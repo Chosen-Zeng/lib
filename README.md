@@ -1,4 +1,4 @@
-# A Noob PID Control of M3508 via C620
+# A Noob PID Control of M3508 with C620 via FDCAN in CAN Frame Format
 ## Exported Function
 ```C
 void C620_PID_RPM(FDCAN_HandleTypeDef* hfdcan, uint32_t ID);
