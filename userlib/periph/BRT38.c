@@ -44,7 +44,7 @@ void BRT38_SendData(FDCAN_HandleTypeDef *hfdcan, uint8_t addr, uint8_t func, uin
     FDCAN_SendData(hfdcan, BRT38_CTRL.addr, &BRT38_CTRL, BRT38_CTRL.length);
 }
 
-void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
+__weak void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
 {
     FDCAN_RxHeaderTypeDef FDCAN_RxHeader;
     uint8_t RxFifo0[7];
