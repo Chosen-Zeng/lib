@@ -8,32 +8,13 @@
 #define ABS(X) ((X) >= 0 ? (X) : -(X))				  // 输出X绝对值
 #define ABS_LIMIT(X, Y) (X >= 0 ? (X = Y) : (X = -Y)) // 将X限制为±Y
 
-#define fANGLE_C620 (360 / 8192.F)
-#define fI_C620 (20 / 16384.F)
-
-
 extern FDCAN_HandleTypeDef hfdcan1;
 
 void C620_PID_Angle(FDCAN_HandleTypeDef *hfdcan, uint32_t ID);
 void C620_SetI(FDCAN_HandleTypeDef *hfdcan, uint32_t ID);
 void C620_PID_RPM(FDCAN_HandleTypeDef *hfdcan, uint32_t ID);
 
-#define ANGLE_Kp 24
-#define ANGLE_Ki 12.5
-#define ANGLE_Kd 2.4e-2
-#define ANGLE_pLIMIT 100
-#define ANGLE_iSTART 35
-#define ANGLE_iLIMIT 80
-#define ANGLE_dLIMIT 120
-
-#define RPM_Kp 2.4e-2
-#define RPM_Ki 1e-2
-#define RPM_Kd 3.8e-5
-#define RPM_pDEADBAND 26
-#define RPM_iSTART 275
-#define RPM_iLIMIT 25
-
-struct PID
+static struct PID
 {
 	float p[8];
 	float i[8];
@@ -45,10 +26,8 @@ struct PID
 	int16_t decurr[8];
 } RPM, Angle;
 struct C620 C620_CTRL, C620_FDBK;
-int16_t lap[8];
-static uint8_t C620[8];
+int16_t C620_lap[8];
 static float time;
-static uint8_t RxFifo0[8];
 
 void C620_PID_Angle(FDCAN_HandleTypeDef *hfdcan, uint32_t ID)
 {
@@ -58,7 +37,7 @@ void C620_PID_Angle(FDCAN_HandleTypeDef *hfdcan, uint32_t ID)
 	for (int count = 0; count < 8; count++)
 	{
 
-		if (ABS(Angle.pterm[count] = C620_CTRL.Angle[count] - (C620_FDBK.Angle[count] + lap[count] * 360)) > ANGLE_pLIMIT) // 对pterm限幅 实现类似步进效果
+		if (ABS(Angle.pterm[count] = C620_CTRL.Angle[count] - (C620_FDBK.Angle[count] + C620_lap[count] * 360)) > ANGLE_pLIMIT) // 对pterm限幅 实现类似步进效果
 			ABS_LIMIT(Angle.pterm[count], ANGLE_pLIMIT);
 		Angle.p[count] = Angle.pterm[count] * ANGLE_Kp;
 
@@ -117,6 +96,8 @@ void C620_PID_RPM(FDCAN_HandleTypeDef *hfdcan, uint32_t ID)
 
 void C620_SetI(FDCAN_HandleTypeDef *hfdcan, uint32_t ID)
 {
+	static uint8_t C620[8];
+
 	for (int count = 0; count <= 3; count++)
 	{
 		if (ABS(C620_CTRL.I[count]) > 20)
@@ -125,11 +106,12 @@ void C620_SetI(FDCAN_HandleTypeDef *hfdcan, uint32_t ID)
 		C620[count * 2 + 1] = (int16_t)(C620_CTRL.I[count] / fI_C620);
 	}
 
-	FDCAN_SendData(hfdcan, ID, C620);
+	FDCAN_SendData(hfdcan, ID, C620, 8);
 }
 void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
 {
 	FDCAN_RxHeaderTypeDef FDCAN_RxHeader;
+	uint8_t RxFifo0[8];
 	if (hfdcan->Instance == FDCAN1)
 	{
 		HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &FDCAN_RxHeader, RxFifo0);
@@ -143,7 +125,7 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
 		static int16_t angle[8];
 
 		if (ABS(angle[count] - C620_FDBK.Angle[count]) >= 60) // 计圈
-			angle[count] > C620_FDBK.Angle[count] ? lap[count]++ : lap[count]--;
+			angle[count] > C620_FDBK.Angle[count] ? C620_lap[count]++ : C620_lap[count]--;
 		angle[count] = C620_FDBK.Angle[count];
 
 		RPM.deprev[count] = RPM.decurr[count];
@@ -151,7 +133,7 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
 
 #ifdef ANGLE_MODE
 		Angle.deprev[count] = Angle.decurr[count];
-		if (ABS(Angle.decurr[count] = C620_CTRL.Angle[count] - (C620_FDBK.Angle[count] + lap[count] * 360)) > 120) // 微分限幅
+		if (ABS(Angle.decurr[count] = C620_CTRL.Angle[count] - (C620_FDBK.Angle[count] + C620_lap[count] * 360)) > 120) // 微分限幅
 			ABS_LIMIT(Angle.decurr[count], 120);
 #endif
 	}
