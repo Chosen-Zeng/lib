@@ -36,6 +36,7 @@ void C620_PID_Angle(FDCAN_HandleTypeDef *hfdcan, uint32_t ID)
 
 	for (int count = 0; count < 8; count++)
 	{
+		C620_CTRL.Angle[count] *= GR_C620;
 
 		if (ABS(Angle.pterm[count] = C620_CTRL.Angle[count] - (C620_FDBK.Angle[count] + C620_lap[count] * 360)) > ANGLE_pLIMIT) // 对pterm限幅 实现类似步进效果
 			ABS_LIMIT(Angle.pterm[count], ANGLE_pLIMIT);
@@ -108,7 +109,7 @@ void C620_SetI(FDCAN_HandleTypeDef *hfdcan, uint32_t ID)
 
 	FDCAN_SendData(hfdcan, ID, C620, 8);
 }
-void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
+__weak void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
 {
 	FDCAN_RxHeaderTypeDef FDCAN_RxHeader;
 	uint8_t RxFifo0[8];

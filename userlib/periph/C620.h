@@ -5,6 +5,7 @@
 
 #define fANGLE_C620 (360 / 8192.F)
 #define fI_C620 (20 / 16384.F)
+#define GR_C620 (3591.f / 187)
 
 #define C620_ID1 0x200
 #define C620_ID2 0x1FF
