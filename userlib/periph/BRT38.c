@@ -67,7 +67,7 @@ __weak void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFi
             static float angle_prev;
 #ifdef BRT38_LAP_SGL
 
-            BRT38_angle_sgl = *(uint32_t *)BRT38_FDBK.data * BRT38_fANGLE;
+            BRT38_angle_sgl = *(uint32_t *)BRT38_FDBK.data * fANGLE_BRT38;
 
             if (ABS(BRT38_angle_sgl - angle_prev) > 360 * 0.9)
                 BRT38_angle_sgl > angle_prev ? BRT38_lap_sgl-- : BRT38_lap_sgl++;
@@ -77,7 +77,7 @@ __weak void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFi
 #endif
 #ifdef BRT38_LAP_MPL
 
-            BRT38_angle_mpl = *(uint32_t *)BRT38_FDBK.data * BRT38_fANGLE;
+            BRT38_angle_mpl = *(uint32_t *)BRT38_FDBK.data * fANGLE_BRT38;
 
             if (ABS(BRT38_angle_mpl - angle_prev) > BRT38_LAP * 360 * 0.9)
                 BRT38_angle_mpl > angle_prev ? BRT38_lap_mpl-- : BRT38_lap_mpl++;

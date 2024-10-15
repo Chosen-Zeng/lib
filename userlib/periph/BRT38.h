@@ -9,13 +9,13 @@
 #define BRT38_MODE_VAL // mode selection: BRT38_MODE_CHECK/BRT38_MODE_DPS/BRT38_MODE_VAL
 #if defined BRT38_MODE_CHECK || defined BRT38_MODE_DPS || defined BRT38_MODE_VAL
 
-#define BRT38_RES 4096  // define resolution
-#ifdef BRT38_RES
-#define BRT38_fANGLE (360.f / BRT38_RES)
+#define RES_BRT38 32768  // define resolution
+#ifdef RES_BRT38
+#define fANGLE_BRT38 (360.f / RES_BRT38)
 
 #ifdef BRT38_LAP_MPL
-#define BRT38_LAP 50    // define lap
-#ifdef BRT38_LAP
+//#define LAP_BRT38 50    // define lap
+#ifdef LAP_BRT38
 #else
 #error No lap defined.
 #endif
