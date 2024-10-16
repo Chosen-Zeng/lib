@@ -1,13 +1,12 @@
-# User Manual
-## userlib
-### hardware
-#### FDCAN
+# UserLib Manual
+## hardware
+### FDCAN
 - Exported Function:
 ```C
 void FDCAN_SendData(FDCAN_HandleTypeDef* hfdcan, uint32_t ID, uint8_t TxData[]);
 ```
-### periph
-#### C620
+## periph
+### C620
 - Exported Function:
 ```C
 void C620_PID_Angle(FDCAN_HandleTypeDef* hfdcan, uint32_t ID);
