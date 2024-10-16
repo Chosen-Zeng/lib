@@ -3,10 +3,10 @@
 #include "FDCAN.h"
 #include "BRT38.h"
 #include "BRT38_INST.h"
+#include <string.h>
 
 #define ABS(X) ((X) >= 0 ? (X) : -(X)) // 输出X绝对值
 
-extern DMA_HandleTypeDef hdma_memtomem_dma1_channel2;
 
 struct BRT38
 {
@@ -27,7 +27,7 @@ void BRT38_Init(FDCAN_HandleTypeDef *hfdcan, uint8_t addr)
 {
     BRT38_SendData(hfdcan, addr, BRT38_ATD_SET, 1000, 2);
     vTaskDelay(1);
-    BRT38_SendData(hfdcan, addr, BRT38_MODE_SET, BRT38_MODE_VAL, 1);
+//    BRT38_SendData(hfdcan, addr, BRT38_MODE_SET, BRT38_MODE_VAL, 1);
     vTaskDelay(1);
     BRT38_SendData(hfdcan, addr, BRT38_INC_DIRCT_SET, BRT38_INC_DIRCT_CCW, 1);
     vTaskDelay(1);
@@ -54,9 +54,8 @@ __weak void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFi
 
         static struct BRT38 BRT38_FDBK;
 
-        HAL_DMA_Start(&hdma_memtomem_dma1_channel2, (uint32_t)RxFifo0, (uint32_t)&BRT38_FDBK, RxFifo0[0]);
-        HAL_DMA_PollForTransfer(&hdma_memtomem_dma1_channel2, HAL_DMA_FULL_TRANSFER, 1);
-
+		memcpy(&BRT38_FDBK, RxFifo0, RxFifo0[0]);
+		
         static int16_t BRT38_lap_sgl, BRT38_lap_mpl;
         static float BRT38_angle_sgl, BRT38_angle_mpl;
 
@@ -67,7 +66,7 @@ __weak void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFi
             static float angle_prev;
 #ifdef BRT38_LAP_SGL
 
-            BRT38_angle_sgl = *(uint32_t *)BRT38_FDBK.data * fANGLE_BRT38;
+            BRT38_angle_sgl = *(uint32_t *)BRT38_FDBK.data * BRT38_fANGLE;
 
             if (ABS(BRT38_angle_sgl - angle_prev) > 360 * 0.9)
                 BRT38_angle_sgl > angle_prev ? BRT38_lap_sgl-- : BRT38_lap_sgl++;
@@ -77,7 +76,7 @@ __weak void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFi
 #endif
 #ifdef BRT38_LAP_MPL
 
-            BRT38_angle_mpl = *(uint32_t *)BRT38_FDBK.data * fANGLE_BRT38;
+            BRT38_angle_mpl = *(uint32_t *)BRT38_FDBK.data * BRT38_fANGLE;
 
             if (ABS(BRT38_angle_mpl - angle_prev) > BRT38_LAP * 360 * 0.9)
                 BRT38_angle_mpl > angle_prev ? BRT38_lap_mpl-- : BRT38_lap_mpl++;
