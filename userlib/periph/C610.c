@@ -2,11 +2,13 @@
 #include "stm32g4xx_hal.h"
 #include "C610.h"
 
-#define ABS(X) ((X) >= 0 ? (X) : -(X))                // 输出X绝对值
-#define ABS_LIMIT(X, Y) (X >= 0 ? (X = Y) : (X = -Y)) // 将X限制为±Y
+#define ABS(X) ((X) >= 0 ? (X) : -(X)) // 输出X绝对值
+#define ABS_LIMIT(X, Y) \
+    if (ABS(X) > Y)     \
+    X >= 0 ? (X = Y) : (X = -Y)
 
 void C610_PID_Angle(FDCAN_HandleTypeDef *hfdcan, uint32_t ID);
-void C610_SetI(FDCAN_HandleTypeDef *hfdcan, uint32_t ID);
+void C610_SetCurrent(FDCAN_HandleTypeDef *hfdcan, uint32_t ID);
 void C610_PID_RPM(FDCAN_HandleTypeDef *hfdcan, uint32_t ID);
 
 static struct PID
@@ -21,7 +23,6 @@ static struct PID
     int16_t decurr[8];
 } PID_RPM, PID_Angle;
 struct C610 C610_CTRL, C610_FDBK;
-int16_t C610_lap[8];
 static float time;
 
 void C610_PID_Angle(FDCAN_HandleTypeDef *hfdcan, uint32_t ID)
@@ -37,9 +38,9 @@ void C610_PID_Angle(FDCAN_HandleTypeDef *hfdcan, uint32_t ID)
     time_prev = time_curr;
 #endif
 
-    for (int count = 0; count < 8; count++)
+    for (int count = (ID == C610_ID2 ? 4 : 0); count < (ID == C610_ID1 ? 4 : 8); count++)
     {
-        PID_Angle.pterm[count] = C610_CTRL.Angle[count] - (C610_FDBK.Angle[count] + C610_lap[count] * 360);
+        PID_Angle.pterm[count] = C610_CTRL.Angle[count] - C610_FDBK.Angle[count];
         PID_Angle.p[count] = PID_Angle.pterm[count] * C610_ANGLE_Kp;
 
         if (ABS(PID_Angle.pterm[count]) >= C610_ANGLE_iSTART) // 积分分离
@@ -49,8 +50,7 @@ void C610_PID_Angle(FDCAN_HandleTypeDef *hfdcan, uint32_t ID)
         else if (ABS(PID_Angle.iterm[count]) <= C610_ANGLE_iLIMIT) // 积分限幅
         {
             PID_Angle.iterm[count] += PID_Angle.pterm[count] * time;
-            if (ABS(PID_Angle.iterm[count]) > C610_ANGLE_iLIMIT)
-                ABS_LIMIT(PID_Angle.iterm[count], C610_ANGLE_iLIMIT);
+            ABS_LIMIT(PID_Angle.iterm[count], C610_ANGLE_iLIMIT);
         }
         PID_Angle.i[count] = PID_Angle.iterm[count] * C610_ANGLE_Ki;
 
@@ -75,7 +75,7 @@ void C610_PID_RPM(FDCAN_HandleTypeDef *hfdcan, uint32_t ID)
     time_prev = time_curr;
 #endif
 
-    for (int count = 0; count < 8; count++)
+    for (int count = (ID == C610_ID2 ? 4 : 0); count < (ID == C610_ID1 ? 4 : 8); count++)
     {
         PID_RPM.pterm[count] = C610_CTRL.RPM[count] - C610_FDBK.RPM[count];
         PID_RPM.p[count] = PID_RPM.pterm[count] * C610_RPM_Kp;
@@ -87,59 +87,87 @@ void C610_PID_RPM(FDCAN_HandleTypeDef *hfdcan, uint32_t ID)
         else if (ABS(PID_RPM.iterm[count]) <= C610_RPM_iLIMIT) // 积分限幅
         {
             PID_RPM.iterm[count] += PID_RPM.pterm[count] * time;
-            if (ABS(PID_RPM.iterm[count]) > C610_RPM_iLIMIT)
-                ABS_LIMIT(PID_RPM.iterm[count], C610_RPM_iLIMIT);
+            ABS_LIMIT(PID_RPM.iterm[count], C610_RPM_iLIMIT);
         }
         PID_RPM.i[count] = PID_RPM.iterm[count] * C610_RPM_Ki;
 
         PID_RPM.dterm[count] = (PID_RPM.decurr[count] - PID_RPM.deprev[count]) / time; // 微分先行
         PID_RPM.d[count] = PID_RPM.dterm[count] * C610_RPM_Kd;
 
-        C610_CTRL.I[count] = PID_RPM.p[count] + PID_RPM.i[count] + PID_RPM.d[count];
+        C610_CTRL.Current[count] = PID_RPM.p[count] + PID_RPM.i[count] + PID_RPM.d[count];
     }
-    C610_SetI(hfdcan, ID);
+    C610_SetCurrent(hfdcan, ID);
 }
 
-void C610_SetI(FDCAN_HandleTypeDef *hfdcan, uint32_t ID)
+void C610_SetTorque(FDCAN_HandleTypeDef *hfdcan, uint32_t ID)
+{
+    for (int count = (ID == C610_ID2 ? 4 : 0); count < (ID == C610_ID1 ? 4 : 8); count++)
+    {
+        C610_CTRL.Current[count] = C610_CTRL.Torque[count] / C610_fTORQUE;
+    }
+    C610_SetCurrent(hfdcan, ID);
+}
+
+void C610_SetCurrent(FDCAN_HandleTypeDef *hfdcan, uint32_t ID)
 {
     uint8_t C610[16];
 
-    for (int count = 0; count < 8; count++)
+    for (int count = (ID == C610_ID2 ? 4 : 0); count < (ID == C610_ID1 ? 4 : 8); count++)
     {
-        if (ABS(C610_CTRL.I[count]) > C610_I_MAX)
-            ABS_LIMIT(C610_CTRL.I[count], C610_I_MAX);
-        C610[count * 2] = (int16_t)(C610_CTRL.I[count] / C610_fI) >> 8;
-        C610[count * 2 + 1] = (int16_t)(C610_CTRL.I[count] / C610_fI);
+        ABS_LIMIT(C610_CTRL.Current[count], C610_CURRENT_MAX);
+        C610[count * 2] = (int16_t)(C610_CTRL.Current[count] / C610_fCURRENT) >> 8;
+        C610[count * 2 + 1] = (int16_t)(C610_CTRL.Current[count] / C610_fCURRENT);
     }
-
-    FDCAN_SendData(hfdcan, ID, ID == C610_ID1 ? C610 : &C610[8], 8);
+    
+    if (ID == (C610_ID1 | C610_ID2))
+    {
+        FDCAN_SendData(hfdcan, FDCAN_STANDARD_ID, C610_ID1, C610, 8);
+        FDCAN_SendData(hfdcan, FDCAN_STANDARD_ID, C610_ID2, &C610[8], 8);
+    }
+    else
+        FDCAN_SendData(hfdcan, FDCAN_STANDARD_ID, ID, ID == C610_ID1 ? C610 : &C610[8], 8);
 }
 
-void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
+void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo1ITs)
 {
     FDCAN_RxHeaderTypeDef FDCAN_RxHeader;
-    uint8_t RxFifo0[8];
-    if (hfdcan->Instance == FDCAN1)
+    uint8_t RxFifo1[8];
+    if (hfdcan->Instance == FDCAN2)
     {
-        HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &FDCAN_RxHeader, RxFifo0);
+        static struct // add delay at initialization to set sw zero point
+        {
+            uint8_t ZP_Status[8];
+            float ZP[8];
+        } C610_ZP;
+        static int16_t C610_lap[8];
+
+        HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO1, &FDCAN_RxHeader, RxFifo1);
         uint8_t count = FDCAN_RxHeader.Identifier - 0x200 - 1;
 
-        C610_FDBK.Angle[count] = (int16_t)((RxFifo0[0] << 8) | RxFifo0[1]) * C610_fANGLE;
-        C610_FDBK.RPM[count] = (int16_t)((RxFifo0[2] << 8) | RxFifo0[3]);
-        C610_FDBK.T[count] = (int16_t)((RxFifo0[4] << 8) | RxFifo0[5]);
+        static float angle_prev[8], angle_curr[8];
+        if (!C610_ZP.ZP_Status[count])
+        {
+            angle_prev[count] = angle_curr[count] = C610_ZP.ZP[count] = ((RxFifo1[0] << 8) | RxFifo1[1]) * C610_fANGLE / C610_GR;
+            C610_ZP.ZP_Status[count] = 1;
+        }
+        else
+        {
+            angle_curr[count] = ((RxFifo1[0] << 8) | RxFifo1[1]) * C610_fANGLE / C610_GR;
+            if (ABS(angle_prev[count] - angle_curr[count]) >= C610_DPS_MAX) // 计圈
+                angle_prev[count] > angle_curr[count] ? C610_lap[count]++ : C610_lap[count]--;
+            angle_prev[count] = angle_curr[count];
+        }
 
-        static int16_t angle_prev[8];
-
-        if (ABS(angle_prev[count] - C610_FDBK.Angle[count]) >= C610_DPS_MAX) // 计圈
-            angle_prev[count] > C610_FDBK.Angle[count] ? C610_lap[count]++ : C610_lap[count]--;
-        angle_prev[count] = C610_FDBK.Angle[count];
+        C610_FDBK.Angle[count] = angle_curr[count] + C610_lap[count] * 360 / C610_GR - C610_ZP.ZP[count];
+        C610_FDBK.RPM[count] = (int16_t)((RxFifo1[2] << 8) | RxFifo1[3]) / C610_GR;
+        C610_FDBK.Torque[count] = (int16_t)((RxFifo1[4] << 8) | RxFifo1[5]) * C610_fCURRENT * C610_fTORQUE;
 
         PID_RPM.deprev[count] = PID_RPM.decurr[count];
         PID_RPM.decurr[count] = C610_CTRL.RPM[count] - C610_FDBK.RPM[count];
 
 #ifdef C610_MODE_ANGLE
         PID_Angle.deprev[count] = PID_Angle.decurr[count];
-        PID_Angle.decurr[count] = C610_CTRL.Angle[count] - (C610_FDBK.Angle[count] + C610_lap[count] * 360);
+        PID_Angle.decurr[count] = C610_CTRL.Angle[count] - C610_FDBK.Angle[count];
 #endif
     }
 }
