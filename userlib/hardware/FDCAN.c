@@ -1,11 +1,11 @@
 #include "FDCAN.h"
 
 
-void FDCAN_SendData(FDCAN_HandleTypeDef* hfdcan, uint32_t ID, uint8_t TxData[], uint8_t length)
+void FDCAN_SendData(FDCAN_HandleTypeDef* hfdcan, uint32_t IDType, uint32_t ID, uint8_t TxData[], uint8_t length)
 {
 	FDCAN_TxHeaderTypeDef FDCAN_TxHeader;
 	FDCAN_TxHeader.Identifier = ID;
-	FDCAN_TxHeader.IdType = FDCAN_STANDARD_ID;
+	FDCAN_TxHeader.IdType = IDType;
 	FDCAN_TxHeader.TxFrameType = FDCAN_DATA_FRAME;
 	FDCAN_TxHeader.DataLength = length;
 	FDCAN_TxHeader.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
