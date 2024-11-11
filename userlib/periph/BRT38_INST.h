@@ -13,18 +13,9 @@
 
 #define BRT38_MODE_SET 0x04
 
-#ifdef BRT38_MODE_CHECK
-#undef BRT38_MODE_CHECK
 #define BRT38_MODE_CHECK 0x00
-#endif
-#ifdef BRT38_MODE_DPS
-#undef BRT38_MODE_DPS
 #define BRT38_MODE_DPS 0x02
-#endif
-#ifdef BRT38_MODE_VAL
-#undef BRT38_MODE_VAL
 #define BRT38_MODE_VAL 0xAA
-#endif
 
 #define BRT38_ATD_SET 0x05 // auto transmit delay
 

@@ -8,7 +8,8 @@
 #define C610_fTORQUE 0.18
 #define C610_GR 36.F
 #define C610_CURRENT_MAX 10
-#define C610_DPS_MAX 3.6
+#define C610_DPS_MAX 3600
+#define C610_FDBK_RATE (1.F / 1000)
 
 #define C610_ID1 0x200
 #define C610_ID2 0x1FF
@@ -25,20 +26,22 @@
 #define C610_RPM_iSTART 100
 #define C610_RPM_iLIMIT 5
 
-struct C610
+typedef enum
+{
+	C610_TIME_SRC_RPM,
+	C610_TIME_SRC_ANGLE
+} C610_Time_SRC_t;
+
+typedef struct
 {
 	float Angle[8];
 	float RPM[8];
 	float Current[8];
 	float Torque[8];
-};
+} C610_t;
 
-#ifdef C610_MODE_ANGLE
-void C610_PID_Angle(FDCAN_HandleTypeDef *hfdcan, uint32_t ID);
-#endif
-#ifdef C610_MODE_RPM
-void C610_PID_RPM(FDCAN_HandleTypeDef *hfdcan, uint32_t ID);
-#endif
-void C610_SetTorque(FDCAN_HandleTypeDef *hfdcan, uint32_t ID);
+void C610_SetAngle(void *CAN_handle, uint32_t C610_ID);
+void C610_SetRPM(void *CAN_handle, uint32_t C610_ID);
+void C610_SetTorque(void *CAN_handle, uint32_t C610_ID);
 
 #endif

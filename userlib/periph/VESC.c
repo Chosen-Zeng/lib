@@ -1,15 +1,19 @@
-#include "stm32g4xx_hal.h"
+#include "main.h"
 #include "VESC.h"
 #include "VESC_INST.h"
+#ifdef CAN_SUPPORT
+#include "CAN.h"
+#elif defined FDCAN_SUPPORT
 #include "FDCAN.h"
+#endif
 
 #define ABS(X) ((X) >= 0 ? (X) : -(X)) // 输出X绝对值
 #define ABS_LIMIT(X, Y) \
     if (ABS(X) > Y)     \
     X >= 0 ? (X = Y) : (X = -Y)
 
-float VESC_RPM[VESC_MAX], VESC_DutyCycle[VESC_MAX]; // VESC_Current[VESC_MAX],
-
+VESC_FDBK_t VESC_FDBK[VESC_MAX];
+float VESC_RPM[VESC_MAX], VESC_DutyCycle[VESC_MAX], VESC_Current[VESC_MAX];
 
 void f2u8_4(const float *num, uint8_t TxData[4])
 {
@@ -19,7 +23,7 @@ void f2u8_4(const float *num, uint8_t TxData[4])
     }
 }
 
-void VESC_SendData(FDCAN_HandleTypeDef *hfdcan, uint8_t VESC_ID, uint8_t VESC_Command, float data)
+void VESC_SendCMD(void *CAN_handle, uint8_t ID, uint8_t VESC_Command, float data)
 {
     uint8_t TxData[4];
 
@@ -50,27 +54,33 @@ void VESC_SendData(FDCAN_HandleTypeDef *hfdcan, uint8_t VESC_ID, uint8_t VESC_Co
         break;
     }
     }
-    FDCAN_SendData(hfdcan, FDCAN_EXTENDED_ID, VESC_ID | VESC_Command << 8, TxData, 4);
+    #ifdef CAN_SUPPORT
+    CAN_SendData(CAN_handle, CAN_ID_EXT, ID | VESC_Command << 8, TxData, 4);
+    #elif defined FDCAN_SUPPORT
+    FDCAN_SendData(CAN_handle, FDCAN_EXTENDED_ID, ID | VESC_Command << 8, TxData, 4);
+    #endif
 }
 
-void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
+/*void HAL_FDCAN_RxFifo0Callback(void *CAN_handle, uint32_t RxFifo0ITs)
 {
-    uint8_t RxData[8];
+    uint8_t RxFifo0[8];
     if (hfdcan->Instance == FDCAN1)
     {
         FDCAN_RxHeaderTypeDef FDCAN_RxHeader;
-        HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &FDCAN_RxHeader, RxData);
+        HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &FDCAN_RxHeader, RxFifo0);
 
         switch ((FDCAN_RxHeader.Identifier & 0xFF00) >> 8)
         {
         case VESC_STATUS:
         {
-            VESC_RPM[FDCAN_RxHeader.Identifier & 0x00FF] = (float)(RxData[0] << 24 | RxData[1] << 16 | RxData[2] << 8 | RxData[3]) / VESC_MOTOR_PP;
-            //            VESC_Current[FDCAN_RxHeader.Identifier & 0x00FF] = (float)(RxData[4] << 8 | RxData[5]) / VESC_fCURRENT_R;
-            VESC_DutyCycle[FDCAN_RxHeader.Identifier & 0x00FF] = (float)(RxData[6] << 8 | RxData[7]) / VESC_fPCT_R;
-
+            VESC_FDBK[FDCAN_RxHeader.Identifier & 0x00FF].RPM = (float)(RxFifo0[0] << 24 | RxFifo0[1] << 16 | RxFifo0[2] << 8 | RxFifo0[3]) / VESC_MOTOR_PP;
+            break;
+        }
+        case VESC_STATUS_4:
+        {
+            VESC_FDBK[FDCAN_RxHeader.Identifier & 0x00FF].Current_In = (float)(RxFifo0[4] << 8 | RxFifo0[5]) / VESC_fCURRENT_R;
             break;
         }
         }
     }
-}
+}*/
