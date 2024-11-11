@@ -1,7 +1,6 @@
 #include "filtering.h"
 #include <float.h>
 
-
 float MeanFiltering(MeanFiltering_t *struct_MeanFiltering, float new)
 {
     if (!struct_MeanFiltering->length)
@@ -44,9 +43,10 @@ float MeanFiltering(MeanFiltering_t *struct_MeanFiltering, float new)
 int MeanFiltering_GetStatus(MeanFiltering_t *struct_MeanFiltering, float new, float err_limit)
 {
     float avg = MeanFiltering(struct_MeanFiltering, new);
-    if (struct_MeanFiltering->length == MEANFILTERING_NUM)
-        if (struct_MeanFiltering->data[struct_MeanFiltering->max_pos] - avg <= err_limit && avg - struct_MeanFiltering->data[struct_MeanFiltering->max_pos] <= err_limit)
-            return MEANFILTERING_YES;
+    if (struct_MeanFiltering->length == MEANFILTERING_NUM &&
+        struct_MeanFiltering->data[struct_MeanFiltering->max_pos] - avg <= err_limit &&
+        avg - struct_MeanFiltering->data[struct_MeanFiltering->min_pos] <= err_limit)
+        return MEANFILTERING_YES;
 
     return MEANFILTERING_NO;
 }

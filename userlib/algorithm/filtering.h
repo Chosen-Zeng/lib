@@ -17,7 +17,7 @@ typedef struct
     unsigned max_pos, min_pos;
 } MeanFiltering_t;
 
-#define MeanFiltering_t_InitStruct {0, {FLT_MIN, FLT_MAX}, 0, 0, 0, 1}
+#define MeanFiltering_InitStruct {0, {FLT_MIN, FLT_MAX}, 0, 0, 0, 1}
 
 float MeanFiltering(MeanFiltering_t *struct_MeanFiltering, float new);
 int MeanFiltering_GetStatus(MeanFiltering_t *struct_MeanFiltering, float new, float err_limit);
