@@ -1,27 +1,44 @@
 #include "TIM.h"
 
-#ifndef TIMSW
-#error Software TIM
+#ifdef TIMSW
+//  @brief     update interval in the specific time struct
+//  @attention interval must < 1s
+void TIMSW_UpdateInterval(time_t *time_struct)
+{
+    if (time_struct->prev != 0 && time_struct->curr != 0)
+    {
+        time_struct->prev = time_struct->curr;
+        time_struct->curr = TIMSW_TIME;
+
+        if (time_struct->prev >= time_struct->curr)
+            time_struct->interval = 1 + time_struct->curr - time_struct->prev;
+        else
+            time_struct->interval = time_struct->curr - time_struct->prev;
+    }
+    else
+        time_struct->prev = time_struct->curr = TIMSW_TIME;
+}
+
+unsigned char TIMSW_TimeLimit(time_t *time_struct, float time_limit)
+{
+    if (time_struct->prev != 0 && time_struct->curr != 0)
+    {
+        time_struct->prev = time_struct->curr;
+        time_struct->curr = TIMSW_TIME;
+
+        if (time_struct->prev >= time_struct->curr)
+            time_struct->interval += 1 + time_struct->curr - time_struct->prev;
+        else
+            time_struct->interval += time_struct->curr - time_struct->prev;
+    }
+    else
+        time_struct->prev = time_struct->curr = TIMSW_TIME;
+
+    return time_struct->interval < time_limit;
+}
+
+float TIMSW_GetTimeRatio(time_t *time_struct, float period)
+{
+    return time_struct->interval > period ? 1 : time_struct->interval / period;
+}
 #endif
-
-void TIMSW_UpdateInterval(time_t *time_struct) // must < 1s
-{
-    time_struct->prev = time_struct->curr;
-    time_struct->curr = TIMSW_TIME;
-
-    if (time_struct->prev > time_struct->curr)
-        time_struct->interval = 1 + time_struct->curr - time_struct->prev;
-    else
-        time_struct->interval = time_struct->curr - time_struct->prev;
-}
-
-uint8_t TIMSW_TimeLimit(time_t *time_struct, float time_limit)
-{
-    time_struct->prev = time_struct->curr;
-    time_struct->curr = TIMSW_TIME;
-
-    if (time_struct->prev > time_struct->curr) // interval as a second counter
-        return ++time_struct->interval - time_struct->prev + time_struct->curr < time_limit;
-    else
-        return time_struct->interval + time_struct->curr - time_struct->prev < time_limit;
-}
