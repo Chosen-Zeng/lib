@@ -29,11 +29,11 @@ typedef struct
     float Temp_Motor;
     float Current_In;
     float PID_Pos;
-} VESC_FDBK_t;
+} VESC_fdbk_t;
 
 extern float VESC_RPM[VESC_MAX],
     VESC_DutyCycle[VESC_MAX]; // VESC_Current[VESC_MAX],
 
-void VESC_SendCMD(void *CAN_handle, uint8_t ID, uint8_t VESC_Command, float data);
+void VESC_SendCmd(void *CAN_handle, uint8_t ID, uint8_t VESC_Command, float data);
 
 #endif

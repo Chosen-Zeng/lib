@@ -12,7 +12,7 @@
     if (ABS(X) > Y)     \
     X >= 0 ? (X = Y) : (X = -Y)
 
-VESC_FDBK_t VESC_FDBK[VESC_MAX];
+VESC_fdbk_t VESC_fdbk[VESC_MAX];
 float VESC_RPM[VESC_MAX], VESC_DutyCycle[VESC_MAX], VESC_Current[VESC_MAX];
 
 void f2u8_4(const float *num, uint8_t TxData[4])
@@ -23,11 +23,11 @@ void f2u8_4(const float *num, uint8_t TxData[4])
     }
 }
 
-void VESC_SendCMD(void *CAN_handle, uint8_t ID, uint8_t VESC_Command, float data)
+void VESC_SendCmd(void *CAN_handle, uint8_t ID, uint8_t VESC_cmd, float data)
 {
     uint8_t TxData[4];
 
-    switch (VESC_Command)
+    switch (VESC_cmd)
     {
     case VESC_SET_DUTY:
     {
@@ -55,9 +55,9 @@ void VESC_SendCMD(void *CAN_handle, uint8_t ID, uint8_t VESC_Command, float data
     }
     }
     #ifdef CAN_SUPPORT
-    CAN_SendData(CAN_handle, CAN_ID_EXT, ID | VESC_Command << 8, TxData, 4);
+    CAN_SendData(CAN_handle, CAN_ID_EXT, ID | VESC_cmd << 8, TxData, 4);
     #elif defined FDCAN_SUPPORT
-    FDCAN_SendData(CAN_handle, FDCAN_EXTENDED_ID, ID | VESC_Command << 8, TxData, 4);
+    FDCAN_SendData(CAN_handle, FDCAN_EXTENDED_ID, ID | VESC_cmd << 8, TxData, 4);
     #endif
 }
 
