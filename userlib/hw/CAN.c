@@ -1,8 +1,7 @@
 #include "CAN.h"
-CAN_TxHeaderTypeDef CAN_TxHeader;
 void CAN_SendData(CAN_HandleTypeDef *hcan, uint32_t CAN_ID_Type, uint32_t ID, uint8_t TxData[], uint8_t length)
 {
-  //  CAN_TxHeaderTypeDef CAN_TxHeader;
+  CAN_TxHeaderTypeDef CAN_TxHeader;
 
   switch (CAN_ID_Type)
   {
@@ -25,8 +24,8 @@ void CAN_SendData(CAN_HandleTypeDef *hcan, uint32_t CAN_ID_Type, uint32_t ID, ui
   CAN_TxHeader.DLC = length;
   CAN_TxHeader.TransmitGlobalTime = 0;
 
-//  while (!HAL_CAN_GetTxMailboxesFreeLevel(hcan))
-//    ;
+  //  while (!HAL_CAN_GetTxMailboxesFreeLevel(hcan))
+  //    ;
 
   if (!HAL_CAN_IsTxMessagePending(hcan, CAN_TX_MAILBOX0))
     HAL_CAN_AddTxMessage(hcan, &CAN_TxHeader, TxData, (uint32_t *)CAN_TX_MAILBOX0);

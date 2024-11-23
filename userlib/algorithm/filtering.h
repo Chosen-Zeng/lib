@@ -20,6 +20,6 @@ typedef struct
 #define MeanFiltering_InitStruct {0, {FLT_MIN, FLT_MAX}, 0, 0, 0, 1}
 
 float MeanFiltering(MeanFiltering_t *struct_MeanFiltering, float new);
-int MeanFiltering_GetStatus(MeanFiltering_t *struct_MeanFiltering, float new, float err_limit);
+unsigned char MeanFiltering_GetStatus(MeanFiltering_t *struct_MeanFiltering, float new, float err_limit);
 
 #endif
