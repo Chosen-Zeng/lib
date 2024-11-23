@@ -1,7 +1,11 @@
 #ifndef __BRT38_H
 #define __BRT38_H
 
+#include "main.h"
+
 #define _DEBUG
+
+extern float BRT38_angle;
 
 #define BRT38_LAP_SGL // type selection: BRT38_LAP_SGL/BRT38_LAP_MPL
 #if defined BRT38_LAP_SGL || defined BRT38_LAP_MPL
@@ -36,7 +40,7 @@ typedef struct
     uint8_t addr;
     uint8_t func;
     uint8_t data[4];
-} BRT38_t;
+} BRT38_msg_t;
 
 void BRT38_Init(void *CAN_handle, uint8_t ID);
 
