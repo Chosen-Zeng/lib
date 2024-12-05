@@ -5,7 +5,6 @@
 
 #define C620_MODE_ANGLE // mode selection: C620_MODE_ANGLE/C620_MODE_RPM
 
-
 #define M3508_fTORQUE 0.3
 #define M3508_GR (3591.F / 187)
 
@@ -16,10 +15,9 @@
 #define C620_ID1 0x200
 #define C620_ID2 0x1FF
 
-// PID param for STM32G474VET6 on FreeRTOS
 #define C620_ANGLE_Kp 19
 #define C620_ANGLE_Ki 3
-#define C620_ANGLE_Kd 0.35
+#define C620_ANGLE_Kd 0.05 //0.35
 #define C620_ANGLE_iSTART 2
 #define C620_ANGLE_iLIMIT 2
 
@@ -59,8 +57,20 @@ typedef struct
 	C620_time_src_t time_src;
 } C620_t;
 
+typedef struct
+{
+	float p[8];
+	float i[8];
+	float d[8];
+	float pterm[8];
+	float iterm[8];
+	float dterm[8];
+	float deprev[8];
+	float decurr[8];
+} C620_PID_t;
 
 extern C620_t C620;
+extern C620_PID_t C620_PID_RPM, C620_PID_angle;
 
 void C620_SetAngle(void *CAN_handle, uint32_t C620_ID);
 void C620_SetRPM(void *CAN_handle, uint32_t C620_ID);

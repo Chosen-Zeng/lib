@@ -8,17 +8,7 @@
 #include "FDCAN.h"
 #endif
 
-static struct PID
-{
-	float p[8];
-	float i[8];
-	float d[8];
-	float pterm[8];
-	float iterm[8];
-	float dterm[8];
-	float deprev[8];
-	float decurr[8];
-} C620_PID_RPM, C620_PID_angle;
+C620_PID_t C620_PID_RPM, C620_PID_angle;
 
 C620_t C620 = {
 	.time_src =
@@ -37,7 +27,7 @@ void C620_SetCurrent(void *CAN_handle, uint32_t C620_ID)
 
 	for (int count = (C620_ID == C620_ID2 ? 4 : 0); count < (C620_ID == C620_ID1 ? 4 : 8); count++)
 	{
-		ABS_LIMIT(C620.ctrl.current[count], C620_CURRENT_LIMIT)
+		LIMIT_ABS(C620.ctrl.current[count], C620_CURRENT_LIMIT)
 		TxData[count * 2] = (int16_t)(C620.ctrl.current[count] / C620_fCURRENT) >> 8;
 		TxData[count * 2 + 1] = (int16_t)(C620.ctrl.current[count] / C620_fCURRENT);
 	}
@@ -77,7 +67,7 @@ void C620_SetRPM(void *CAN_handle, uint32_t C620_ID)
 		else if (ABS(C620_PID_RPM.iterm[count]) <= C620_RPM_iLIMIT) // 积分限幅
 		{
 			C620_PID_RPM.iterm[count] += C620_PID_RPM.pterm[count] * C620_time.interval;
-			ABS_LIMIT(C620_PID_RPM.iterm[count], C620_RPM_iLIMIT);
+			LIMIT_ABS(C620_PID_RPM.iterm[count], C620_RPM_iLIMIT);
 		}
 		C620_PID_RPM.i[count] = C620_PID_RPM.iterm[count] * C620_RPM_Ki;
 
@@ -109,7 +99,7 @@ void C620_SetAngle(void *CAN_handle, uint32_t C620_ID)
 		else if (ABS(C620_PID_angle.iterm[count]) <= C620_ANGLE_iLIMIT) // 积分限幅
 		{
 			C620_PID_angle.iterm[count] += C620_PID_angle.pterm[count] * C620_time.interval;
-			ABS_LIMIT(C620_PID_angle.iterm[count], C620_ANGLE_iLIMIT);
+			LIMIT_ABS(C620_PID_angle.iterm[count], C620_ANGLE_iLIMIT);
 		}
 		C620_PID_angle.i[count] = C620_PID_angle.iterm[count] * C620_ANGLE_Ki;
 
@@ -133,7 +123,7 @@ void C620_SetTorque(void *CAN_handle, uint32_t C620_ID)
 }
 
 #ifdef CAN_SUPPORT
-void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
+__weak void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
 	CAN_RxHeaderTypeDef CAN_RxHeader;
 	uint8_t RxFifo0[8];

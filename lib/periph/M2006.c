@@ -8,17 +8,7 @@
 #include "FDCAN.h"
 #endif
 
-struct PID
-{
-    float p[8];
-    float i[8];
-    float d[8];
-    float pterm[8];
-    float iterm[8];
-    float dterm[8];
-    float deprev[8];
-    float decurr[8];
-} C610_PID_RPM, C610_PID_angle;
+C610_PID_t C610_PID_RPM, C610_PID_angle;
 
 C610_t C610 = {
     .time_src =
@@ -37,7 +27,7 @@ void C610_SetCurrent(void *CAN_handle, uint32_t C610_ID)
 
     for (int count = (C610_ID == C610_ID2 ? 4 : 0); count < (C610_ID == C610_ID1 ? 4 : 8); count++)
     {
-        ABS_LIMIT(C610.ctrl.current[count], C610_CURRENT_LIMIT)
+        LIMIT_ABS(C610.ctrl.current[count], C610_CURRENT_LIMIT)
         TxData[count * 2] = (int16_t)(C610.ctrl.current[count] / C610_fCURRENT) >> 8;
         TxData[count * 2 + 1] = (int16_t)(C610.ctrl.current[count] / C610_fCURRENT);
     }
@@ -77,7 +67,7 @@ void C610_SetRPM(void *CAN_handle, uint32_t C610_ID)
         else if (ABS(C610_PID_RPM.iterm[count]) <= C610_RPM_iLIMIT) // 积分限幅
         {
             C610_PID_RPM.iterm[count] += C610_PID_RPM.pterm[count] * C610_time.interval;
-            ABS_LIMIT(C610_PID_RPM.iterm[count], C610_RPM_iLIMIT);
+            LIMIT_ABS(C610_PID_RPM.iterm[count], C610_RPM_iLIMIT);
         }
         C610_PID_RPM.i[count] = C610_PID_RPM.iterm[count] * C610_RPM_Ki;
 
@@ -109,7 +99,7 @@ void C610_SetAngle(void *CAN_handle, uint32_t C610_ID)
         else if (ABS(C610_PID_angle.iterm[count]) <= C610_ANGLE_iLIMIT) // 积分限幅
         {
             C610_PID_angle.iterm[count] += C610_PID_angle.pterm[count] * C610_time.interval;
-            ABS_LIMIT(C610_PID_angle.iterm[count], C610_ANGLE_iLIMIT);
+            LIMIT_ABS(C610_PID_angle.iterm[count], C610_ANGLE_iLIMIT);
         }
         C610_PID_angle.i[count] = C610_PID_angle.iterm[count] * C610_ANGLE_Ki;
 
@@ -165,7 +155,7 @@ __weak void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFi
         {
             angle_curr[count] = ((RxFifo1[0] << 8) | RxFifo1[1]) * C610_fANGLE;
             if (ABS(angle_prev[count] - angle_curr[count]) >= 180) // 计圈
-                C610.fdbk.angle[count] += ((angle_prev[count] > angle_curr[count] ? 360 : -360) - angle_prev[count] + angle_curr[count]) / M2006_GR;
+                C610.fdbk.angle[count] += ((angle_prev[count] > angle_curr[count] ? 360 : -360) + angle_curr[count] - angle_prev[count]) / M2006_GR;
             else
                 C610.fdbk.angle[count] += (angle_curr[count] - angle_prev[count]) / M2006_GR;
             angle_prev[count] = angle_curr[count];

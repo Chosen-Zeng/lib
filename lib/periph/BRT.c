@@ -1,0 +1,123 @@
+#include "cmsis_os.h"
+#include "BRT.h"
+#include "BRT_INST.h"
+#ifdef CAN_SUPPORT
+#include "CAN.h"
+#elif defined FDCAN_SUPPORT
+#include "FDCAN.h"
+#endif
+
+#define ABS(X) ((X) >= 0 ? (X) : -(X)) // 输出X绝对值
+
+BRT_msg_t BRT_msg_ctrl;
+float BRT_angle[BRT_NUM];
+
+#define nDEBUG
+
+#ifdef DEBUG
+uint8_t BRT_status;
+#endif
+
+void BRT_SendCmd(void *CAN_handle, uint8_t ID, uint8_t BRT_func, uint32_t data)
+{
+    switch (BRT_func)
+    {
+    default:
+    {
+        BRT_msg_ctrl.length = 3 + 1;
+        break;
+    }
+    case BRT_ATD_SET:
+    case BRT_DPS_SMPLT_SET:
+    {
+        BRT_msg_ctrl.length = 3 + 2;
+        break;
+    }
+    case BRT_POS_CURR_SET:
+    {
+        BRT_msg_ctrl.length = 3 + 4;
+        break;
+    }
+    }
+    BRT_msg_ctrl.addr = ID;
+    BRT_msg_ctrl.func = BRT_func;
+    *(uint32_t *)BRT_msg_ctrl.data = data;
+
+#ifdef CAN_SUPPORT
+    CAN_SendData(CAN_handle, CAN_ID_STD, BRT_msg_ctrl.addr, &BRT_msg_ctrl, BRT_msg_ctrl.length);
+#elif defined FDCAN_SUPPROT
+    FDCAN_SendData(CAN_handle, FDCAN_STANDARD_ID, BRT_msg_ctrl.addr, &BRT_msg_ctrl, BRT_msg_ctrl.length);
+#endif
+}
+
+__weak void BRT_Init(void *CAN_handle, uint8_t ID)
+{
+    BRT_SendCmd(CAN_handle, ID, BRT_ATD_SET, 1000);
+    osDelay(500);
+    BRT_SendCmd(CAN_handle, ID, BRT_MODE_SET, BRT_MODE_VAL);
+    osDelay(500);
+    BRT_SendCmd(CAN_handle, ID, BRT_INC_DIRCT_SET, BRT_INC_DIRCT_CW);
+    osDelay(500);
+    BRT_SendCmd(CAN_handle, ID, BRT_POS_0_SET, 0);
+    osDelay(500);
+}
+
+#ifdef CAN_SUPPORT
+#elif defined FDCAN_SUPPORT
+void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
+{
+    FDCAN_RxHeaderTypeDef FDCAN_RxHeader;
+    uint8_t RxFifo0[7];
+    if (hfdcan->Instance == FDCAN1)
+    {
+        HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &FDCAN_RxHeader, RxFifo0);
+
+        static struct BRT_msg_t BRT_msg_fdbk;
+
+        memcpy(&BRT_msg_fdbk, RxFifo0, RxFifo0[0]);
+
+        static int16_t BRT_lap;
+        static float BRT_angle_curr;
+
+        switch (BRT_msg_fdbk.func)
+        {
+        case BRT_VAL_READ:
+        {
+            static float BRT_angle_prev;
+#ifdef BRT_LAP_SGL
+
+            BRT_angle_curr[count] = *(uint32_t *)BRT_msg_fdbk.data * BRT_fANGLE;
+
+            if (ABS(BRT_angle_curr[count] - BRT_angle_prev[count]) >= 180)
+                BRT_angle[count] += (BRT_angle_curr[count] > BRT_angle_prev[count] ? -360 : 360) + BRT_angle_curr[count] - BRT_angle_prev[count];
+            else
+                BRT_angle[count] += BRT_angle_curr[count] - BRT_angle_prev[count];
+            BRT_angle_prev[count] = BRT_angle_curr[count];
+
+#endif
+#ifdef BRT_LAP_MPL
+
+            BRT_angle_curr[count] = *(uint32_t *)BRT_msg_fdbk.data * BRT_fANGLE;
+
+            if (ABS(BRT_angle_curr[count] - BRT_angle_prev[count]) >= BRT_LAP * 180)
+                BRT_angle[count] += BRT_LAP * (BRT_angle_prev[count] > BRT_angle_curr[count] ? 360 : -360) + BRT_angle_curr[count] - BRT_angle_prev[count];
+            else
+                BRT_angle[count] += BRT_angle_curr[count] - BRT_angle_prev[count];
+            BRT_angle_prev[count] = BRT_angle_curr[count];
+
+#endif
+            break;
+        }
+#ifdef DEBUG
+        default:
+        {
+            if (BRT_msg_fdbk.data[0])
+                BRT_status = BRT_ERROR;
+            else
+                BRT_status = BRT_SUCCESS;
+        }
+#endif
+        }
+    }
+}
+#endif

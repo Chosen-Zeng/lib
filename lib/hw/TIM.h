@@ -14,7 +14,8 @@ typedef struct
 } time_t;
 
 void TIMSW_UpdateInterval(time_t *time_struct);
-uint8_t TIMSW_TimeLimit(time_t *time_struct, float time_limit);
+unsigned char TIMSW_TimeLimit(time_t *time_struct, float time_limit);
 float TIMSW_GetTimeRatio(time_t *time_struct, float period);
+void TIMSW_ClearTime(time_t *time_struct);
 
 #endif

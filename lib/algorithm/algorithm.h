@@ -32,7 +32,7 @@
         else if (X < Y) \
             X = Y;      \
     }
-#define ABS_LIMIT(X, Y) \
+#define LIMIT_ABS(X, Y) \
     if (ABS(X) > Y)     \
         X >= 0 ? (X = Y) : (X = -Y);
 

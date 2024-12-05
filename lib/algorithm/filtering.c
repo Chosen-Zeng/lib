@@ -1,6 +1,6 @@
-#include "filtering.h"
+#include "algorithm.h"
 
-float MeanFiltering(MeanFiltering_t *struct_MeanFiltering, float new)
+float MeanFiltering(meanfiltering_t *struct_MeanFiltering, float new_item)
 {
     if (!struct_MeanFiltering->length)
     {
@@ -12,15 +12,15 @@ float MeanFiltering(MeanFiltering_t *struct_MeanFiltering, float new)
         struct_MeanFiltering->min_pos = 1;
     }
 
-    if (new > struct_MeanFiltering->data[struct_MeanFiltering->max_pos])
+    if (new_item > struct_MeanFiltering->data[struct_MeanFiltering->max_pos])
         struct_MeanFiltering->max_pos = struct_MeanFiltering->pos;
-    if (new < struct_MeanFiltering->data[struct_MeanFiltering->min_pos])
+    if (new_item < struct_MeanFiltering->data[struct_MeanFiltering->min_pos])
         struct_MeanFiltering->min_pos = struct_MeanFiltering->pos;
 
     if (struct_MeanFiltering->length == MEANFILTERING_NUM)
     {
-        struct_MeanFiltering->sum += new - struct_MeanFiltering->data[struct_MeanFiltering->pos];
-        struct_MeanFiltering->data[struct_MeanFiltering->pos] = new;
+        struct_MeanFiltering->sum += new_item - struct_MeanFiltering->data[struct_MeanFiltering->pos];
+        struct_MeanFiltering->data[struct_MeanFiltering->pos] = new_item;
 
         if (++struct_MeanFiltering->pos == MEANFILTERING_NUM)
             struct_MeanFiltering->pos = 0;
@@ -29,7 +29,7 @@ float MeanFiltering(MeanFiltering_t *struct_MeanFiltering, float new)
     }
     else
     {
-        struct_MeanFiltering->sum += struct_MeanFiltering->data[struct_MeanFiltering->length] = new;
+        struct_MeanFiltering->sum += struct_MeanFiltering->data[struct_MeanFiltering->length] = new_item;
         struct_MeanFiltering->length++, struct_MeanFiltering->pos++;
 
         if (struct_MeanFiltering->length == MEANFILTERING_NUM)
@@ -39,13 +39,18 @@ float MeanFiltering(MeanFiltering_t *struct_MeanFiltering, float new)
     }
 }
 
-unsigned char MeanFiltering_GetStatus(MeanFiltering_t *struct_MeanFiltering, float new, float err_limit)
+unsigned char MeanFiltering_GetStatus(meanfiltering_t *struct_MeanFiltering, float new_item, float err_limit)
 {
-    float avg = MeanFiltering(struct_MeanFiltering, new);
+    float avg = MeanFiltering(struct_MeanFiltering, new_item);
     if (struct_MeanFiltering->length == MEANFILTERING_NUM &&
         struct_MeanFiltering->data[struct_MeanFiltering->max_pos] - avg <= err_limit &&
         avg - struct_MeanFiltering->data[struct_MeanFiltering->min_pos] <= err_limit)
         return MEANFILTERING_YES;
 
     return MEANFILTERING_NO;
+}
+
+unsigned char MeanFiltering_GetTargetStatus(meanfiltering_t *struct_MeanFiltering, float new_item, float target, float err_limit)
+{
+    return ABS(MeanFiltering(struct_MeanFiltering, new_item) - target) <= err_limit;
 }

@@ -5,13 +5,14 @@
 
 #ifdef T_MOTOR_AT4130_KV450
 #define VESC_MOTOR_CURRENT_MAX 75
-#define VESC_MOTOR_RPM_MAX 7200 // unexact
+#define VESC_MOTOR_RPM_MAX 9000
 #define VESC_MOTOR_PP (14 / 2)
 #else
 #error No motor info.
 #endif
 
-#define VESC_MAX 4
+#define VESC_NUM 4
+#define VESC_ID_OFFSET 0
 
 #define VESC_fPCT_W 100000
 #define VESC_fCURRENT_W 1000
@@ -31,8 +32,8 @@ typedef struct
     float PID_Pos;
 } VESC_fdbk_t;
 
-extern float VESC_RPM[VESC_MAX],
-    VESC_DutyCycle[VESC_MAX]; // VESC_Current[VESC_MAX],
+extern float VESC_RPM[VESC_NUM],
+    VESC_DutyCycle[VESC_NUM]; // VESC_Current[VESC_NUM],
 
 void VESC_SendCmd(void *CAN_handle, uint8_t ID, uint8_t VESC_Command, float data);
 
