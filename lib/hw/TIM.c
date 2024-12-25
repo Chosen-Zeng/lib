@@ -1,9 +1,11 @@
 #include "TIM.h"
 
-#ifdef TIMSW
+#ifdef TIMSW // @note define TIMSW TIMx
+#define TIMSW_TIME ((float)(TIMSW->CNT + 1) / (TIMSW->ARR + 1))
+
 //  @brief     update interval in the specific time struct
 //  @attention interval must < 1s
-void TIMSW_UpdateInterval(time_t *time_struct)
+inline void TIMSW_UpdateInterval(timer_t *time_struct)
 {
     if (time_struct->prev != 0 && time_struct->curr != 0)
     {
@@ -20,7 +22,7 @@ void TIMSW_UpdateInterval(time_t *time_struct)
 }
 
 // @return time within limit or not
-unsigned char TIMSW_TimeLimit(time_t *time_struct, float time_limit)
+inline unsigned char TIMSW_TimeLimit(timer_t *time_struct, float time_limit)
 {
     if (time_struct->prev != 0 && time_struct->curr != 0)
     {
@@ -38,13 +40,16 @@ unsigned char TIMSW_TimeLimit(time_t *time_struct, float time_limit)
     return time_struct->interval < time_limit;
 }
 
-void TIMSW_ClearTime(time_t *time_struct)
+inline void TIMSW_ClearTime(timer_t *time_struct)
 {
     time_struct->interval = time_struct->curr = time_struct->prev = 0;
 }
 
-float TIMSW_GetTimeRatio(time_t *time_struct, float period)
+inline float TIMSW_GetTimeRatio(timer_t *time_struct, float period)
 {
     return time_struct->interval > period ? 1 : time_struct->interval / period;
 }
+
+#else
+#error No TIM for swTIM defined.
 #endif

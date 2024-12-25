@@ -2,12 +2,12 @@
 #define __ALGORITHM_H
 
 #include "filtering.h"
+#include "CRC.h"
 
 /** @defgroup macro replacement
  * @{
  */
 
-// limit X to +-Y
 #define ABS(X) ((X) >= 0 ? (X) : -(X))
 
 /** }@ */
@@ -32,6 +32,7 @@
         else if (X < Y) \
             X = Y;      \
     }
+// limit X to +-Y
 #define LIMIT_ABS(X, Y) \
     if (ABS(X) > Y)     \
         X >= 0 ? (X = Y) : (X = -Y);

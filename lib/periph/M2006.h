@@ -15,8 +15,8 @@
 #define C610_ID1 0x200
 #define C610_ID2 0x1FF
 
-#define C610_ANGLE_Kp 10 //16
-#define C610_ANGLE_Ki 12
+#define C610_ANGLE_Kp 10 // 16
+#define C610_ANGLE_Ki 10 // 12
 #define C610_ANGLE_Kd 0.1 // 1
 #define C610_ANGLE_iSTART 60
 #define C610_ANGLE_iLIMIT 0.8

@@ -4,18 +4,17 @@
 
 #include "main.h"
 
-#define TIMSW_TIME ((float)(TIMSW->CNT + 1) / (TIMSW->ARR + 1))
-
 #define time_InitStruct {0, 0, 0}
 
 typedef struct
 {
     float interval, curr, prev;
-} time_t;
+} timer_t;
 
-void TIMSW_UpdateInterval(time_t *time_struct);
-unsigned char TIMSW_TimeLimit(time_t *time_struct, float time_limit);
-float TIMSW_GetTimeRatio(time_t *time_struct, float period);
-void TIMSW_ClearTime(time_t *time_struct);
+
+void TIMSW_UpdateInterval(timer_t *time_struct);
+unsigned char TIMSW_TimeLimit(timer_t *time_struct, float time_limit);
+void TIMSW_ClearTime(timer_t *time_struct);
+float TIMSW_GetTimeRatio(timer_t *time_struct, float period);
 
 #endif

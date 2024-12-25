@@ -1,13 +1,14 @@
 #include "cmsis_os.h"
 #include "BRT.h"
 #include "BRT_INST.h"
+#include "algorithm.h"
 #ifdef CAN_SUPPORT
 #include "CAN.h"
 #elif defined FDCAN_SUPPORT
 #include "FDCAN.h"
 #endif
 
-#define ABS(X) ((X) >= 0 ? (X) : -(X)) // 输出X绝对值
+#if defined BRT_NUM && defined BRT_OFFSET
 
 BRT_msg_t BRT_msg_ctrl;
 float BRT_angle[BRT_NUM];
@@ -68,24 +69,22 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
 {
     FDCAN_RxHeaderTypeDef FDCAN_RxHeader;
     uint8_t RxFifo0[7];
+    HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &FDCAN_RxHeader, RxFifo0);
+
     if (hfdcan->Instance == FDCAN1)
     {
-        HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &FDCAN_RxHeader, RxFifo0);
-
-        static struct BRT_msg_t BRT_msg_fdbk;
+        BRT_msg_t BRT_msg_fdbk;
+        uint8_t count = FDCAN_RxHeader.Identifier - BRT_OFFSET;
 
         memcpy(&BRT_msg_fdbk, RxFifo0, RxFifo0[0]);
-
-        static int16_t BRT_lap;
-        static float BRT_angle_curr;
 
         switch (BRT_msg_fdbk.func)
         {
         case BRT_VAL_READ:
         {
-            static float BRT_angle_prev;
-#ifdef BRT_LAP_SGL
+            static float BRT_angle_curr[BRT_NUM], BRT_angle_prev[BRT_NUM];
 
+#ifdef BRT_LAP_SGL
             BRT_angle_curr[count] = *(uint32_t *)BRT_msg_fdbk.data * BRT_fANGLE;
 
             if (ABS(BRT_angle_curr[count] - BRT_angle_prev[count]) >= 180)
@@ -93,10 +92,8 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
             else
                 BRT_angle[count] += BRT_angle_curr[count] - BRT_angle_prev[count];
             BRT_angle_prev[count] = BRT_angle_curr[count];
-
 #endif
 #ifdef BRT_LAP_MPL
-
             BRT_angle_curr[count] = *(uint32_t *)BRT_msg_fdbk.data * BRT_fANGLE;
 
             if (ABS(BRT_angle_curr[count] - BRT_angle_prev[count]) >= BRT_LAP * 180)
@@ -104,7 +101,6 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
             else
                 BRT_angle[count] += BRT_angle_curr[count] - BRT_angle_prev[count];
             BRT_angle_prev[count] = BRT_angle_curr[count];
-
 #endif
             break;
         }
@@ -120,4 +116,5 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
         }
     }
 }
+#endif
 #endif

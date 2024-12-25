@@ -1,7 +1,6 @@
 #include "FDCAN.h"
 
-
-void FDCAN_SendData(FDCAN_HandleTypeDef* hfdcan, uint32_t IDType, uint32_t ID, uint8_t TxData[], uint8_t length)
+inline void FDCAN_SendData(FDCAN_HandleTypeDef* hfdcan, uint32_t IDType, uint32_t ID, uint8_t TxData[], uint8_t length)
 {
 	FDCAN_TxHeaderTypeDef FDCAN_TxHeader;
 	FDCAN_TxHeader.Identifier = ID;
@@ -14,8 +13,8 @@ void FDCAN_SendData(FDCAN_HandleTypeDef* hfdcan, uint32_t IDType, uint32_t ID, u
 	FDCAN_TxHeader.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
 	FDCAN_TxHeader.MessageMarker = 0;
 	
-	while (!HAL_FDCAN_GetTxFifoFreeLevel(hfdcan))
-		;
+//	while (!HAL_FDCAN_GetTxFifoFreeLevel(hfdcan))
+//		;
 	
 	HAL_FDCAN_AddMessageToTxFifoQ(hfdcan, &FDCAN_TxHeader, TxData);
 }

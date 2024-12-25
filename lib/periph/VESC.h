@@ -1,40 +1,55 @@
 #ifndef __VESC_H
 #define __VESC_H
 
-#define T_MOTOR_AT4130_KV450
+#include "user.h"
 
 #ifdef T_MOTOR_AT4130_KV450
 #define VESC_MOTOR_CURRENT_MAX 75
 #define VESC_MOTOR_RPM_MAX 9000
-#define VESC_MOTOR_PP (14 / 2)
-#else
-#error No motor info.
+#define VESC_MOTOR_PP 7
+
+#elif defined HOBBYWING_V9626_160KV
+#define VESC_MOTOR_CURRENT_MAX 171.5
+#define VESC_MOTOR_RPM_MAX 6000
+#define VESC_MOTOR_PP 21
+
 #endif
 
-#define VESC_NUM 4
-#define VESC_ID_OFFSET 0
+#if defined VESC_NUM && defined VESC_ID_OFFSET
 
 #define VESC_fPCT_W 100000
 #define VESC_fCURRENT_W 1000
-// pos
 
 #define VESC_fPCT_R 1000
 #define VESC_fCURRENT_R 10
-// pos
 
 typedef struct
 {
-    float RPM;
+    float curr;
+    float spd;
+} VESC_ctrl_t;
+
+typedef struct
+{
+    // CAN_PACKET_STATUS
+    float spd;
     float DutyCycle;
-    float Temp_FET;
-    float Temp_Motor;
-    float Current_In;
-    float PID_Pos;
+
+    // CAN_PACKET_STATUS_4
+    float temp_MOSFET;
+    float temp_motor;
+    float curr_in;
 } VESC_fdbk_t;
 
-extern float VESC_RPM[VESC_NUM],
-    VESC_DutyCycle[VESC_NUM]; // VESC_Current[VESC_NUM],
+typedef struct
+{
+    VESC_ctrl_t ctrl;
+    VESC_fdbk_t fdbk;
+} VESC_t;
 
-void VESC_SendCmd(void *CAN_handle, uint8_t ID, uint8_t VESC_Command, float data);
+extern VESC_t VESC[VESC_NUM];
 
+void VESC_SendCmd(void *CAN_handle, uint8_t ID, uint8_t VESC_Command);
+
+#endif
 #endif

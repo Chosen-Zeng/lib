@@ -19,7 +19,7 @@ C610_t C610 = {
 #endif
 };
 
-static time_t C610_time;
+static timer_t C610_time;
 
 void C610_SetCurrent(void *CAN_handle, uint32_t C610_ID)
 {
@@ -64,10 +64,10 @@ void C610_SetRPM(void *CAN_handle, uint32_t C610_ID)
         {
             C610_PID_RPM.iterm[count] *= 0.4;
         }
-        else if (ABS(C610_PID_RPM.iterm[count]) <= C610_RPM_iLIMIT) // 积分限幅
+        else
         {
             C610_PID_RPM.iterm[count] += C610_PID_RPM.pterm[count] * C610_time.interval;
-            LIMIT_ABS(C610_PID_RPM.iterm[count], C610_RPM_iLIMIT);
+            LIMIT_ABS(C610_PID_RPM.iterm[count], C610_RPM_iLIMIT); // 积分限幅
         }
         C610_PID_RPM.i[count] = C610_PID_RPM.iterm[count] * C610_RPM_Ki;
 

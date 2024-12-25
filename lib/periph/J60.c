@@ -7,8 +7,7 @@
 #include "FDCAN.h"
 #endif
 
-#include <string.h>
-
+#if defined J60_NUM && defined J60_ID_OFFSET
 J60_t J60[J60_NUM];
 
 void J60_SendCmd(void *CAN_handle, uint8_t ID, uint16_t J60_cmd, float data)
@@ -20,21 +19,22 @@ void J60_SendCmd(void *CAN_handle, uint8_t ID, uint16_t J60_cmd, float data)
     case J60_MOTOR_CONTROL:
     {
         length = 8;
+        uint8_t ID_array = ID - J60_ID_OFFSET;
 
-        LIMIT_ABS(J60[ID - J60_ID_OFFSET].ctrl.angle, J60_ANGLE_LIMIT)
-        *(uint64_t *)TxData = (uint64_t)((J60[ID - J60_ID_OFFSET].ctrl.angle + J60_ANGLE_LIMIT) / J60_fANGLE_W);
+        LIMIT_ABS(J60[ID_array].ctrl.angle, J60_ANGLE_LIMIT)
+        *(uint64_t *)TxData = (uint64_t)((J60[ID_array].ctrl.angle + J60_ANGLE_LIMIT) / J60_fANGLE_W);
 
-        LIMIT_ABS(J60[ID - J60_ID_OFFSET].ctrl.spd, J60_SPD_LIMIT)
-        *(uint64_t *)TxData |= (uint64_t)((J60[ID - J60_ID_OFFSET].ctrl.spd + J60_SPD_LIMIT) / J60_fSPD_W) << 16;
+        LIMIT_ABS(J60[ID_array].ctrl.spd, J60_SPD_LIMIT)
+        *(uint64_t *)TxData |= (uint64_t)((J60[ID_array].ctrl.spd + J60_SPD_LIMIT) / J60_fSPD_W) << 16;
 
-        LIMIT(J60[ID - J60_ID_OFFSET].ctrl.Kp, J60_Kp_LIMIT)
-        *(uint64_t *)TxData |= (uint64_t)J60[ID - J60_ID_OFFSET].ctrl.Kp << 30;
+        LIMIT(J60[ID_array].ctrl.Kp, J60_Kp_LIMIT)
+        *(uint64_t *)TxData |= (uint64_t)J60[ID_array].ctrl.Kp << 30;
 
-        LIMIT(J60[ID - J60_ID_OFFSET].ctrl.Kd, J60_Kd_LIMIT)
-        *(uint64_t *)TxData |= (uint64_t)(J60[ID - J60_ID_OFFSET].ctrl.Kd / J60_fKd) << 40;
+        LIMIT(J60[ID_array].ctrl.Kd, J60_Kd_LIMIT)
+        *(uint64_t *)TxData |= (uint64_t)(J60[ID_array].ctrl.Kd / J60_fKd) << 40;
 
-        LIMIT_ABS(J60[ID - J60_ID_OFFSET].ctrl.torque, J60_TORQUE_LIMIT)
-        *(uint64_t *)TxData |= (uint64_t)((J60[ID - J60_ID_OFFSET].ctrl.torque + J60_TORQUE_LIMIT) / J60_fTORQUE) << 48;
+        LIMIT_ABS(J60[ID_array].ctrl.torque, J60_TORQUE_LIMIT)
+        *(uint64_t *)TxData |= (uint64_t)((J60[ID_array].ctrl.torque + J60_TORQUE_LIMIT) / J60_fTORQUE) << 48;
         break;
     }
     case J60_SET_CAN_TIMEOUT:
@@ -67,7 +67,7 @@ void J60_Init(void *CAN_handle, uint8_t ID)
 }
 
 #ifdef CAN_SUPPORT
-__weak void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
+/*void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)//__weak 
 {
     CAN_RxHeaderTypeDef CAN_RxHeader;
     uint8_t RxFifo1[8];
@@ -75,29 +75,25 @@ __weak void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
 
     if (hcan->Instance == CAN1)
     {
-
         switch (CAN_RxHeader.StdId & 0x7E0)
         {
         case J60_MOTOR_CONTROL:
         {
-            J60[(CAN_RxHeader.StdId & 0xF) - J60_ID_OFFSET].fdbk.angle = (*(uint32_t *)RxFifo1 & 0xFFFFF) * J60_fANGLE_R - J60_ANGLE_LIMIT;
-            J60[(CAN_RxHeader.StdId & 0xF) - J60_ID_OFFSET].fdbk.spd = (*(uint32_t *)&RxFifo1[2] >> 4 & 0xFFFFF) * J60_fSPD_R - J60_SPD_LIMIT;
-            J60[(CAN_RxHeader.StdId & 0xF) - J60_ID_OFFSET].fdbk.torque = *(uint16_t *)&RxFifo1[5] * J60_fTORQUE - J60_TORQUE_LIMIT;
-            if (J60[(CAN_RxHeader.StdId & 0xF) - J60_ID_OFFSET].fdbk.temp_flag = *(uint8_t *)&RxFifo1[7] & 1)
-                J60[(CAN_RxHeader.StdId & 0xF) - J60_ID_OFFSET].fdbk.temp_motor = (*(uint8_t *)&RxFifo1[7] >> 1) * J60_fTEMP + J60_TEMP_OFFSET;
-            else
-                J60[(CAN_RxHeader.StdId & 0xF) - J60_ID_OFFSET].fdbk.temp_MOSFET = (*(uint8_t *)&RxFifo1[7] >> 1) * J60_fTEMP + J60_TEMP_OFFSET;
+            uint8_t ID_array = (CAN_RxHeader.StdId & 0xF) - J60_ID_OFFSET;
 
-            break;
-        }
-        case J60_GET_STATUSWORD:
-        {
-            memmove(&J60[CAN_RxHeader.StdId & 0xF].statusword, RxFifo1, 2);
+            J60[ID_array].fdbk.angle = (*(uint32_t *)RxFifo1 & 0xFFFFF) * J60_fANGLE_R - J60_ANGLE_LIMIT;
+            J60[ID_array].fdbk.spd = (*(uint32_t *)&RxFifo1[2] >> 4 & 0xFFFFF) * J60_fSPD_R - J60_SPD_LIMIT;
+            J60[ID_array].fdbk.torque = *(uint16_t *)&RxFifo1[5] * J60_fTORQUE - J60_TORQUE_LIMIT;
+            if (J60[ID_array].fdbk.temp_flag = *(uint8_t *)&RxFifo1[7] & 1)
+                J60[ID_array].fdbk.temp_motor = (*(uint8_t *)&RxFifo1[7] >> 1) * J60_fTEMP + J60_TEMP_OFFSET;
+            else
+                J60[ID_array].fdbk.temp_MOSFET = (*(uint8_t *)&RxFifo1[7] >> 1) * J60_fTEMP + J60_TEMP_OFFSET;
 
             break;
         }
         }
     }
-}
+}*/
 #elif defined FDCAN_SUPPORT
+#endif
 #endif

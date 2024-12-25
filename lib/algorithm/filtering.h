@@ -3,7 +3,7 @@
 
 #include <float.h>
 
-#define MEANFILTERING_NUM 20
+#define MEANFILTERING_NUM 100
 
 #define MEANFILTERING_YES 1
 #define MEANFILTERING_NO 0

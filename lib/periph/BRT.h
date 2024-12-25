@@ -1,11 +1,9 @@
 #ifndef __BRT_H
 #define __BRT_H
 
-#include "main.h"
+#include "user.h"
 
-#define BRT_NUM 2
-#define BRT_OFFSET 4
-
+#if defined BRT_NUM && defined BRT_OFFSET
 
 #define BRT_LAP_MPL // type selection: BRT_LAP_SGL/BRT_LAP_MPL
 #if defined BRT_LAP_SGL || defined BRT_LAP_MPL
@@ -48,4 +46,5 @@ extern BRT_msg_t BRT_msg_ctrl;
 void BRT_Init(void *CAN_handle, uint8_t ID);
 void BRT_SendCmd(void *CAN_handle, uint8_t ID, uint8_t BRT_func, uint32_t data);
 
+#endif
 #endif
