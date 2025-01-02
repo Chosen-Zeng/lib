@@ -1,9 +1,9 @@
-#ifndef __RM3508_H
-#define __RM3508_H
+#ifndef __M3508_H
+#define __M3508_H
 
-#include "main.h"
+#include "user.h"
 
-#define C620_MODE_ANGLE // mode selection: C620_MODE_ANGLE/C620_MODE_RPM
+#ifdef FREQ
 
 #define M3508_fTORQUE 0.3
 #define M3508_GR (3591.F / 187)
@@ -17,7 +17,7 @@
 
 #define C620_ANGLE_Kp 19
 #define C620_ANGLE_Ki 3
-#define C620_ANGLE_Kd 0.05 //0.35
+#define C620_ANGLE_Kd 0.05 // 0.35
 #define C620_ANGLE_iSTART 2
 #define C620_ANGLE_iLIMIT 2
 
@@ -27,11 +27,11 @@
 #define C620_RPM_iSTART 50
 #define C620_RPM_iLIMIT 10
 
-typedef enum
-{
-	C620_TIME_SRC_RPM,
-	C620_TIME_SRC_ANGLE
-} C620_time_src_t;
+// typedef enum
+//{
+//	C620_TIME_SRC_RPM,
+//	C620_TIME_SRC_ANGLE
+// } C620_time_src_t;
 
 typedef struct
 {
@@ -54,7 +54,6 @@ typedef struct
 {
 	C620_ctrl_t ctrl;
 	C620_fdbk_t fdbk;
-	C620_time_src_t time_src;
 } C620_t;
 
 typedef struct
@@ -76,4 +75,5 @@ void C620_SetAngle(void *CAN_handle, uint32_t C620_ID);
 void C620_SetRPM(void *CAN_handle, uint32_t C620_ID);
 void C620_SetTorque(void *CAN_handle, uint32_t C620_ID);
 
+#endif
 #endif

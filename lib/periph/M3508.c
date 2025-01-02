@@ -8,18 +8,11 @@
 #include "FDCAN.h"
 #endif
 
+#ifdef FREQ
+
 C620_PID_t C620_PID_RPM, C620_PID_angle;
 
-C620_t C620 = {
-	.time_src =
-#ifdef C620_MODE_RPM
-		C620_TIME_SRC_RPM
-#elif defined C620_MODE_ANGLE
-		C620_TIME_SRC_ANGLE
-#endif
-};
-
-static timer_t C620_time;
+C620_t C620;
 
 void C620_SetCurrent(void *CAN_handle, uint32_t C620_ID)
 {
@@ -38,22 +31,20 @@ void C620_SetCurrent(void *CAN_handle, uint32_t C620_ID)
 		CAN_SendData(CAN_handle, CAN_ID_STD, C620_ID1, TxData, 8);
 		CAN_SendData(CAN_handle, CAN_ID_STD, C620_ID2, &TxData[8], 8);
 #elif defined FDCAN_SUPPORT
-		FDCAN_SendData(CAN_handle, FDCAN_STANDARD_ID, C620_ID1, TxData, 8);
-		FDCAN_SendData(CAN_handle, FDCAN_STANDARD_ID, C620_ID2, &TxData[8], 8);
+		CAN_SendData(CAN_handle, FDCAN_STANDARD_ID, C620_ID1, TxData, 8);
+		CAN_SendData(CAN_handle, FDCAN_STANDARD_ID, C620_ID2, &TxData[8], 8);
 #endif
 	}
 	else
 #ifdef CAN_SUPPORT
 		CAN_SendData(CAN_handle, CAN_ID_STD, C620_ID, C620_ID == C620_ID1 ? TxData : &TxData[8], 8);
 #elif defined FDCAN_SUPPORT
-		FDCAN_SendData(CAN_handle, FDCAN_STANDARD_ID, C620_ID, C620_ID == C620_ID1 ? TxData : &TxData[8], 8);
+		CAN_SendData(CAN_handle, FDCAN_STANDARD_ID, C620_ID, C620_ID == C620_ID1 ? TxData : &TxData[8], 8);
 #endif
 }
 
 void C620_SetRPM(void *CAN_handle, uint32_t C620_ID)
 {
-	if (C620.time_src == C620_TIME_SRC_RPM) // judge the time source(from lower or upper level)
-		TIMSW_UpdateInterval(&C620_time);
 
 	for (int count = (C620_ID == C620_ID2 ? 4 : 0); count < (C620_ID == C620_ID1 ? 4 : 8); count++)
 	{
@@ -66,16 +57,13 @@ void C620_SetRPM(void *CAN_handle, uint32_t C620_ID)
 		}
 		else
 		{
-			C620_PID_RPM.iterm[count] += C620_PID_RPM.pterm[count] * C620_time.interval;
+			C620_PID_RPM.iterm[count] += C620_PID_RPM.pterm[count] / FREQ;
 			LIMIT_ABS(C620_PID_RPM.iterm[count], C620_RPM_iLIMIT); // 积分限幅
 		}
 		C620_PID_RPM.i[count] = C620_PID_RPM.iterm[count] * C620_RPM_Ki;
 
-		if (C620_time.interval)
-		{
-			C620_PID_RPM.dterm[count] = (C620_PID_RPM.decurr[count] - C620_PID_RPM.deprev[count]) / C620_time.interval; // 微分先行
-			C620_PID_RPM.d[count] = C620_PID_RPM.dterm[count] * C620_RPM_Kd;
-		}
+		C620_PID_RPM.dterm[count] = (C620_PID_RPM.decurr[count] - C620_PID_RPM.deprev[count]) * FREQ; // 微分先行
+		C620_PID_RPM.d[count] = C620_PID_RPM.dterm[count] * C620_RPM_Kd;
 
 		C620.ctrl.current[count] = C620_PID_RPM.p[count] + C620_PID_RPM.i[count] + C620_PID_RPM.d[count];
 	}
@@ -84,8 +72,6 @@ void C620_SetRPM(void *CAN_handle, uint32_t C620_ID)
 
 void C620_SetAngle(void *CAN_handle, uint32_t C620_ID)
 {
-	if (C620.time_src == C620_TIME_SRC_ANGLE) // judge the time source(from lower or upper level)
-		TIMSW_UpdateInterval(&C620_time);
 
 	for (int count = (C620_ID == C620_ID2 ? 4 : 0); count < (C620_ID == C620_ID1 ? 4 : 8); count++)
 	{
@@ -98,16 +84,14 @@ void C620_SetAngle(void *CAN_handle, uint32_t C620_ID)
 		}
 		else if (ABS(C620_PID_angle.iterm[count]) <= C620_ANGLE_iLIMIT) // 积分限幅
 		{
-			C620_PID_angle.iterm[count] += C620_PID_angle.pterm[count] * C620_time.interval;
+			C620_PID_angle.iterm[count] += C620_PID_angle.pterm[count] / FREQ;
 			LIMIT_ABS(C620_PID_angle.iterm[count], C620_ANGLE_iLIMIT);
 		}
 		C620_PID_angle.i[count] = C620_PID_angle.iterm[count] * C620_ANGLE_Ki;
 
-		if (C620_time.interval)
-		{
-			C620_PID_angle.dterm[count] = (C620_PID_angle.decurr[count] - C620_PID_angle.deprev[count]) / C620_time.interval; // 微分先行
-			C620_PID_angle.d[count] = C620_PID_angle.dterm[count] * C620_ANGLE_Kd;
-		}
+		C620_PID_angle.dterm[count] = (C620_PID_angle.decurr[count] - C620_PID_angle.deprev[count]) * FREQ; // 微分先行
+		C620_PID_angle.d[count] = C620_PID_angle.dterm[count] * C620_ANGLE_Kd;
+
 		C620.ctrl.RPM[count] = C620_PID_angle.p[count] + C620_PID_angle.i[count] + C620_PID_angle.d[count];
 	}
 	C620_SetRPM(CAN_handle, C620_ID);
@@ -154,4 +138,5 @@ __weak void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 	}
 }
 #elif defined FDCAN_SUPPORT
+#endif
 #endif
