@@ -21,8 +21,8 @@ void J60_SendCmd(void *CAN_handle, uint8_t ID, uint16_t J60_cmd, float data)
         length = 8;
         uint8_t ID_array = ID - J60_ID_OFFSET;
 
-        LIMIT_ABS(J60[ID_array].ctrl.angle, J60_ANGLE_LIMIT)
-        *(uint64_t *)TxData = (uint64_t)((J60[ID_array].ctrl.angle + J60_ANGLE_LIMIT) / J60_fANGLE_W);
+        LIMIT_ABS(J60[ID_array].ctrl.pos, J60_POS_LIMIT)
+        *(uint64_t *)TxData = (uint64_t)((J60[ID_array].ctrl.pos + J60_POS_LIMIT) / J60_fPOS_W);
 
         LIMIT_ABS(J60[ID_array].ctrl.spd, J60_SPD_LIMIT)
         *(uint64_t *)TxData |= (uint64_t)((J60[ID_array].ctrl.spd + J60_SPD_LIMIT) / J60_fSPD_W) << 16;
@@ -33,8 +33,8 @@ void J60_SendCmd(void *CAN_handle, uint8_t ID, uint16_t J60_cmd, float data)
         LIMIT(J60[ID_array].ctrl.Kd, J60_Kd_LIMIT)
         *(uint64_t *)TxData |= (uint64_t)(J60[ID_array].ctrl.Kd / J60_fKd) << 40;
 
-        LIMIT_ABS(J60[ID_array].ctrl.torque, J60_TORQUE_LIMIT)
-        *(uint64_t *)TxData |= (uint64_t)((J60[ID_array].ctrl.torque + J60_TORQUE_LIMIT) / J60_fTORQUE) << 48;
+        LIMIT_ABS(J60[ID_array].ctrl.trq_offset, J60_TORQUE_LIMIT)
+        *(uint64_t *)TxData |= (uint64_t)((J60[ID_array].ctrl.trq_offset + J60_TORQUE_LIMIT) / J60_fTORQUE) << 48;
         break;
     }
     case J60_SET_CAN_TIMEOUT:
@@ -57,7 +57,7 @@ void J60_SendCmd(void *CAN_handle, uint8_t ID, uint16_t J60_cmd, float data)
 #ifdef CAN_SUPPORT
     CAN_SendData(CAN_handle, CAN_ID_STD, J60_cmd | ID, TxData, length);
 #elif defined FDCAN_SUPPORT
-    FDCAN_SendData(CAN_handle, FDCAN_STANDARD_ID, J60_cmd | ID, TxData, length);
+    CAN_SendData(CAN_handle, FDCAN_STANDARD_ID, J60_cmd | ID, TxData, length);
 #endif
 }
 
@@ -67,7 +67,7 @@ void J60_Init(void *CAN_handle, uint8_t ID)
 }
 
 #ifdef CAN_SUPPORT
-/*void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)//__weak 
+/*void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)//__weak
 {
     CAN_RxHeaderTypeDef CAN_RxHeader;
     uint8_t RxFifo1[8];
@@ -81,9 +81,9 @@ void J60_Init(void *CAN_handle, uint8_t ID)
         {
             uint8_t ID_array = (CAN_RxHeader.StdId & 0xF) - J60_ID_OFFSET;
 
-            J60[ID_array].fdbk.angle = (*(uint32_t *)RxFifo1 & 0xFFFFF) * J60_fANGLE_R - J60_ANGLE_LIMIT;
+            J60[ID_array].fdbk.pos = (*(uint32_t *)RxFifo1 & 0xFFFFF) * J60_fPOS_R - J60_POS_LIMIT;
             J60[ID_array].fdbk.spd = (*(uint32_t *)&RxFifo1[2] >> 4 & 0xFFFFF) * J60_fSPD_R - J60_SPD_LIMIT;
-            J60[ID_array].fdbk.torque = *(uint16_t *)&RxFifo1[5] * J60_fTORQUE - J60_TORQUE_LIMIT;
+            J60[ID_array].fdbk.trq = *(uint16_t *)&RxFifo1[5] * J60_fTORQUE - J60_TORQUE_LIMIT;
             if (J60[ID_array].fdbk.temp_flag = *(uint8_t *)&RxFifo1[7] & 1)
                 J60[ID_array].fdbk.temp_motor = (*(uint8_t *)&RxFifo1[7] >> 1) * J60_fTEMP + J60_TEMP_OFFSET;
             else

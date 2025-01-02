@@ -12,11 +12,11 @@
 
 VESC_t VESC[VESC_NUM];
 
-void f_2_4u8(float num, uint8_t arr[4])
+void f_2_4u8(float num, uint8_t array[4])
 {
     for (int count = 0; count < 4; count++)
     {
-        arr[count] = (int32_t)num >> 8 * (3 - count);
+        array[count] = (int32_t)num >> 8 * (3 - count);
     }
 }
 
@@ -42,7 +42,7 @@ void VESC_SendCmd(void *CAN_handle, uint8_t ID, uint8_t VESC_cmd)
 #ifdef CAN_SUPPORT
     CAN_SendData(CAN_handle, CAN_ID_EXT, ID | VESC_cmd << 8, TxData, 4);
 #elif defined FDCAN_SUPPORT
-    FDCAN_SendData(CAN_handle, FDCAN_EXTENDED_ID, ID | VESC_cmd << 8, TxData, 4);
+    CAN_SendData(CAN_handle, FDCAN_EXTENDED_ID, ID | VESC_cmd << 8, TxData, 4);
 #endif
 }
 

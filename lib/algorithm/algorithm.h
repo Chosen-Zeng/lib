@@ -32,10 +32,22 @@
         else if (X < Y) \
             X = Y;      \
     }
+
+// limit X to MIN ~ MAX
+#define LIMIT_RANGE(X, MAX, MIN) \
+    if (X > MAX)                 \
+    {                            \
+        X = MAX;                 \
+    }                            \
+    else if (X < MIN)            \
+    {                            \
+        X = MIN;                 \
+    }
+
 // limit X to +-Y
 #define LIMIT_ABS(X, Y) \
-    if (ABS(X) > Y)     \
-        X >= 0 ? (X = Y) : (X = -Y);
+    if (ABS(X) > (Y))   \
+        X >= 0 ? (X = (Y)) : (X = -(Y));
 
 /** }@ */
 #endif
