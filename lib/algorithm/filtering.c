@@ -1,7 +1,10 @@
+#include "filtering.h"
 #include "algorithm.h"
 
+//update and get filtered data
 float MeanFiltering(meanfiltering_t *struct_MeanFiltering, float new_item)
 {
+	// init
     if (!struct_MeanFiltering->length)
     {
         struct_MeanFiltering->pos = 0;
@@ -12,11 +15,13 @@ float MeanFiltering(meanfiltering_t *struct_MeanFiltering, float new_item)
         struct_MeanFiltering->min_pos = 1;
     }
 
+	//locate max & min
     if (new_item > struct_MeanFiltering->data[struct_MeanFiltering->max_pos])
         struct_MeanFiltering->max_pos = struct_MeanFiltering->pos;
     if (new_item < struct_MeanFiltering->data[struct_MeanFiltering->min_pos])
         struct_MeanFiltering->min_pos = struct_MeanFiltering->pos;
 
+	//return filtered val
     if (struct_MeanFiltering->length == MEANFILTERING_NUM)
     {
         struct_MeanFiltering->sum += new_item - struct_MeanFiltering->data[struct_MeanFiltering->pos];

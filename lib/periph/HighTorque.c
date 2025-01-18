@@ -77,7 +77,7 @@ void HighTorque_SetSpdLimit(void *FDCAN_handle, unsigned char ID, float spd, flo
 
 /*void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
 {
-    uint8_t RxFifo0[32];
+    uint8_t RxFifo0[64];
     FDCAN_RxHeaderTypeDef FDCAN_RxHeader;
     HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &FDCAN_RxHeader, RxFifo0);
 

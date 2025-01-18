@@ -3,12 +3,11 @@
 #ifndef __GO_M8010_6_H
 #define __GO_M8010_6_H
 
-#include "main.h"
+#include "user.h"
+
+#if defined GO_M8010_6_NUM && defined GO_M8010_6_ID_OFFSET
 
 #define PI 3.1415926535897
-
-#define GO_M8010_6_ID_OFFSET 1
-#define GO_M8010_6_NUM 1
 
 typedef struct
 {
@@ -38,7 +37,6 @@ typedef struct
 } GO_M8010_6_t;
 
 extern GO_M8010_6_t GO_M8010_6[GO_M8010_6_NUM];
-extern unsigned char GO_M8010_6_TxData[17], GO_M8010_6_RxData[16];
 
 #define GO_M8010_6_GR (19 / 3)
 
@@ -71,4 +69,5 @@ extern unsigned char GO_M8010_6_TxData[17], GO_M8010_6_RxData[16];
 
 void GO_M8010_6_SendCmd(void *RS485_handler, unsigned char ID);
 
+#endif
 #endif

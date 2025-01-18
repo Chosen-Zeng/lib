@@ -1,8 +1,6 @@
 #ifndef __ALGORITHM_H
 #define __ALGORITHM_H
 
-#include "filtering.h"
-#include "CRC.h"
 
 /** @defgroup macro replacement
  * @{
