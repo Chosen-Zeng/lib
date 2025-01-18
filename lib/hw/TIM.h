@@ -11,7 +11,6 @@ typedef struct
     float interval, curr, prev;
 } timer_t;
 
-
 void TIMSW_UpdateInterval(timer_t *time_struct);
 unsigned char TIMSW_TimeLimit(timer_t *time_struct, float time_limit);
 void TIMSW_ClearTime(timer_t *time_struct);
