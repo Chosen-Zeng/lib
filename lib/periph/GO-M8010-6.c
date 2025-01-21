@@ -1,5 +1,3 @@
-// unverified lib
-
 #include "GO-M8010-6.h"
 #include "USART.h"
 #include "algorithm.h"
@@ -9,7 +7,7 @@
 
 GO_M8010_6_t GO_M8010_6[GO_M8010_6_NUM];
 
-void GO_M8010_6_SendCmd(void *RS485_handler, unsigned char ID)
+void GO_M8010_6_SendCmd(USART_TypeDef *USART_handler, unsigned char ID)
 {
     unsigned char ID_array = ID - GO_M8010_6_ID_OFFSET, TxData[17];
 
@@ -20,10 +18,10 @@ void GO_M8010_6_SendCmd(void *RS485_handler, unsigned char ID)
     *(short *)&TxData[3] = GO_M8010_6[ID_array].ctrl.torque * GO_M8010_6_fTORQUE;
 
     LIMIT_ABS(GO_M8010_6[ID_array].ctrl.spd, GO_M8010_6_SPD_LIMIT);
-    *(short *)&TxData[5] = GO_M8010_6[ID_array].ctrl.spd * GO_M8010_6_fSPD * GO_M8010_6_GR;
+    *(short *)&TxData[5] = GO_M8010_6[ID_array].ctrl.spd * GO_M8010_6_fSPD;
 
     LIMIT_ABS(GO_M8010_6[ID_array].ctrl.pos, GO_M8010_6_POS_LIMIT);
-    *(int *)&TxData[7] = GO_M8010_6[ID_array].ctrl.pos * GO_M8010_6_fPOS * GO_M8010_6_GR;
+    *(int *)&TxData[7] = GO_M8010_6[ID_array].ctrl.pos * GO_M8010_6_fPOS;
 
     LIMIT(GO_M8010_6[ID_array].ctrl.Kpos, GO_M8010_6_Kpos_LIMIT);
     *(unsigned short *)&TxData[11] = GO_M8010_6[ID_array].ctrl.Kpos * GO_M8010_6_fKpos;
@@ -33,10 +31,10 @@ void GO_M8010_6_SendCmd(void *RS485_handler, unsigned char ID)
 
     *(unsigned short *)&TxData[15] = CRC_16_Cal(&CRC_16_CCITT, TxData, 15);
 
-    UART_SendData(RS485_handler, TxData, 17);
+    UART_SendData(USART_handler, TxData, 17, 0.001);
 }
 
-__weak void USART3_IRQHandler(void)
+void USART3_IRQHandler(void)
 {
     static unsigned char RxData[16], cnt;
     if (USART3->ISR & 0x20)
@@ -49,9 +47,7 @@ __weak void USART3_IRQHandler(void)
         cnt = 0;
 
         if (*(unsigned short *)RxData == GO_M8010_6_HEAD_RECV &&
-            !CRC_16_Cal(&CRC_16_CCITT, RxData, 16) &&
-            (RxData[2] & 0xF) - GO_M8010_6_ID_OFFSET < GO_M8010_6_NUM &&
-            (RxData[2] & 0xF) - GO_M8010_6_ID_OFFSET >= 0)
+            !CRC_16_Cal(&CRC_16_CCITT, RxData, 16))
         {
             uint8_t ID_array = (RxData[2] & 0x0F) - GO_M8010_6_ID_OFFSET;
 

@@ -1,5 +1,3 @@
-// unverified lib
-
 #ifndef __GO_M8010_6_H
 #define __GO_M8010_6_H
 
@@ -54,8 +52,8 @@ extern GO_M8010_6_t GO_M8010_6[GO_M8010_6_NUM];
 #define GO_M8010_6_Kspd_LIMIT 25.6
 
 #define GO_M8010_6_fTORQUE 255.f
-#define GO_M8010_6_fSPD (255 / (2 * PI))
-#define GO_M8010_6_fPOS (32767 / (2 * PI))
+#define GO_M8010_6_fSPD (255 / (2 * PI) * GO_M8010_6_GR)
+#define GO_M8010_6_fPOS (32767 / (2 * PI) * GO_M8010_6_GR)
 #define GO_M8010_6_fKpos 1279.f
 #define GO_M8010_6_fKspd 1279.f
 
@@ -67,7 +65,7 @@ extern GO_M8010_6_t GO_M8010_6[GO_M8010_6_NUM];
 #define GO_M8010_6_MOTOR_ERR_BUSBAR_UV 5
 #define GO_M8010_6_MOTOR_ERR_WINDING_OH 6
 
-void GO_M8010_6_SendCmd(void *RS485_handler, unsigned char ID);
+void GO_M8010_6_SendCmd(USART_TypeDef *USART_handler, unsigned char ID);
 
 #endif
 #endif
