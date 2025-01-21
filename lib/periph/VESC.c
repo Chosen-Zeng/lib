@@ -1,4 +1,4 @@
-#include "main.h"
+#include "user.h"
 #include "VESC.h"
 #include "VESC_INST.h"
 #include "algorithm.h"

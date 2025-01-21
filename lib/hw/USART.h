@@ -3,6 +3,6 @@
 
 #include "user.h"
 
-inline void UART_SendData(USART_TypeDef *UART_handler, unsigned char data[], unsigned char len, unsigned char timeout);
+void UART_SendData(USART_TypeDef *USART_handler, unsigned char data[], unsigned char len, float timeout);
 
 #endif
