@@ -33,8 +33,13 @@ typedef struct
     GO_M8010_6_ctrl_t ctrl;
     GO_M8010_6_fdbk_t fdbk;
 } GO_M8010_6_t;
-
 extern GO_M8010_6_t GO_M8010_6[GO_M8010_6_NUM];
+
+typedef struct
+{
+    unsigned char TxData[17], RxData[16];
+} GO_M8010_6_data_t;
+extern GO_M8010_6_data_t GO_M8010_6_data[DMA_Stream_PAIR];
 
 #define GO_M8010_6_GR (19 / 3)
 
@@ -65,7 +70,7 @@ extern GO_M8010_6_t GO_M8010_6[GO_M8010_6_NUM];
 #define GO_M8010_6_MOTOR_ERR_BUSBAR_UV 5
 #define GO_M8010_6_MOTOR_ERR_WINDING_OH 6
 
-void GO_M8010_6_SendCmd(USART_TypeDef *USART_handler, unsigned char ID);
+void GO_M8010_6_SendCmd(USART_TypeDef *USART_handler, unsigned char ID, DMA_Stream_TypeDef *DMA_Stream_handle);
 
 #endif
 #endif
