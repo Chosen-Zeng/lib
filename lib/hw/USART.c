@@ -1,18 +1,30 @@
 #include "USART.h"
 #include "TIM.h"
 
-inline void UART_SendData(USART_TypeDef *USART_handle, unsigned char TxData[], unsigned char len, float timeout)
+inline unsigned char UART_SendData(USART_TypeDef *USART_handle, unsigned char TxData)
+{
+    if (USART_handle->ISR & 0x80) // TXE
+    {
+        USART_handle->TDR = TxData;
+        return 0;
+    }
+    return 1;
+}
+
+inline unsigned char UART_SendStr(USART_TypeDef *USART_handle, unsigned char TxData[], unsigned char len, float timeout)
 {
     timer_t USART_time = timer_InitStruct;
     unsigned char cnt = 0;
     while (TIMSW_TimeLimit(&USART_time, timeout) && cnt < len)
-    {
-        if (USART_handle->ISR & 0x80) // TXE
-            USART_handle->TDR = TxData[cnt++];
-    }
+        if (!UART_SendData(USART_handle, TxData[cnt]))
+            cnt++;
+
+    if (cnt == len)
+        return 0;
+    return 1;
 }
 
-inline void UART_SendData_DMA(DMA_Stream_TypeDef *DMA_Stream_handle, USART_TypeDef *USART_handle, unsigned char TxData[], unsigned char len)
+inline void UART_SendStr_DMA(DMA_Stream_TypeDef *DMA_Stream_handle, USART_TypeDef *USART_handle, unsigned char TxData[], unsigned char len)
 {
     // clear flags if uneffective
     // do
