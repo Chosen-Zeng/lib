@@ -4,6 +4,7 @@
 
 #include "user.h"
 
+#ifdef TIMSW
 typedef struct
 {
     float interval, curr, prev;
@@ -16,4 +17,5 @@ unsigned char TIMSW_TimeLimit(timer_t *time_struct, float time_limit);
 void TIMSW_ClearTime(timer_t *time_struct);
 float TIMSW_GetTimeRatio(timer_t *time_struct, float period);
 
+#endif
 #endif
