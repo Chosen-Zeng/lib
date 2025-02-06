@@ -20,7 +20,7 @@ static struct
     unsigned char PROG_msg : 1;     // PROG msg in FIFO
 } AS5047P_state_bit[AS5047P_NUM];
 
-unsigned char ParityCalc(unsigned short data)
+static unsigned char ParityCalc(unsigned short data)
 {
     unsigned char cnt = 16, ret = 0;
     while (cnt--)
