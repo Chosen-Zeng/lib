@@ -47,7 +47,7 @@ static inline unsigned char Timer_CheckTimeout(timer_t *time_struct, float timeo
     else
         time_struct->prev = time_struct->curr = TIMER_TIME;
 
-    return time_struct->interval < timeout;
+    return time_struct->interval >= timeout;
 }
 
 static inline void Timer_Clear(timer_t *time_struct)
