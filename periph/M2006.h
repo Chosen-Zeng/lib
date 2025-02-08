@@ -3,17 +3,13 @@
 
 #include "user.h"
 
-#ifdef FREQ
+#ifdef FREQ_CTRL
 
-#define M2006_fTORQUE 0.3
+#define M2006_fTRQ 0.3
 #define M2006_GR 36.F
 
-#define C610_fCURRENT (10.F / 10000)
+#define C610_fCURR (10.F / 10000)
 #define C610_fPOS (360.F / 8192)
-#define C610_CURRENT_LIMIT 10
-
-#define C610_ID1 0x200
-#define C610_ID2 0x1FF
 
 #define C610_POS_Kp 10	// 16
 #define C610_POS_Ki 10	// 12
@@ -27,12 +23,17 @@
 #define C610_SPD_iSTART 100
 #define C610_SPD_iLIMIT 10 // 5
 
+#define C610_CURR_LIMIT 10
+
+#define C610_ID1 0x200
+#define C610_ID2 0x1FF
+
 typedef struct
 {
 	float pos;
 	float spd;
-	float current;
-	float torque;
+	float curr;
+	float trq;
 } C610_ctrl_t, C610_fdbk_t;
 
 typedef struct
@@ -40,6 +41,7 @@ typedef struct
 	C610_ctrl_t ctrl;
 	C610_fdbk_t fdbk;
 } C610_t;
+extern C610_t C610[8];
 
 typedef struct
 {
@@ -52,14 +54,12 @@ typedef struct
 	float deprev;
 	float decurr;
 } C610_PID_t;
-
-extern C610_t C610[8];
 extern C610_PID_t C610_PID_spd[8], C610_PID_pos[8];
 
-void C610_SetCurrent(void *CAN_handle, uint32_t C610_ID);
-void C610_SetPos(void *CAN_handle, uint32_t C610_ID);
-void C610_SetSpd(void *CAN_handle, uint32_t C610_ID);
-void C610_SetTorque(void *CAN_handle, uint32_t C610_ID);
+void C610_SetCurrent(void *CAN_handle, unsigned short C610_ID);
+void C610_SetPos(void *CAN_handle, unsigned short C610_ID);
+void C610_SetSpd(void *CAN_handle, unsigned short C610_ID);
+void C610_SetTorque(void *CAN_handle, unsigned short C610_ID);
 
 #endif
 #endif

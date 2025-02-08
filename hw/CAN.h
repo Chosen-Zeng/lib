@@ -38,7 +38,7 @@ static inline void CAN_SendData(FDCAN_HandleTypeDef *hfdcan, uint32_t FDCAN_IDTy
     FDCAN_TxHeader.IdType = FDCAN_IDType;
     FDCAN_TxHeader.TxFrameType = FDCAN_DATA_FRAME;
     FDCAN_TxHeader.DataLength = length;
-    FDCAN_TxHeader.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
+    FDCAN_TxHeader.ErrorStateIndicator = FDCAN_ESI_PASSIVE;
     FDCAN_TxHeader.BitRateSwitch = FDCAN_BRS_OFF;
     FDCAN_TxHeader.FDFormat = FDCAN_CLASSIC_CAN;
     FDCAN_TxHeader.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
@@ -54,7 +54,7 @@ static inline void FDCAN_nBRS_SendData(FDCAN_HandleTypeDef *hfdcan, uint32_t FDC
     FDCAN_TxHeader.IdType = FDCAN_IDType;
     FDCAN_TxHeader.TxFrameType = FDCAN_DATA_FRAME;
     FDCAN_TxHeader.DataLength = FDCAN_DLC;
-    FDCAN_TxHeader.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
+    FDCAN_TxHeader.ErrorStateIndicator = FDCAN_ESI_PASSIVE;
     FDCAN_TxHeader.BitRateSwitch = FDCAN_BRS_OFF;
     FDCAN_TxHeader.FDFormat = FDCAN_FD_CAN;
     FDCAN_TxHeader.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
@@ -70,7 +70,7 @@ static inline void FDCAN_BRS_SendData(FDCAN_HandleTypeDef *hfdcan, uint32_t FDCA
     FDCAN_TxHeader.IdType = FDCAN_IDType;
     FDCAN_TxHeader.TxFrameType = FDCAN_DATA_FRAME;
     FDCAN_TxHeader.DataLength = FDCAN_DLC;
-    FDCAN_TxHeader.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
+    FDCAN_TxHeader.ErrorStateIndicator = FDCAN_ESI_PASSIVE;
     FDCAN_TxHeader.BitRateSwitch = FDCAN_BRS_ON;
     FDCAN_TxHeader.FDFormat = FDCAN_FD_CAN;
     FDCAN_TxHeader.TxEventFifoControl = FDCAN_NO_TX_EVENTS;

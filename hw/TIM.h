@@ -6,15 +6,15 @@
 #ifdef TIMER // define TIMER TIMx, TIM freq must be set 1Hz
 typedef struct
 {
-    float interval, curr, prev;
+    float intvl, curr, prev;
 } timer_t;
 
 #define timer_InitStruct {0, 0, 0}
 
 #define TIMER_TIME ((float)(TIMER->CNT + 1) / (TIMER->ARR + 1))
 
-//  @brief     update interval in the specific time struct
-//  @attention interval must < 1s
+//  @brief     update intvl in the specific time struct
+//  @attention intvl must < 1s
 static inline void Timer_GetInterval(timer_t *time_struct)
 {
     if (time_struct->prev != 0 && time_struct->curr != 0)
@@ -23,9 +23,9 @@ static inline void Timer_GetInterval(timer_t *time_struct)
         time_struct->curr = TIMER_TIME;
 
         if (time_struct->prev > time_struct->curr)
-            time_struct->interval = 1 + time_struct->curr - time_struct->prev;
+            time_struct->intvl = 1 + time_struct->curr - time_struct->prev;
         else
-            time_struct->interval = time_struct->curr - time_struct->prev;
+            time_struct->intvl = time_struct->curr - time_struct->prev;
     }
     else
         time_struct->prev = time_struct->curr = TIMER_TIME;
@@ -40,24 +40,24 @@ static inline unsigned char Timer_CheckTimeout(timer_t *time_struct, float timeo
         time_struct->curr = TIMER_TIME;
 
         if (time_struct->prev > time_struct->curr)
-            time_struct->interval += 1 + time_struct->curr - time_struct->prev;
+            time_struct->intvl += 1 + time_struct->curr - time_struct->prev;
         else
-            time_struct->interval += time_struct->curr - time_struct->prev;
+            time_struct->intvl += time_struct->curr - time_struct->prev;
     }
     else
         time_struct->prev = time_struct->curr = TIMER_TIME;
 
-    return time_struct->interval >= timeout;
+    return time_struct->intvl >= timeout;
 }
 
 static inline void Timer_Clear(timer_t *time_struct)
 {
-    time_struct->interval = time_struct->curr = time_struct->prev = 0;
+    time_struct->intvl = time_struct->curr = time_struct->prev = 0;
 }
 
 static inline float Timer_GetTimeRatio(timer_t *time_struct, float duration)
 {
-    return time_struct->interval > duration ? 1 : time_struct->interval / duration;
+    return time_struct->intvl > duration ? 1 : time_struct->intvl / duration;
 }
 
 #undef TIMER_TIME

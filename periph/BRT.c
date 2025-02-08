@@ -1,12 +1,6 @@
-#include "cmsis_os.h"
 #include "BRT.h"
-#include "BRT_INST.h"
 #include "algorithm.h"
-#ifdef CAN_SUPPORT
 #include "CAN.h"
-#elif defined FDCAN_SUPPORT
-#include "FDCAN.h"
-#endif
 
 #if defined BRT_NUM && defined BRT_OFFSET
 
@@ -107,10 +101,9 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
 #ifdef DEBUG
         default:
         {
-            if (BRT_msg_fdbk.data[0])
-                BRT_status = BRT_ERROR;
-            else
-                BRT_status = BRT_SUCCESS;
+            BRT_status = BRT_msg_fdbk.data[0] ? BRT_ERROR : BRT_SUCCESS;
+
+            break;
         }
 #endif
         }

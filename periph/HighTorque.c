@@ -1,12 +1,12 @@
 #include "HighTorque.h"
-#include "HighTorque_REG.h"
 #include "algorithm.h"
 
 #include <string.h>
 
+// src addr 0 by default
 #if defined HIGHTORQUE_ID_OFFSET && defined HIGHTORQUE_NUM
 
-/*hightorque_motor_t HTDW_4538_32_NE = {
+/*HighTorque_motor_t HTDW_4538_32_NE = {
                        //.GR = 32,
                        .torque_limit = 18,
                        .spd_limit = 100,
@@ -17,11 +17,11 @@
                                       .torque_limit = 20,
                                       .spd_limit = 90};*/
 
-hightorque_t HighTorque[HIGHTORQUE_NUM];
+HighTorque_t HighTorque[HIGHTORQUE_NUM + 1];
 
 void HighTorque_SendPosParam_f(void *FDCAN_handle, unsigned char ID)
 {
-    unsigned char ID_array = ID - HIGHTORQUE_ID_OFFSET;
+    unsigned char ID_array = ID == HIGHTORQUE_ADDR_BCAST ? HIGHTORQUE_NUM : ID - HIGHTORQUE_ID_OFFSET;
     unsigned char TxData[32] = {HIGHTORQUE_DATA_W | HIGHTORQUE_DATA_TYPE_8 | 1,
                                 HIGHTORQUE_REG_MODE,
                                 HIGHTORQUE_MODE_POS,
@@ -33,8 +33,8 @@ void HighTorque_SendPosParam_f(void *FDCAN_handle, unsigned char ID)
 
     *(float *)&TxData[10] = HighTorque[ID_array].ctrl.spd / 360;
 
-    // *(float *)&TxData[11] = (HighTorque[ID_array].ctrl.trq_offset - HTDW_motor->trq_b_f) / HTDW_motor->trq_k_f;
-    *(float *)&TxData[14] = HighTorque[ID_array].ctrl.trq_offset;
+    // *(float *)&TxData[11] = (HighTorque[ID_array].ctrl.trq - HTDW_motor->trq_b_f) / HTDW_motor->trq_k_f;
+    *(float *)&TxData[14] = HighTorque[ID_array].ctrl.trq;
 
     *(float *)&TxData[18] = HighTorque[ID_array].ctrl.Kp;
     *(float *)&TxData[22] = HighTorque[ID_array].ctrl.Kd;
@@ -43,12 +43,11 @@ void HighTorque_SendPosParam_f(void *FDCAN_handle, unsigned char ID)
     TxData[27] = 3;
     TxData[28] = HIGHTORQUE_REG_POS_FDBK;
 
-    memset(&TxData[29], HIGHTORQUE_NOP, 32 - 28 - 1);
+    memset(&TxData[29], HIGHTORQUE_NOP, 32 - 29);
 
-    FDCAN_nBRS_SendData(FDCAN_handle, FDCAN_EXTENDED_ID, HIGHTORQUE_ADDR_RE | HIGHTORQUE_ADDR_SRC | ID, TxData, FDCAN_DLC_BYTES_32);
+    FDCAN_nBRS_SendData(FDCAN_handle, FDCAN_EXTENDED_ID, HIGHTORQUE_ADDR_RE | ID, TxData, FDCAN_DLC_BYTES_32);
 }
 
-// @attention unverified feature
 void HighTorque_Stop(void *FDCAN_handle, unsigned char ID)
 {
     unsigned char TxData[5] = {HIGHTORQUE_DATA_W | HIGHTORQUE_DATA_TYPE_8 | 1,
@@ -57,10 +56,9 @@ void HighTorque_Stop(void *FDCAN_handle, unsigned char ID)
                                HIGHTORQUE_DATA_R | HIGHTORQUE_DATA_TYPE_8 | 1,
                                HIGHTORQUE_REG_MODE};
 
-    FDCAN_nBRS_SendData(FDCAN_handle, FDCAN_EXTENDED_ID, HIGHTORQUE_ADDR_RE | HIGHTORQUE_ADDR_SRC | ID, TxData, FDCAN_DLC_BYTES_5);
+    FDCAN_nBRS_SendData(FDCAN_handle, FDCAN_EXTENDED_ID, HIGHTORQUE_ADDR_RE | ID, TxData, 5);
 }
 
-// @attention unverified feature
 void HighTorque_SetSpdLimit(void *FDCAN_handle, unsigned char ID, float spd, float acc)
 {
     unsigned char TxData[12] = {HIGHTORQUE_DATA_W | HIGHTORQUE_DATA_TYPE_FLOAT | 2,
@@ -72,7 +70,23 @@ void HighTorque_SetSpdLimit(void *FDCAN_handle, unsigned char ID, float spd, flo
     TxData[10] = HIGHTORQUE_DATA_R | HIGHTORQUE_DATA_TYPE_FLOAT | 2;
     TxData[11] = HIGHTORQUE_REG_SPD_LIMIT;
 
-    FDCAN_nBRS_SendData(FDCAN_handle, FDCAN_EXTENDED_ID, HIGHTORQUE_ADDR_RE | HIGHTORQUE_ADDR_SRC | ID, TxData, FDCAN_DLC_BYTES_12);
+    FDCAN_nBRS_SendData(FDCAN_handle, FDCAN_EXTENDED_ID, HIGHTORQUE_ADDR_RE | ID, TxData, FDCAN_DLC_BYTES_12);
+}
+
+void HighTorque_SwitchMode(void *FDCAN_handle, unsigned char ID, unsigned char HIGHTORQUE_MODE)
+{
+    unsigned char ID_array = ID == HIGHTORQUE_ADDR_BCAST ? HIGHTORQUE_NUM : ID - HIGHTORQUE_ID_OFFSET;
+
+    unsigned char TxData[8] = {HIGHTORQUE_DATA_W | HIGHTORQUE_DATA_TYPE_8 | 1,
+                               HIGHTORQUE_REG_MODE,
+                               HIGHTORQUE_MODE,
+                               HIGHTORQUE_DATA_R | HIGHTORQUE_DATA_TYPE_FLOAT | HIGHTORQUE_MODE2,
+                               3,
+                               HIGHTORQUE_REG_POS_FDBK};
+
+    memset(&TxData[6], HIGHTORQUE_NOP, 8 - 6);
+
+    FDCAN_nBRS_SendData(FDCAN_handle, FDCAN_EXTENDED_ID, HIGHTORQUE_ADDR_RE | ID, TxData, 8);
 }
 
 /*void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)

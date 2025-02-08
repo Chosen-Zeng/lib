@@ -8,44 +8,20 @@
 GO_M8010_6_t GO_M8010_6[GO_M8010_6_NUM];
 GO_M8010_6_data_t GO_M8010_6_data[DMA_Stream_PAIR]; // for DMA
 
-void GO_M8010_6_SendCmd(USART_TypeDef *USART_handler, unsigned char ID, DMA_Stream_TypeDef *DMA_Stream_handle)
+void GO_M8010_6_SendCmd(USART_TypeDef *USART_handler, unsigned char ID, DMA_TypeDef *DMA_handle, void *DMA_handle_sub)
 {
     unsigned char ID_array = ID - GO_M8010_6_ID_OFFSET;
 
     *(unsigned short *)GO_M8010_6_data[ID_array].TxData = GO_M8010_6_HEAD_SEND;
     GO_M8010_6_data[ID_array].TxData[2] = ID | GO_M8010_6[ID_array].ctrl.mode << 4;
-
-    LIMIT_ABS(GO_M8010_6[ID_array].ctrl.torque, GO_M8010_6_TORQUE_LIMIT);
-    *(short *)&GO_M8010_6_data[ID_array].TxData[3] = GO_M8010_6[ID_array].ctrl.torque * GO_M8010_6_fTORQUE;
-
-    LIMIT_ABS(GO_M8010_6[ID_array].ctrl.spd, GO_M8010_6_SPD_LIMIT);
-    *(short *)&GO_M8010_6_data[ID_array].TxData[5] = GO_M8010_6[ID_array].ctrl.spd * GO_M8010_6_fSPD;
-
-    LIMIT_ABS(GO_M8010_6[ID_array].ctrl.pos, GO_M8010_6_POS_LIMIT);
-    *(int *)&GO_M8010_6_data[ID_array].TxData[7] = GO_M8010_6[ID_array].ctrl.pos * GO_M8010_6_fPOS;
-
-    LIMIT(GO_M8010_6[ID_array].ctrl.Kpos, GO_M8010_6_Kpos_LIMIT);
-    *(unsigned short *)&GO_M8010_6_data[ID_array].TxData[11] = GO_M8010_6[ID_array].ctrl.Kpos * GO_M8010_6_fKpos;
-
-    LIMIT(GO_M8010_6[ID_array].ctrl.Kspd, GO_M8010_6_Kspd_LIMIT);
-    *(unsigned short *)&GO_M8010_6_data[ID_array].TxData[13] = GO_M8010_6[ID_array].ctrl.Kspd * GO_M8010_6_fKspd;
-
+    *(short *)&GO_M8010_6_data[ID_array].TxData[3] = LIMIT_ABS(GO_M8010_6[ID_array].ctrl.torque, GO_M8010_6_TORQUE_LIMIT) * GO_M8010_6_fTORQUE;
+    *(short *)&GO_M8010_6_data[ID_array].TxData[5] = LIMIT_ABS(GO_M8010_6[ID_array].ctrl.spd, GO_M8010_6_SPD_LIMIT) * GO_M8010_6_fSPD;
+    *(int *)&GO_M8010_6_data[ID_array].TxData[7] = LIMIT_ABS(GO_M8010_6[ID_array].ctrl.pos, GO_M8010_6_POS_LIMIT) * GO_M8010_6_fPOS;
+    *(unsigned short *)&GO_M8010_6_data[ID_array].TxData[11] = LIMIT(GO_M8010_6[ID_array].ctrl.Kpos, GO_M8010_6_Kpos_LIMIT) * GO_M8010_6_fKpos;
+    *(unsigned short *)&GO_M8010_6_data[ID_array].TxData[13] = LIMIT(GO_M8010_6[ID_array].ctrl.Kspd, GO_M8010_6_Kspd_LIMIT) * GO_M8010_6_fKspd;
     *(unsigned short *)&GO_M8010_6_data[ID_array].TxData[15] = CRC_16_Cal(&CRC_16_CCITT, GO_M8010_6_data[ID_array].TxData, 15);
 
-    if (DMA_Stream_handle)
-    {
-        // DMA
-        // do
-        // {
-        //     DMA1->LIFCR |= 0x3D;
-        // } while (DMA1->LISR & 0x3D);
-        UART_SendData_DMA(DMA_Stream_handle, USART_handler, GO_M8010_6_data[ID_array].TxData, 17);
-    }
-    else
-    {
-        // blocking
-        UART_SendData(USART_handler, GO_M8010_6_data[ID_array].TxData, 17, 0.001);
-    }
+    UART_SendArray(USART_handler, GO_M8010_6_data[ID_array].TxData, 17, 0.001, DMA_handle, DMA_handle_sub);
 }
 
 // void USART3_IRQHandler(void)
