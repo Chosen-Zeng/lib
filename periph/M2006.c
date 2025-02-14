@@ -15,8 +15,8 @@ void C610_SetCurrent(void *CAN_handle, unsigned short C610_ID)
 
     for (unsigned char ID_array = (C610_ID == C610_ID2 ? 4 : 0); ID_array < (C610_ID == C610_ID1 ? 4 : 8); ID_array++)
     {
-        TxData[ID_array * 2] = (unsigned short)(LIMIT_ABS(C610[ID_array].ctrl.curr, C610_CURR_LIMIT) / C610_fCURR) >> 8;
-        TxData[ID_array * 2 + 1] = (unsigned short)(C610[ID_array].ctrl.curr / C610_fCURR);
+        TxData[ID_array * 2] = (short)(LIMIT_ABS(C610[ID_array].ctrl.curr, C610_CURR_LIMIT) / C610_fCURR) >> 8;
+        TxData[ID_array * 2 + 1] = (short)(C610[ID_array].ctrl.curr / C610_fCURR);
     }
 
     if (C610_ID == (C610_ID1 | C610_ID2))
@@ -127,8 +127,8 @@ __weak void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *hfdcan, unsigned int 
             pos_prev[ID_array] = pos_curr[ID_array];
         }
 
-        C610[ID_array].fdbk.spd = (unsigned short)((RxFifo1[2] << 8) | RxFifo1[3]) / M2006_GR;
-        C610[ID_array].fdbk.curr = (unsigned short)((RxFifo1[4] << 8) | RxFifo1[5]) * C610_fCURR;
+        C610[ID_array].fdbk.spd = (short)((RxFifo1[2] << 8) | RxFifo1[3]) / M2006_GR;
+        C610[ID_array].fdbk.curr = (short)((RxFifo1[4] << 8) | RxFifo1[5]) * C610_fCURR;
         C610[ID_array].fdbk.trq = C610[ID_array].fdbk.curr * M2006_fTRQ;
 
         C610_PID_spd[ID_array].deprev = C610_PID_spd[ID_array].decurr;
