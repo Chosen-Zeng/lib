@@ -24,24 +24,24 @@
 #define VESC_fCURR_R 10
 #define VESC_fPOS_R 50
 
-#define VESC_SET_DUTYCYCLE 0
-#define VESC_SET_CURR 1
-#define VESC_SET_CURR_STOP 2
-#define VESC_SET_SPD 3
-#define VESC_SET_POS 4
-#define VESC_SET_CURR_REL 10
-#define VESC_SET_STOP_REL 11
-#define VESC_SET_CURR_HANDBRAKE 12
-#define VESC_SET_CURR_HANDBRAKE_REL 13
+#define VESC_SET_DUTYCYCLE (0 << 8)
+#define VESC_SET_CURR (1 << 8)
+#define VESC_SET_CURR_STOP (2 << 8)
+#define VESC_SET_SPD (3 << 8)
+#define VESC_SET_POS (4 << 8)
+#define VESC_SET_CURR_REL (10 << 8)
+#define VESC_SET_STOP_REL (11 << 8)
+#define VESC_SET_CURR_HANDBRAKE (12 << 8)
+#define VESC_SET_CURR_HANDBRAKE_REL (13 << 8)
 
 #define VESC_POS_MAX 359
 
-#define VESC_STATUS_1 9
-#define VESC_STATUS_2 14
-#define VESC_STATUS_3 15
-#define VESC_STATUS_4 16
-#define VESC_STATUS_5 27
-#define VESC_STATUS_6 28
+#define VESC_STATUS_1 (9 << 8)
+#define VESC_STATUS_2 (14 << 8)
+#define VESC_STATUS_3 (15 << 8)
+#define VESC_STATUS_4 (16 << 8)
+#define VESC_STATUS_5 (27 << 8)
+#define VESC_STATUS_6 (28 << 8)
 
 typedef struct
 {
@@ -71,7 +71,7 @@ typedef struct
 
 extern VESC_t VESC[VESC_NUM];
 
-void VESC_SendCmd(void *CAN_handle, unsigned char ID, unsigned char VESC_cmd);
+void VESC_SendCmd(void *CAN_handle, unsigned char ID, unsigned short VESC_cmd);
 
 #endif
 #endif

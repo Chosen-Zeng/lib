@@ -15,23 +15,24 @@ static inline unsigned char UART_SendData(USART_TypeDef *USART_handle, unsigned 
     return 1;
 }
 
-#define UART_TIMEOUT_ARRAY 0.0002
+#define UART_TIMEOUT_ARRAY 0.001
 // @note 0.2ms timeout by default; optional DMA use
-static inline void UART_SendArray(USART_TypeDef *USART_handle, unsigned char TxData[], unsigned char len, void *DMA_handle, void *DMA_handle_sub)
+static inline void UART_SendArray(USART_TypeDef *USART_handle, unsigned char TxData[], unsigned char len, DMA_TypeDef *DMA_handle, void *DMA_handle_sub, unsigned char DMA_sub_ID)
 {
-    if (DMA_handle && DMA_handle_sub)
+    if (DMA_handle && DMA_handle_sub &&
+        USART_handle->CR3 & 0x40) // DMAT
     {
 #ifdef STM32H7
-        // clear flags if uneffective
-        // do
-        // {
-        //     ((DMA_TypeDef *)DMA_handle)->LIFCR |= 0x3D;
-        // } while (((DMA_TypeDef *)DMA_handle)->LISR & 0x3D);
+        // clear flags
+        if (DMA_sub_ID >= 4)
+            ((DMA_TypeDef *)DMA_handle)->HIFCR |= 0x3D << 6 * (DMA_sub_ID - 4);
+        else
+            ((DMA_TypeDef *)DMA_handle)->LIFCR |= 0x3D << 6 * DMA_sub_ID;
 
         ((DMA_Stream_TypeDef *)DMA_handle_sub)->NDTR = len;
         ((DMA_Stream_TypeDef *)DMA_handle_sub)->PAR = (unsigned)&USART_handle->TDR;
         ((DMA_Stream_TypeDef *)DMA_handle_sub)->M0AR = (unsigned)TxData;
-        ((DMA_Stream_TypeDef *)DMA_handle_sub)->CR = 0x00010441; // (note)
+        ((DMA_Stream_TypeDef *)DMA_handle_sub)->CR = 0x00010441;
 #else
 #error lack DMA config
 #endif
@@ -56,7 +57,7 @@ static inline void UART_SendArray(USART_TypeDef *USART_handle, unsigned char TxD
 #define MODBUS_W_MPL_COIL 0x0F
 #define MODBUS_W_MPL_REG 0x10
 
-static inline void Modbus_UART_Read(USART_TypeDef *USART_handle, unsigned char slave_addr, unsigned char MODBUS_R_TYPE, unsigned short addr, unsigned short num, void *DMA_handle, void *DMA_handle_sub)
+static inline void Modbus_UART_Read(USART_TypeDef *USART_handle, unsigned char slave_addr, unsigned char MODBUS_R_TYPE, unsigned short addr, unsigned short num, void *DMA_handle, void *DMA_handle_sub, unsigned char DMA_sub_ID)
 {
     static unsigned char TxData[8];
 
@@ -68,10 +69,10 @@ static inline void Modbus_UART_Read(USART_TypeDef *USART_handle, unsigned char s
     TxData[5] = num;
     *(unsigned short *)&TxData[6] = CRC_16_Cal(&CRC_16_Modbus, TxData, 6);
 
-    UART_SendArray(USART_handle, TxData, 8, DMA_handle, DMA_handle_sub);
+    UART_SendArray(USART_handle, TxData, 8, DMA_handle, DMA_handle_sub, DMA_sub_ID);
 }
 
-static inline void Modbus_UART_WriteSgl(USART_TypeDef *USART_handle, unsigned char slave_addr, unsigned char MODBUS_W_TYPE, unsigned short addr, unsigned short val, void *DMA_handle, void *DMA_handle_sub)
+static inline void Modbus_UART_WriteSgl(USART_TypeDef *USART_handle, unsigned char slave_addr, unsigned char MODBUS_W_TYPE, unsigned short addr, unsigned short val, void *DMA_handle, void *DMA_handle_sub, unsigned char DMA_sub_ID)
 {
     static unsigned char TxData[8];
 
@@ -88,7 +89,7 @@ static inline void Modbus_UART_WriteSgl(USART_TypeDef *USART_handle, unsigned ch
     }
     *(unsigned short *)&TxData[6] = CRC_16_Cal(&CRC_16_Modbus, TxData, 6);
 
-    UART_SendArray(USART_handle, TxData, 8, DMA_handle, DMA_handle_sub);
+    UART_SendArray(USART_handle, TxData, 8, DMA_handle, DMA_handle_sub, DMA_sub_ID);
 }
 
 // void USART3_IRQHandler(void)

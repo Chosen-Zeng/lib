@@ -10,9 +10,7 @@ static unsigned char CheckSum(unsigned char data[], unsigned char len)
     unsigned char retval = 0;
 
     while (len--)
-    {
         retval += data[len];
-    }
 
     return retval;
 }

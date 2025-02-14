@@ -77,22 +77,22 @@ void Daran_Prop_W(FDCAN_HandleTypeDef *hfdcan, unsigned char ID, unsigned short 
     }
     case DARAN_DATA_TYPE_u16:
     {
-        *(unsigned short *)&TxData[4] = (unsigned short)param_val;
+        *(unsigned short *)&TxData[4] = param_val;
         break;
     }
     case DARAN_DATA_TYPE_s16:
     {
-        *(short *)&TxData[4] = (short)param_val;
+        *(short *)&TxData[4] = param_val;
         break;
     }
     case DARAN_DATA_TYPE_u32:
     {
-        *(unsigned int *)&TxData[4] = (unsigned int)param_val;
+        *(unsigned int *)&TxData[4] = param_val;
         break;
     }
     case DARAN_DATA_TYPE_s32:
     {
-        *(int *)&TxData[4] = (int)param_val;
+        *(int *)&TxData[4] = param_val;
         break;
     }
     }

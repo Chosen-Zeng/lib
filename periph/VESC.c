@@ -6,7 +6,7 @@
 
 VESC_t VESC[VESC_NUM];
 
-void VESC_SendCmd(void *CAN_handle, unsigned char ID, unsigned char VESC_cmd)
+void VESC_SendCmd(void *CAN_handle, unsigned char ID, unsigned short VESC_cmd)
 {
     unsigned char TxData[4];
 
@@ -31,9 +31,9 @@ void VESC_SendCmd(void *CAN_handle, unsigned char ID, unsigned char VESC_cmd)
         return;
     }
 #ifdef CAN_SUPPORT
-    CAN_SendData(CAN_handle, CAN_ID_EXT, ID | VESC_cmd << 8, TxData, 4);
+    CAN_SendData(CAN_handle, CAN_ID_EXT, VESC_cmd | ID, TxData, 4);
 #elif defined FDCAN_SUPPORT
-    CAN_SendData(CAN_handle, FDCAN_EXTENDED_ID, ID | VESC_cmd << 8, TxData, 4);
+    CAN_SendData(CAN_handle, FDCAN_EXTENDED_ID, VESC_cmd | ID, TxData, 4);
 #endif
 }
 

@@ -83,6 +83,7 @@
 {
     float GR, torque_limit, spd_limit, trq_k_f, trq_b_f; // which torque needs to be converted is unknown
 } HighTorque_motor_t;*/
+// extern HighTorque_motor_t HTDW_4538_32_NE, HTDW_5047_36_NE;
 
 typedef struct
 {
@@ -100,8 +101,6 @@ typedef struct
     HighTorque_fdbk_t fdbk;
 } HighTorque_t;
 extern HighTorque_t HighTorque[HIGHTORQUE_NUM + 1];
-
-// extern HighTorque_motor_t HTDW_4538_32_NE, HTDW_5047_36_NE;
 
 void HighTorque_SendPosParam_f(void *FDCAN_handle, unsigned char ID);
 void HighTorque_Stop(void *FDCAN_handle, unsigned char ID);

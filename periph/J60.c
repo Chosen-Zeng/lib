@@ -1,50 +1,48 @@
 #include "J60.h"
 #include "algorithm.h"
-#include "FDCAN.h"
+#include "CAN.h"
 
 #if defined J60_NUM && defined J60_ID_OFFSET
 J60_t J60[J60_NUM];
 
 void J60_SendCmd(void *CAN_handle, unsigned char ID, unsigned short J60_cmd, float data)
 {
-    unsigned char TxData[8], length = 0;
+    unsigned char TxData[8], len = 0;
 
     switch (J60_cmd)
     {
     case J60_MOTOR_CONTROL:
     {
-        length = 8;
+        len = 8;
         unsigned char ID_array = ID - J60_ID_OFFSET;
 
-        *(unsigned long *)TxData = (unsigned long)((LIMIT_ABS(J60[ID_array].ctrl.pos, J60_POS_LIMIT) + J60_POS_LIMIT) / J60_fPOS_W);
-        *(unsigned long *)TxData |= (unsigned long)((LIMIT_ABS(J60[ID_array].ctrl.spd, J60_SPD_LIMIT) + J60_SPD_LIMIT) / J60_fSPD_W) << 16;
+        *(unsigned long *)TxData = (unsigned long)(LIMIT_ABS(J60[ID_array].ctrl.pos, J60_POS_LIMIT) + J60_POS_LIMIT) / J60_fPOS_W;
+        *(unsigned long *)TxData |= (unsigned long)(LIMIT_ABS(J60[ID_array].ctrl.spd, J60_SPD_LIMIT) + J60_SPD_LIMIT) / J60_fSPD_W << 16;
         *(unsigned long *)TxData |= (unsigned long)LIMIT(J60[ID_array].ctrl.Kp, J60_Kp_LIMIT) << 30;
-        *(unsigned long *)TxData |= (unsigned long)(LIMIT(J60[ID_array].ctrl.Kd, J60_Kd_LIMIT) / J60_fKd) << 40;
-        *(unsigned long *)TxData |= (unsigned long)((LIMIT_ABS(J60[ID_array].ctrl.trq, J60_TORQUE_LIMIT) + J60_TORQUE_LIMIT) / J60_fTORQUE) << 48;
+        *(unsigned long *)TxData |= (unsigned long)LIMIT(J60[ID_array].ctrl.Kd, J60_Kd_LIMIT) / J60_fKd << 40;
+        *(unsigned long *)TxData |= (unsigned long)(LIMIT_ABS(J60[ID_array].ctrl.trq, J60_TORQUE_LIMIT) + J60_TORQUE_LIMIT) / J60_fTORQUE << 48;
 
         break;
     }
     case J60_SET_CAN_TIMEOUT:
     {
-        length = 1;
+        len = 1;
 
-        TxData[0] = (unsigned char)LIMIT(data, J60_CAN_TIMEOUT_LIMIT);
+        TxData[0] = LIMIT(data, J60_CAN_TIMEOUT_LIMIT);
         break;
     }
     case J60_SET_BANDWIDTH:
     {
-        length = 2;
+        len = 2;
 
-        *(unsigned short *)TxData = (unsigned short)LIMIT(data, J60_BANDWIDTH_LIMIT);
+        *(unsigned short *)TxData = LIMIT(data, J60_BANDWIDTH_LIMIT);
         break;
     }
-    default:
-        return;
     }
 #ifdef CAN_SUPPORT
-    CAN_SendData(CAN_handle, CAN_ID_STD, J60_cmd | ID, TxData, length);
+    CAN_SendData(CAN_handle, CAN_ID_STD, J60_cmd | ID, TxData, len);
 #elif defined FDCAN_SUPPORT
-    CAN_SendData(CAN_handle, FDCAN_STANDARD_ID, J60_cmd | ID, TxData, length);
+    CAN_SendData(CAN_handle, FDCAN_STANDARD_ID, J60_cmd | ID, TxData, len);
 #endif
 }
 

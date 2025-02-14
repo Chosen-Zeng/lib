@@ -8,7 +8,7 @@
 GO_M8010_6_t GO_M8010_6[GO_M8010_6_NUM];
 GO_M8010_6_data_t GO_M8010_6_data[DMA_Stream_PAIR]; // for DMA
 
-void GO_M8010_6_SendCmd(USART_TypeDef *USART_handler, unsigned char ID, DMA_TypeDef *DMA_handle, void *DMA_handle_sub)
+void GO_M8010_6_SendCmd(USART_TypeDef *USART_handler, unsigned char ID, DMA_TypeDef *DMA_handle, void *DMA_handle_sub, unsigned char DMA_sub_ID)
 {
     unsigned char ID_array = ID - GO_M8010_6_ID_OFFSET;
 
@@ -21,7 +21,7 @@ void GO_M8010_6_SendCmd(USART_TypeDef *USART_handler, unsigned char ID, DMA_Type
     *(unsigned short *)&GO_M8010_6_data[ID_array].TxData[13] = LIMIT(GO_M8010_6[ID_array].ctrl.Kspd, GO_M8010_6_Kspd_LIMIT) * GO_M8010_6_fKspd;
     *(unsigned short *)&GO_M8010_6_data[ID_array].TxData[15] = CRC_16_Cal(&CRC_16_CCITT, GO_M8010_6_data[ID_array].TxData, 15);
 
-    UART_SendArray(USART_handler, GO_M8010_6_data[ID_array].TxData, 17, 0.001, DMA_handle, DMA_handle_sub);
+    UART_SendArray(USART_handler, GO_M8010_6_data[ID_array].TxData, 17, 0.001, DMA_handle, DMA_handle_sub, DMA_sub_ID);
 }
 
 // void USART3_IRQHandler(void)

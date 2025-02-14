@@ -1,4 +1,5 @@
 #include "HighTorque.h"
+#include "CAN.h"
 #include "algorithm.h"
 
 #include <string.h>
@@ -75,8 +76,6 @@ void HighTorque_SetSpdLimit(void *FDCAN_handle, unsigned char ID, float spd, flo
 
 void HighTorque_SwitchMode(void *FDCAN_handle, unsigned char ID, unsigned char HIGHTORQUE_MODE)
 {
-    unsigned char ID_array = ID == HIGHTORQUE_ADDR_BCAST ? HIGHTORQUE_NUM : ID - HIGHTORQUE_ID_OFFSET;
-
     unsigned char TxData[8] = {HIGHTORQUE_DATA_W | HIGHTORQUE_DATA_TYPE_8 | 1,
                                HIGHTORQUE_REG_MODE,
                                HIGHTORQUE_MODE,
