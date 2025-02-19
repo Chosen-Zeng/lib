@@ -18,7 +18,7 @@
 #define HIGHTORQUE_DATA_TYPE_32 0b1000
 #define HIGHTORQUE_DATA_TYPE_FLOAT 0b1100
 
-#define HIGHTORQUE_MODE2 0b0000
+#define HIGHTORQUE_MODE2 0b0000 // MODE2 is required if data num > 3
 
 #define HIGHTORQUE_REG_MODE 0x00
 #define HIGHTORQUE_REG_POS_FDBK 0x01
@@ -79,11 +79,11 @@
 #define HIGHTORQUE_MODE_INDUCTOR_MEAS 14
 #define HIGHTORQUE_MODE_BRAKE 15
 
-/*typedef const struct
+typedef const struct
 {
-    float GR, torque_limit, spd_limit, trq_k_f, trq_b_f; // which torque needs to be converted is unknown
-} HighTorque_motor_t;*/
-// extern HighTorque_motor_t HTDW_4538_32_NE, HTDW_5047_36_NE;
+    float trq_k, trq_d;
+} HighTorque_motor_t;
+extern HighTorque_motor_t HTDW_4538_32_NE;
 
 typedef struct
 {
@@ -92,7 +92,7 @@ typedef struct
 
 typedef struct
 {
-    float pos, spd, trq;
+    float pos, spd, trq, temp;
 } HighTorque_fdbk_t;
 
 typedef struct
@@ -102,7 +102,7 @@ typedef struct
 } HighTorque_t;
 extern HighTorque_t HighTorque[HIGHTORQUE_NUM + 1];
 
-void HighTorque_SendPosParam_f(void *FDCAN_handle, unsigned char ID);
+void HighTorque_SendPosParam_f(void *FDCAN_handle, unsigned char ID, HighTorque_motor_t *HTDW_motor);
 void HighTorque_Stop(void *FDCAN_handle, unsigned char ID);
 void HighTorque_SetSpdLimit(void *FDCAN_handle, unsigned char ID, float spd, float acc);
 void HighTorque_SwitchMode(void *FDCAN_handle, unsigned char ID, unsigned char HIGHTORQUE_MODE);

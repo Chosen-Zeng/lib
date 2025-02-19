@@ -15,7 +15,7 @@ static inline unsigned char UART_SendData(USART_TypeDef *USART_handle, unsigned 
     return 1;
 }
 
-#define UART_TIMEOUT_ARRAY 0.001
+#define UART_TIMEOUT_ARRAY 0.0002
 // @note 0.2ms timeout by default; optional DMA use
 static inline void UART_SendArray(USART_TypeDef *USART_handle, unsigned char TxData[], unsigned char len, DMA_TypeDef *DMA_handle, void *DMA_handle_sub, unsigned char DMA_sub_ID)
 {

@@ -9,10 +9,13 @@
 #define VESC_MOTOR_CURR_MAX 75
 #define VESC_MOTOR_SPD_MAX 9000
 #define VESC_MOTOR_PP 7
-
 #elif defined HOBBYWING_V9626_KV160
 #define VESC_MOTOR_CURR_MAX 171.5
 #define VESC_MOTOR_SPD_MAX 6000
+#define VESC_MOTOR_PP 21
+#elif defined CUBEMARS_R100_KV90
+#define VESC_MOTOR_CURR_MAX 104
+#define VESC_MOTOR_SPD_MAX 3800
 #define VESC_MOTOR_PP 21
 #endif
 
@@ -26,7 +29,7 @@
 
 #define VESC_SET_DUTYCYCLE (0 << 8)
 #define VESC_SET_CURR (1 << 8)
-#define VESC_SET_CURR_STOP (2 << 8)
+#define VESC_SET_CURR_BRAKE (2 << 8)
 #define VESC_SET_SPD (3 << 8)
 #define VESC_SET_POS (4 << 8)
 #define VESC_SET_CURR_REL (10 << 8)

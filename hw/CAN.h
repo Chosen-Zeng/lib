@@ -3,16 +3,30 @@
 
 #include "user.h"
 
-#define CAN_FILTER_ID_DATA_STD(CAN_ID) (CAN_ID) << 5 | CAN_ID_STD | CAN_RTR_DATA
-#define CAN_FILTER_ID_DATA_EXT_H(CAN_ID) (CAN_ID) >> 13
-#define CAN_FILTER_ID_DATA_EXT_L(CAN_ID) (CAN_ID) << 3 | CAN_ID_EXT | CAN_RTR_DATA
+#ifdef FDCAN_SUPPORT
+#define CAN_FLTR_TYPE_STD_RANGE 0x00000000
+#define CAN_FLTR_TYPE_STD_DUAL 0x40000000
+#define CAN_FLTR_TYPE_STD_MASK 0x80000000
+#define CAN_FLTR_TYPE_STD_DISABLED 0xC0000000
 
-#define CAN_FILTER_MASK_DATA_STD(CAN_ID) (CAN_ID) << 5 | 0x001F
-#define CAN_FILTER_MASK_DATA_EXT_H(CAN_ID) (CAN_ID) >> 13
-#define CAN_FILTER_MASK_DATA_EXT_L(CAN_ID) (CAN_ID) << 3 | 0x7
+#define CAN_FLTR_CFG_STD_DISABLED 0x00000000
+#define CAN_FLTR_CFG_STD_FIFO0 0x08000000
+#define CAN_FLTR_CFG_STD_FIFO1 0x10000000
+#define CAN_FLTR_CFG_STD_REJECT 0x18000000
+//...
+#elif defined CAN_SUPPORT
+#define CAN_FLTR_ID_DATA_STD(CAN_ID) (CAN_ID) << 5 | CAN_ID_STD | CAN_RTR_DATA
+#define CAN_FLTR_ID_DATA_EXT_H(CAN_ID) (CAN_ID) >> 13
+#define CAN_FLTR_ID_DATA_EXT_L(CAN_ID) (CAN_ID) << 3 | CAN_ID_EXT | CAN_RTR_DATA
+
+#define CAN_FLTR_MASK_DATA_STD(CAN_ID) (CAN_ID) << 5 | 0x001F
+#define CAN_FLTR_MASK_DATA_EXT_H(CAN_ID) (CAN_ID) >> 13
+#define CAN_FLTR_MASK_DATA_EXT_L(CAN_ID) (CAN_ID) << 3 | 0x7
+#endif
 
 #ifdef CAN_SUPPORT
-static inline void CAN_SendData(CAN_HandleTypeDef *hcan, uint32_t CAN_ID_Type, uint32_t ID, uint8_t TxData[], uint8_t length)
+static inline void
+CAN_SendData(CAN_HandleTypeDef *hcan, uint32_t CAN_ID_Type, uint32_t ID, uint8_t TxData[], uint8_t length)
 {
     CAN_TxHeaderTypeDef CAN_TxHeader;
 

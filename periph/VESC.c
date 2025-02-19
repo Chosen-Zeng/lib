@@ -17,6 +17,11 @@ void VESC_SendCmd(void *CAN_handle, unsigned char ID, unsigned short VESC_cmd)
         f_2_4u8(LIMIT_ABS(VESC[ID - VESC_ID_OFFSET].ctrl.curr, VESC_MOTOR_CURR_MAX) * VESC_fCURR_W, TxData);
         break;
     }
+    case VESC_SET_CURR_BRAKE:
+    {
+        f_2_4u8(LIMIT_ABS(VESC[ID - VESC_ID_OFFSET].ctrl.curr, VESC_MOTOR_CURR_MAX) * VESC_fCURR_W, TxData);
+        break;
+    }
     case VESC_SET_SPD:
     {
         f_2_4u8(LIMIT_ABS(VESC[ID - VESC_ID_OFFSET].ctrl.spd, VESC_MOTOR_SPD_MAX) * VESC_MOTOR_PP, TxData);

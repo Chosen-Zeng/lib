@@ -100,21 +100,21 @@ typedef struct
     float pos;
     float spd;
     float trq;
-} Daran_ctrl_t, Daran_fdbk_t;
+} DaRan_ctrl_t, DaRan_fdbk_t;
 
 typedef struct
 {
-    Daran_ctrl_t ctrl;
-    Daran_fdbk_t fdbk;
-} Daran_t;
-extern Daran_t Daran[DARAN_NUM + 1];
+    DaRan_ctrl_t ctrl;
+    DaRan_fdbk_t fdbk;
+} DaRan_t;
+extern DaRan_t DaRan[DARAN_NUM + 1];
 
-void Daran_CANFdbkInit(FDCAN_HandleTypeDef *hfdcan, unsigned char ID, float intvl_ms);
-void Daran_SetPos(FDCAN_HandleTypeDef *hfdcan, unsigned char ID, unsigned char DARAN_CMD_POS_MODE, float param);
-void Daran_Prop_W(FDCAN_HandleTypeDef *hfdcan, unsigned char ID, unsigned short DARAN_PARAM, unsigned short DARAN_DATA_TYPE, float param_val);
-void Daran_Prop_R(FDCAN_HandleTypeDef *hfdcan, unsigned char ID, unsigned short DARAN_PARAM, unsigned short DARAN_DATA_TYPE);
-void Daran_SetSpd(FDCAN_HandleTypeDef *hfdcan, unsigned char ID, unsigned char DARAN_SPD_MODE, float accel);
-void Daran_SetTrq(FDCAN_HandleTypeDef *hfdcan, unsigned char ID, unsigned char DARAN_TRQ_MODE, float accel);
+void DaRan_CANFdbkInit(FDCAN_HandleTypeDef *hfdcan, unsigned char ID, float intvl_ms);
+void DaRan_SetPos(FDCAN_HandleTypeDef *hfdcan, unsigned char ID, unsigned char DARAN_CMD_POS_MODE, float param);
+void DaRan_Prop_W(FDCAN_HandleTypeDef *hfdcan, unsigned char ID, unsigned short DARAN_PARAM, unsigned short DARAN_DATA_TYPE, float param_val);
+void DaRan_Prop_R(FDCAN_HandleTypeDef *hfdcan, unsigned char ID, unsigned short DARAN_PARAM, unsigned short DARAN_DATA_TYPE);
+void DaRan_SetSpd(FDCAN_HandleTypeDef *hfdcan, unsigned char ID, unsigned char DARAN_SPD_MODE, float accel);
+void DaRan_SetTrq(FDCAN_HandleTypeDef *hfdcan, unsigned char ID, unsigned char DARAN_TRQ_MODE, float accel);
 
 #endif
 #endif
