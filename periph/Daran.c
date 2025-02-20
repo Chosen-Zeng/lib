@@ -17,7 +17,7 @@ void DaRan_SetPos(FDCAN_HandleTypeDef *hfdcan, unsigned char ID, unsigned char D
     unsigned char ID_array = ID == DARAN_ID_BCAST ? DARAN_NUM : ID - DARAN_ID_OFFSET;
 
     *(float *)TxData = DaRan[ID_array].ctrl.pos;
-    *(short *)&TxData[4] = LIMIT_RANGE(DaRan[ID_array].ctrl.spd, 32767 * DARAN_SCALING, -32768 * DARAN_SCALING) / DARAN_SCALING;
+    *(short *)&TxData[4] = LIMIT_RANGE(DaRan[ID_array].ctrl.spd, 32767 / DARAN_fSPD, -32768 / DARAN_fSPD) * DARAN_fSPD;
 
     switch (DARAN_CMD_POS_MODE)
     {
@@ -43,7 +43,7 @@ void DaRan_SetSpd(FDCAN_HandleTypeDef *hfdcan, unsigned char ID, unsigned char D
     unsigned char TxData[8];
     unsigned char ID_array = ID == DARAN_ID_BCAST ? DARAN_NUM : ID - DARAN_ID_OFFSET;
 
-    *(float *)TxData = DaRan[ID_array].ctrl.spd;
+    *(float *)TxData = DaRan[ID_array].ctrl.spd / 60;
     *(short *)&TxData[4] = DARAN_SPD_MODE == DARAN_SPD_MODE_FDFWD ? LIMIT_RANGE(DaRan[ID_array].ctrl.trq, 32767 * DARAN_SCALING, -32768 * DARAN_SCALING) / DARAN_SCALING : LIMIT_RANGE(accel, 32767 * DARAN_SCALING, -32768 * DARAN_SCALING) / DARAN_SCALING;
     *(unsigned short *)&TxData[6] = DARAN_SPD_MODE;
 
@@ -127,7 +127,7 @@ void FDCAN1_IT0_IRQHandler(void)
         case 1 << 5 | DARAN_CMD_PROP_R:
         {
             DaRan[1 - DARAN_ID_OFFSET].fdbk.pos = *(float *)RxData;
-            DaRan[1 - DARAN_ID_OFFSET].fdbk.spd = *(short *)&RxData[4] * DARAN_SCALING;
+            DaRan[1 - DARAN_ID_OFFSET].fdbk.spd = *(short *)&RxData[4] / DARAN_fSPD;
             DaRan[1 - DARAN_ID_OFFSET].fdbk.trq = *(short *)&RxData[6] * DARAN_SCALING;
             break;
         }

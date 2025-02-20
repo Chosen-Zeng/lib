@@ -4,6 +4,7 @@
 #include "user.h"
 
 #if defined GO_M8010_6_NUM && defined GO_M8010_6_ID_OFFSET
+#include "algorithm.h"
 
 #define GO_M8010_6_GR (19 / 3)
 
@@ -11,14 +12,14 @@
 #define GO_M8010_6_HEAD_RECV 0xEEFD
 
 #define GO_M8010_6_fTORQUE 255.f
-#define GO_M8010_6_fSPD (255 / (2 * PI) * GO_M8010_6_GR)
-#define GO_M8010_6_fPOS (32767 / (2 * PI) * GO_M8010_6_GR)
+#define GO_M8010_6_fSPD (255 / R2D * GO_M8010_6_GR)
+#define GO_M8010_6_fPOS (32767 / R2D * GO_M8010_6_GR)
 #define GO_M8010_6_fKpos 1279.f
 #define GO_M8010_6_fKspd 1279.f
 
 #define GO_M8010_6_TORQUE_LIMIT 128
-#define GO_M8010_6_SPD_LIMIT (128 * 2 * PI / GO_M8010_6_GR)
-#define GO_M8010_6_POS_LIMIT (65536 * 2 * PI / GO_M8010_6_GR)
+#define GO_M8010_6_SPD_LIMIT (128 * R2D / GO_M8010_6_GR)
+#define GO_M8010_6_POS_LIMIT (65536 * R2D / GO_M8010_6_GR)
 #define GO_M8010_6_Kpos_LIMIT 25.6
 #define GO_M8010_6_Kspd_LIMIT 25.6
 

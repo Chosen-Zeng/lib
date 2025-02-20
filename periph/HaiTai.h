@@ -26,7 +26,7 @@
 #define HAITAI_CTRL_POS_SPD_CFG 0x57
 
 #define HAITAI_fPOS (360.f / 16384)
-#define HAITAI_fSPD 0.1
+#define HAITAI_fSPD (0.1 * 60)
 #define HAITAI_fVOLT 0.2
 #define HAITAI_fCURR 0.03
 #define HAITAI_fTEMP 0.04
