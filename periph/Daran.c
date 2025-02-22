@@ -27,7 +27,11 @@ void DaRan_SetPos(FDCAN_HandleTypeDef *hfdcan, unsigned char ID, unsigned char D
         *(short *)&TxData[6] = LIMIT_RANGE(DaRan[ID_array].ctrl.trq, 32767 * DARAN_SCALING, -32768 * DARAN_SCALING) / DARAN_SCALING;
         break;
     }
-    case DARAN_CMD_POS_MODE_BW:
+    case DARAN_CMD_POS_MODE_FLTR:
+    {
+        *(short *)&TxData[6] = LIMIT(param, DARAN_FLTR_BW_MAX) / DARAN_SCALING;
+        break;
+    }
     case DARAN_CMD_POS_MODE_ACCEL:
     {
         *(short *)&TxData[6] = LIMIT_RANGE(param, 32767 * DARAN_SCALING, -32768 * DARAN_SCALING) / DARAN_SCALING;
