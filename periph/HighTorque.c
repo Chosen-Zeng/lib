@@ -24,8 +24,7 @@ void HighTorque_SendPosParam_f(void *FDCAN_handle, unsigned char ID, HighTorque_
 
     *(float *)&TxData[10] = HighTorque[ID_array].ctrl.spd / 360;
 
-    *(float *)&TxData[14] = HTDW_motor ? (HighTorque[ID_array].ctrl.trq - HTDW_motor->trq_d) / HTDW_motor->trq_k
-                                       : HighTorque[ID_array].ctrl.trq;
+    *(float *)&TxData[14] = /*HTDW_motor ? (HighTorque[ID_array].ctrl.trq - HTDW_motor->trq_d) / HTDW_motor->trq_k :*/ HighTorque[ID_array].ctrl.trq;
 
     *(float *)&TxData[18] = HighTorque[ID_array].ctrl.Kp;
     *(float *)&TxData[22] = HighTorque[ID_array].ctrl.Kd;
@@ -98,8 +97,8 @@ void HighTorque_SwitchMode(void *FDCAN_handle, unsigned char ID, unsigned char H
                 HighTorque[2 - HIGHTORQUE_ID_OFFSET].fdbk.pos = *(float *)&RxData[2] * 360;
                 HighTorque[2 - HIGHTORQUE_ID_OFFSET].fdbk.spd = *(float *)&RxData[6] * 360;
                 HighTorque[2 - HIGHTORQUE_ID_OFFSET].fdbk.trq = *(float *)&RxData[10];
-                HighTorque[2 - HIGHTORQUE_ID_OFFSET].fdbk.temp = *(float *)&RxData[16];
             // HighTorque[ID_array].fdbk.trq = *(float *)&RxData[10] * HTDW_4538_32_NE.trq_k + HTDW_4538_32_NE.trq_d;
+                HighTorque[2 - HIGHTORQUE_ID_OFFSET].fdbk.temp = *(float *)&RxData[16];
         }
         break;
     }
