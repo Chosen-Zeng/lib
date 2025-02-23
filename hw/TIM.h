@@ -13,51 +13,61 @@ typedef struct
 
 #define TIMER_TIME ((float)(TIMER->CNT + 1) / (TIMER->ARR + 1))
 
-//  @brief     update intvl in the specific time struct
+//  @brief     update intvl of the specific time struct
 //  @attention intvl must < 1s
-static inline void Timer_GetInterval(timer_t *time_struct)
+static inline float Timer_GetInterval(timer_t *timer_struct)
 {
-    if (time_struct->prev != 0 && time_struct->curr != 0)
+    if (timer_struct->prev != 0 && timer_struct->curr != 0)
     {
-        time_struct->prev = time_struct->curr;
-        time_struct->curr = TIMER_TIME;
+        timer_struct->prev = timer_struct->curr;
+        timer_struct->curr = TIMER_TIME;
 
-        if (time_struct->prev > time_struct->curr)
-            time_struct->intvl = 1 + time_struct->curr - time_struct->prev;
+        if (timer_struct->prev > timer_struct->curr)
+            timer_struct->intvl = 1 + timer_struct->curr - timer_struct->prev;
         else
-            time_struct->intvl = time_struct->curr - time_struct->prev;
+            timer_struct->intvl = timer_struct->curr - timer_struct->prev;
     }
     else
-        time_struct->prev = time_struct->curr = TIMER_TIME;
+        timer_struct->prev = timer_struct->curr = TIMER_TIME;
+
+    return timer_struct->intvl;
+}
+
+//  @brief     update elapse of the specific time struct
+//  @attention intvl must < 1s
+static inline float Timer_GetElapse(timer_t *timer_struct)
+{
+    if (timer_struct->prev != 0 && timer_struct->curr != 0)
+    {
+        timer_struct->prev = timer_struct->curr;
+        timer_struct->curr = TIMER_TIME;
+
+        if (timer_struct->prev > timer_struct->curr)
+            timer_struct->intvl += 1 + timer_struct->curr - timer_struct->prev;
+        else
+            timer_struct->intvl += timer_struct->curr - timer_struct->prev;
+    }
+    else
+        timer_struct->prev = timer_struct->curr = TIMER_TIME;
+
+    return timer_struct->intvl;
 }
 
 // @return timeout or not
-static inline unsigned char Timer_CheckTimeout(timer_t *time_struct, float timeout)
+static inline unsigned char Timer_CheckTimeout(timer_t *timer_struct, float timeout)
 {
-    if (time_struct->prev != 0 && time_struct->curr != 0)
-    {
-        time_struct->prev = time_struct->curr;
-        time_struct->curr = TIMER_TIME;
-
-        if (time_struct->prev > time_struct->curr)
-            time_struct->intvl += 1 + time_struct->curr - time_struct->prev;
-        else
-            time_struct->intvl += time_struct->curr - time_struct->prev;
-    }
-    else
-        time_struct->prev = time_struct->curr = TIMER_TIME;
-
-    return time_struct->intvl >= timeout;
+    Timer_GetElapse(timer_struct);
+    return timer_struct->intvl >= timeout;
 }
 
-static inline void Timer_Clear(timer_t *time_struct)
+static inline void Timer_Clear(timer_t *timer_struct)
 {
-    time_struct->intvl = time_struct->curr = time_struct->prev = 0;
+    timer_struct->intvl = timer_struct->curr = timer_struct->prev = 0;
 }
 
-static inline float Timer_GetTimeRatio(timer_t *time_struct, float duration)
+static inline float Timer_GetTimeRatio(timer_t *timer_struct, float duration)
 {
-    return time_struct->intvl > duration ? 1 : time_struct->intvl / duration;
+    return timer_struct->intvl > duration ? 1 : timer_struct->intvl / duration;
 }
 
 #undef TIMER_TIME
