@@ -6,11 +6,11 @@
 // src addr 0 by default
 #if defined HIGHTORQUE_ID_OFFSET && defined HIGHTORQUE_NUM
 
-HighTorque_motor_t HTDW_4538_32_NE = {.trq_k = 0.414104, .trq_d = -0.472467};
+// HighTorque_motor_t HTDW_4538_32_NE = {.trq_k = 0.414104, .trq_d = -0.472467};
 
 HighTorque_t HighTorque[HIGHTORQUE_NUM + 1];
 
-void HighTorque_SendPosParam_f(void *FDCAN_handle, unsigned char ID, HighTorque_motor_t *HTDW_motor)
+void HighTorque_SendPosParam_f(void *FDCAN_handle, unsigned char ID /*, HighTorque_motor_t *HTDW_motor*/)
 {
     unsigned char ID_array = ID == HIGHTORQUE_ADDR_BCAST ? HIGHTORQUE_NUM : ID - HIGHTORQUE_ID_OFFSET;
     unsigned char TxData[32] = {HIGHTORQUE_DATA_W | HIGHTORQUE_DATA_TYPE_8 | 1,
