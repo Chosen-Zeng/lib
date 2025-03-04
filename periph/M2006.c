@@ -1,5 +1,4 @@
 #include "M2006.h"
-#include "TIM.h"
 #include "algorithm.h"
 #include "CAN.h"
 
@@ -9,7 +8,7 @@ C610_t C610[8];
 
 C610_PID_t C610_PID_spd[8], C610_PID_pos[8];
 
-void C610_SetCurrent(void *CAN_handle, unsigned short C610_ID)
+void C610_SetCurr(void *CAN_handle, unsigned short C610_ID)
 {
     unsigned char TxData[16];
 
@@ -56,7 +55,7 @@ void C610_SetSpd(void *CAN_handle, unsigned short C610_ID)
 
         C610[ID_array].ctrl.curr = C610_PID_spd[ID_array].p + C610_PID_spd[ID_array].i + C610_PID_spd[ID_array].d;
     }
-    C610_SetCurrent(CAN_handle, C610_ID);
+    C610_SetCurr(CAN_handle, C610_ID);
 }
 
 void C610_SetPos(void *CAN_handle, unsigned short C610_ID)
@@ -81,62 +80,38 @@ void C610_SetPos(void *CAN_handle, unsigned short C610_ID)
     C610_SetSpd(CAN_handle, C610_ID);
 }
 
-void C610_SetTorque(void *CAN_handle, unsigned short C610_ID)
+void C610_SetTrq(void *CAN_handle, unsigned short C610_ID)
 {
     for (unsigned char ID_array = (C610_ID == C610_ID2 ? 4 : 0); ID_array < (C610_ID == C610_ID1 ? 4 : 8); ID_array++)
         C610[ID_array].ctrl.curr = C610[ID_array].ctrl.trq / M2006_fTRQ;
 
-    C610_SetCurrent(CAN_handle, C610_ID);
+    C610_SetCurr(CAN_handle, C610_ID);
 }
 
-#ifdef CAN_SUPPORT
-#elif defined FDCAN_SUPPORT
-__weak void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *hfdcan, unsigned int RxFifo1ITs)
+/*void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *hfdcan, unsigned int RxFifo1ITs)
 {
     FDCAN_RxHeaderTypeDef FDCAN_RxHeader;
     unsigned char RxFifo1[8];
-    if (hfdcan->Instance == FDCAN2)
-    {
-        // sw reset unusable
-        /*
-        static struct // add delay at initialization to set sw zero point
-        {
-            unsigned char ZP_Status[8];
-            float ZP[8];
-        } C610_ZP;
-        */
+    HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO1, &FDCAN_RxHeader, RxFifo1);
+    unsigned char ID_array = FDCAN_RxHeader.Identifier - 0x200 - 1;
 
-        HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO1, &FDCAN_RxHeader, RxFifo1);
-        unsigned char ID_array = FDCAN_RxHeader.Identifier - 0x200 - 1;
+    static float pos_prev, pos_curr;
 
-        static float pos_prev[8], pos_curr[8];
-        /*
-        if (!C610_ZP.ZP_Status)
-        {
-            pos_prev = pos_curr = C610_ZP.ZP = ((RxFifo1[0] << 8) | RxFifo1[1]) * C610_fPOS / C610_GR;
-            C610_ZP.ZP_Status = 1;
-        }
-        else
-        */
-        {
-            pos_curr[ID_array] = ((RxFifo1[0] << 8) | RxFifo1[1]) * C610_fPOS;
-            if (ABS(pos_prev - pos_curr) >= 180) // 计圈
-                C610[ID_array].fdbk.pos += ((pos_prev > pos_curr ? 360 : -360) + pos_curr - pos_prev) / M2006_GR;
-            else
-                C610[ID_array].fdbk.pos += (pos_curr - pos_prev) / M2006_GR;
-            pos_prev[ID_array] = pos_curr[ID_array];
-        }
+    pos_curr = ((RxData[0] << 8) | RxData[1]) * C610_fPOS;
+    if (ABS(pos_prev - pos_curr) >= 180) // lap count
+        C610[0].fdbk.pos += ((pos_prev > pos_curr ? 360 : -360) + pos_curr - pos_prev) / M2006_GR;
+    else
+        C610[0].fdbk.pos += (pos_curr - pos_prev) / M2006_GR;
+    pos_prev = pos_curr;
 
-        C610[ID_array].fdbk.spd = (short)((RxFifo1[2] << 8) | RxFifo1[3]) / M2006_GR;
-        C610[ID_array].fdbk.curr = (short)((RxFifo1[4] << 8) | RxFifo1[5]) * C610_fCURR;
-        C610[ID_array].fdbk.trq = C610[ID_array].fdbk.curr * M2006_fTRQ;
+    C610[0].fdbk.spd = (short)((RxData[2] << 8) | RxData[3]) / M2006_GR;
+    C610[0].fdbk.curr = (short)((RxData[4] << 8) | RxData[5]) * C610_fCURR;
+    C610[0].fdbk.trq = C610[0].fdbk.curr * M2006_fTRQ;
 
-        C610_PID_spd[ID_array].deprev = C610_PID_spd[ID_array].decurr;
-        C610_PID_spd[ID_array].decurr = C610[ID_array].ctrl.spd - C610[ID_array].fdbk.spd;
+    C610_PID_spd[0].deprev = C610_PID_spd[0].decurr;
+    C610_PID_spd[0].decurr = C610[0].ctrl.spd - C610[0].fdbk.spd;
 
-        C610_PID_pos[ID_array].deprev = C610_PID_pos[ID_array].decurr;
-        C610_PID_pos[ID_array].decurr = C610[ID_array].ctrl.pos - C610[ID_array].fdbk.pos;
-    }
-}
-#endif
+    C610_PID_pos[0].deprev = C610_PID_pos[0].decurr;
+    C610_PID_pos[0].decurr = C610[0].ctrl.pos - C610[0].fdbk.pos;
+}*/
 #endif

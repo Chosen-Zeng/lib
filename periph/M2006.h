@@ -11,9 +11,9 @@
 #define C610_fCURR (10.F / 10000)
 #define C610_fPOS (360.F / 8192)
 
-#define C610_POS_Kp 10	// 16
-#define C610_POS_Ki 10	// 12
-#define C610_POS_Kd 0.1 // 1
+#define C610_POS_Kp 10 // 16
+#define C610_POS_Ki 12
+#define C610_POS_Kd 0.05 // 1
 #define C610_POS_iSTART 60
 #define C610_POS_iLIMIT 0.8
 
@@ -56,10 +56,9 @@ typedef struct
 } C610_PID_t;
 extern C610_PID_t C610_PID_spd[8], C610_PID_pos[8];
 
-void C610_SetCurrent(void *CAN_handle, unsigned short C610_ID);
 void C610_SetPos(void *CAN_handle, unsigned short C610_ID);
 void C610_SetSpd(void *CAN_handle, unsigned short C610_ID);
-void C610_SetTorque(void *CAN_handle, unsigned short C610_ID);
+void C610_SetTrq(void *CAN_handle, unsigned short C610_ID);
 
 #endif
 #endif

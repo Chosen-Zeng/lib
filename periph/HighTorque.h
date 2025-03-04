@@ -102,7 +102,7 @@ typedef struct
 } HighTorque_t;
 extern HighTorque_t HighTorque[HIGHTORQUE_NUM + 1];
 
-void HighTorque_SendPosParam_f(void *FDCAN_handle, unsigned char ID /*, HighTorque_motor_t *HTDW_motor*/);
+void HighTorque_SetMixParam_f(void *FDCAN_handle, unsigned char ID /*, HighTorque_motor_t *HTDW_motor*/);
 void HighTorque_Stop(void *FDCAN_handle, unsigned char ID);
 void HighTorque_SetSpdLimit(void *FDCAN_handle, unsigned char ID, float spd, float acc);
 void HighTorque_SwitchMode(void *FDCAN_handle, unsigned char ID, unsigned char HIGHTORQUE_MODE);

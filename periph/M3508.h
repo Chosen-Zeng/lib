@@ -67,7 +67,7 @@ extern C620_PID_t C620_PID_spd[8], C620_PID_pos[8];
 
 void C620_SetPos(void *CAN_handle, unsigned short C620_ID);
 void C620_SetSpd(void *CAN_handle, unsigned short C620_ID);
-void C620_SetTorque(void *CAN_handle, unsigned short C620_ID);
+void C620_SetTrq(void *CAN_handle, unsigned short C620_ID);
 
 #endif
 #endif

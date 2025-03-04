@@ -12,6 +12,10 @@ void HaiTai_CAN_SendCmd(FDCAN_HandleTypeDef *hfdcan, unsigned char ID, unsigned 
 
     switch (HAITAI_cmd)
     {
+    case HAITAI_CTRL_OFF:
+    case HAITAI_CTRL_0POS_MPL:
+    case HAITAI_CTRL_0POS_SGL:
+        break;
     case HAITAI_CTRL_PWR:
     {
         len = 2;
@@ -27,13 +31,13 @@ void HaiTai_CAN_SendCmd(FDCAN_HandleTypeDef *hfdcan, unsigned char ID, unsigned 
     case HAITAI_CTRL_POS_ABS:
     {
         len = 4;
-        *(int *)TxData = LIMIT_RANGE(HaiTai[ID - HAITAI_ID_OFFSET].ctrl.pos_abs, HAITAI_POS_MAX, HAITAI_POS_MIN) / HAITAI_fPOS;
+        *(int *)TxData = LIMIT_RANGE(HaiTai[ID - HAITAI_ID_OFFSET].ctrl.pos, HAITAI_POS_MAX, HAITAI_POS_MIN) / HAITAI_fPOS;
         break;
     }
     case HAITAI_CTRL_POS_REL:
     {
         len = 4;
-        *(int *)TxData = LIMIT_RANGE(HaiTai[ID - HAITAI_ID_OFFSET].ctrl.pos_rel, HAITAI_POS_MAX, HAITAI_POS_MIN) / HAITAI_fPOS;
+        *(int *)TxData = LIMIT_RANGE(HaiTai[ID - HAITAI_ID_OFFSET].ctrl.pos, HAITAI_POS_MAX, HAITAI_POS_MIN) / HAITAI_fPOS;
         break;
     }
     case HAITAI_CTRL_POS_SPD_CFG:
@@ -77,13 +81,13 @@ void HaiTai_RS485_SendCmd(USART_TypeDef *USART_handle, unsigned char ID, unsigne
     case HAITAI_CTRL_POS_ABS:
     {
         HaiTai_TxData[4] = 4;
-        *(int *)&HaiTai_TxData[5] = LIMIT_RANGE(HaiTai[ID - HAITAI_ID_OFFSET].ctrl.pos_abs, HAITAI_POS_MAX, HAITAI_POS_MIN) / HAITAI_fPOS;
+        *(int *)&HaiTai_TxData[5] = LIMIT_RANGE(HaiTai[ID - HAITAI_ID_OFFSET].ctrl.pos, HAITAI_POS_MAX, HAITAI_POS_MIN) / HAITAI_fPOS;
         break;
     }
     case HAITAI_CTRL_POS_REL:
     {
         HaiTai_TxData[4] = 4;
-        *(int *)&HaiTai_TxData[5] = LIMIT_RANGE(HaiTai[ID - HAITAI_ID_OFFSET].ctrl.pos_rel, HAITAI_POS_MAX, HAITAI_POS_MIN) / HAITAI_fPOS;
+        *(int *)&HaiTai_TxData[5] = LIMIT_RANGE(HaiTai[ID - HAITAI_ID_OFFSET].ctrl.pos, HAITAI_POS_MAX, HAITAI_POS_MIN) / HAITAI_fPOS;
         break;
     }
     case HAITAI_CTRL_POS_SPD_CFG:

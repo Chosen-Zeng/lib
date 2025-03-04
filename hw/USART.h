@@ -7,9 +7,18 @@
 
 static inline unsigned char UART_SendData(USART_TypeDef *USART_handle, unsigned char TxData)
 {
+#if defined STM32H7
     if (USART_handle->ISR & 0x80) // TXE
     {
         USART_handle->TDR = TxData;
+#elif (defined STM32F4 || \
+       defined STM32F1)
+    if (USART_handle->SR & 0x80) // TXE
+    {
+        USART_handle->DR = TxData;
+#else
+#error No UART cfg.
+#endif
         return 0;
     }
     return 1;
@@ -19,34 +28,65 @@ static inline unsigned char UART_SendData(USART_TypeDef *USART_handle, unsigned 
 // @note 0.2ms timeout by default; optional DMA use
 static inline void UART_SendArray(USART_TypeDef *USART_handle, unsigned char TxData[], unsigned char len, DMA_TypeDef *DMA_handle, void *DMA_handle_sub, unsigned char DMA_sub_ID)
 {
+
+#if (defined STM32H7 || \
+     defined STM32F4)
     if (DMA_handle && DMA_handle_sub &&
-        USART_handle->CR3 & 0x40) // DMAT
+        USART_handle->CR3 & 0x80) // DMAT
     {
-#ifdef STM32H7
         // clear flags
-        if (DMA_sub_ID >= 4)
-            ((DMA_TypeDef *)DMA_handle)->HIFCR |= 0x3D << 6 * (DMA_sub_ID - 4);
+        if (DMA_sub_ID > 5)
+            DMA_handle->HIFCR |= 0x20 << (6 * (DMA_sub_ID - 4) + 4);
+        else if (DMA_sub_ID > 3)
+            DMA_handle->HIFCR |= 0x20 << 6 * (DMA_sub_ID - 4);
+        else if (DMA_sub_ID > 1)
+            DMA_handle->LIFCR |= 0x20 << (6 * DMA_sub_ID + 4);
         else
-            ((DMA_TypeDef *)DMA_handle)->LIFCR |= 0x3D << 6 * DMA_sub_ID;
+            DMA_handle->LIFCR |= 0x20 << 6 * DMA_sub_ID;
 
         ((DMA_Stream_TypeDef *)DMA_handle_sub)->NDTR = len;
+#if defined STM32H7
         ((DMA_Stream_TypeDef *)DMA_handle_sub)->PAR = (unsigned)&USART_handle->TDR;
-        ((DMA_Stream_TypeDef *)DMA_handle_sub)->M0AR = (unsigned)TxData;
-        ((DMA_Stream_TypeDef *)DMA_handle_sub)->CR = 0x00010441;
-#else
-#error lack DMA config
+#elif defined STM32F4
+        ((DMA_Stream_TypeDef *)DMA_handle_sub)->PAR = (unsigned)&USART_handle->DR;
 #endif
+        ((DMA_Stream_TypeDef *)DMA_handle_sub)->M0AR = (unsigned)TxData;
+        ((DMA_Stream_TypeDef *)DMA_handle_sub)->CR |= 0x441;
     }
     else
+#elif defined STM32F1
+    if (DMA_handle && DMA_handle_sub &&
+        USART_handle->CR3 & 0x80) // DMAT
     {
+        // clear flags
+        DMA_handle->IFCR |= 0x7 << 4 * (DMA_sub_ID - 1);
+
+        ((DMA_Channel_TypeDef *)DMA_handle_sub)->CCR &= ~1;
+        ((DMA_Channel_TypeDef *)DMA_handle_sub)->CNDTR = len;
+        ((DMA_Channel_TypeDef *)DMA_handle_sub)->CPAR = (unsigned)&USART_handle->DR;
+        ((DMA_Channel_TypeDef *)DMA_handle_sub)->CMAR = (unsigned)TxData;
+        ((DMA_Channel_TypeDef *)DMA_handle_sub)->CCR |= 1;
+    }
+    else
+#else
+#warning No DMA cfg.
+#endif
+    {
+#ifdef TIMER
         timer_t USART_time = timer_InitStruct;
-        unsigned char cnt = 0;
+        unsigned short cnt = 0;
         while (!Timer_CheckTimeout(&USART_time, UART_TIMEOUT_ARRAY) && cnt < len)
             if (!UART_SendData(USART_handle, TxData[cnt]))
                 cnt++;
+#else
+#warning UART may block the program.
+        unsigned short cnt = 0;
+        while (cnt < len)
+            if (!UART_SendData(USART_handle, TxData[cnt]))
+                cnt++;
+#endif
     }
 }
-#undef UART_TIMEOUT_ARRAY
 
 #define MODBUS_R_COIL 0x01
 #define MODBUS_R_DISCRETE_INPUT 0x02

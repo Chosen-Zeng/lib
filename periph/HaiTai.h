@@ -45,10 +45,10 @@
 #define HAITAI_ERR_CURR 0b010
 #define HAITAI_ERR_TEMP 0b100
 
-#define HAITAI_MODE_OFF 0
-#define HAITAI_MODE_PWR 1
-#define HAITAI_MODE_SPD 3
-#define HAITAI_MODE_POS 5
+#define HAITAI_MODE_OFF 0 // fdbk status
+#define HAITAI_MODE_PWR 1 // fdbk status
+#define HAITAI_MODE_SPD 3 // fdbk status
+#define HAITAI_MODE_POS 5 // fdbk status
 
 #define HAITAI_FAILURE 0
 #define HAITAI_SUCCESS 1
@@ -59,8 +59,7 @@
 
 typedef struct
 {
-    float pos_abs;
-    float pos_rel;
+    float pos;
     float spd;
     float pwr;
 } HaiTai_ctrl_t;

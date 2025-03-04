@@ -20,7 +20,7 @@ static struct
     unsigned char PROG_msg : 1;     // PROG msg in FIFO
 } AS5047P_state_bit[AS5047P_NUM];
 
-static unsigned char ParityCalc(unsigned short data)
+static inline unsigned char ParityCalc(unsigned short data)
 {
     unsigned char cnt = 16, ret = 0;
     while (cnt--)
@@ -126,26 +126,26 @@ unsigned char AS5047P_SendFIFO(SPI_TypeDef *SPI_handle, unsigned char AS5047P_ID
 {
     static timer_t AS5047P_time_PROG, AS5047P_time_ERRFL;
 
-    if (!TIMSW_TimeLimit(&AS5047P_time_PROG, 1) &&    // minimum check time: 1s
+    if (Timer_CheckTimeout(&AS5047P_time_PROG, 1) &&  // minimum check time: 1s
         AS5047P_state_bit[AS5047P_ID].PROGEN_check && // PROGEN should be set
         !AS5047P[AS5047P_ID].PROGEN &&                // PROGEN not set
         !AS5047P_state_bit[AS5047P_ID].PROG_msg)      // PROG msg not in FIFO
     {
-        AS5047P_FIFO_R(AS5047P_ID, AS5047P_PROG);
+        AS5047P_FIFO_R(AS5047P_ID, AS5047P_REG_PROG);
 
         AS5047P_state_bit[AS5047P_ID].PROG_msg = 1;
-        AS5047P_time_PROG.curr = AS5047P_time_PROG.interval = AS5047P_time_PROG.prev = 0; // clear timer
+        AS5047P_time_PROG.curr = AS5047P_time_PROG.intvl = AS5047P_time_PROG.prev = 0; // clear timer
     }
 
-    if (!TIMSW_TimeLimit(&AS5047P_time_ERRFL, 1) && // minimum check time: 1s
-        AS5047P[AS5047P_ID].err &&                  // error bit
-        !AS5047P_state_bit[AS5047P_ID].ERRFL_msg)   // ERRFL msg not in FIFO
+    if (Timer_CheckTimeout(&AS5047P_time_ERRFL, 1) && // minimum check time: 1s
+        AS5047P[AS5047P_ID].err &&                    // error bit
+        !AS5047P_state_bit[AS5047P_ID].ERRFL_msg)     // ERRFL msg not in FIFO
     {
-        AS5047P_FIFO_R(AS5047P_ID, AS5047P_ERRFL);
-        AS5047P_FIFO_R(AS5047P_ID, AS5047P_DIAAGC);
+        AS5047P_FIFO_R(AS5047P_ID, AS5047P_REG_ERRFL);
+        AS5047P_FIFO_R(AS5047P_ID, AS5047P_REG_DIAAGC);
 
         AS5047P_state_bit[AS5047P_ID].ERRFL_msg = 1;
-        AS5047P_time_ERRFL.curr = AS5047P_time_ERRFL.interval = AS5047P_time_ERRFL.prev = 0; // clear timer
+        AS5047P_time_ERRFL.curr = AS5047P_time_ERRFL.intvl = AS5047P_time_ERRFL.prev = 0; // clear timer
     }
 
     // specific msg
@@ -157,7 +157,7 @@ unsigned char AS5047P_SendFIFO(SPI_TypeDef *SPI_handle, unsigned char AS5047P_ID
         AS5047P_node_send[AS5047P_ID] = AS5047P_node_send[AS5047P_ID]->next;
     }
     // common msg
-    else if (SPI_SendData(SPI_handle, ParityCalc(AS5047P_R | AS5047P_ANGLECOM) << 15 | AS5047P_R | AS5047P_ANGLECOM))
+    else if (SPI_SendData(SPI_handle, ParityCalc(AS5047P_R | AS5047P_REG_ANGLECOM) << 15 | AS5047P_R | AS5047P_REG_ANGLECOM))
         return 1;
 
     return 0;
@@ -171,14 +171,14 @@ void AS5047P_MsgDecode(unsigned char AS5047P_ID)
         if (AS5047P_node_recv[AS5047P_ID] &&                           // specific msg
             AS5047P_node_recv[AS5047P_ID]->type == AS5047P_TYPE_CMD_R) // msg to recv is read
         {
-            if (AS5047P_node_recv[AS5047P_ID]->msg == (AS5047P_R | AS5047P_ERRFL))
+            if (AS5047P_node_recv[AS5047P_ID]->msg == (AS5047P_R | AS5047P_REG_ERRFL))
                 AS5047P[AS5047P_ID].err = AS5047P_state_bit->ERRFL_msg = 0;
             else
                 AS5047P[AS5047P_ID].err = (AS5047P_RxData[AS5047P_ID] & 0x4000) >> 14; // check error bit
 
             switch (AS5047P_node_recv[AS5047P_ID]->msg & 0x3FFF) // match the reg
             {
-            case AS5047P_DIAAGC:
+            case AS5047P_REG_DIAAGC:
             {
                 AS5047P[AS5047P_ID].MAGL = (AS5047P_RxData[AS5047P_ID] & 0x800) >> 11;
                 AS5047P[AS5047P_ID].MAGH = (AS5047P_RxData[AS5047P_ID] & 0x400) >> 10;
@@ -186,7 +186,7 @@ void AS5047P_MsgDecode(unsigned char AS5047P_ID)
 
                 break;
             }
-            case AS5047P_PROG:
+            case AS5047P_REG_PROG:
             {
                 AS5047P_state_bit->PROG_msg = 0;
                 AS5047P[AS5047P_ID].PROGEN = AS5047P_RxData[AS5047P_ID];
@@ -210,7 +210,7 @@ void AS5047P_MsgDecode(unsigned char AS5047P_ID)
 // @brief prepare for non-volatile reg program
 inline void AS5047P_ProgramInit(unsigned char AS5047P_ID)
 {
-    AS5047P_FIFO_W(AS5047P_ID, AS5047P_PROG, 0x9);
+    AS5047P_FIFO_W(AS5047P_ID, AS5047P_REG_PROG, 0x9);
 
     AS5047P_state_bit[AS5047P_ID].PROGEN_check = 1;
 }
@@ -218,11 +218,12 @@ inline void AS5047P_ProgramInit(unsigned char AS5047P_ID)
 // @brief end of non-volatile reg program
 inline void AS5047P_ProgramDone(unsigned char AS5047P_ID)
 {
-    AS5047P_FIFO_W(AS5047P_ID, AS5047P_PROG, 0x44);
+    AS5047P_FIFO_W(AS5047P_ID, AS5047P_REG_PROG, 0x44);
 
     AS5047P[AS5047P_ID].PROGEN = AS5047P_state_bit[AS5047P_ID].PROGEN_check = 0;
 }
 
+/*
 void DMA1_Channel1_IRQHandler(void)
 {
     DMA1->IFCR |= 0x2;
@@ -238,7 +239,7 @@ void DMA1_Channel1_IRQHandler(void)
 // for better recv exp, refer to DMA_IRQHandler
 void SPI1_IRQHandler(void)
 {
-    AS5047P_RxData[0] = SPI1->DR;
+    AS5047P_RxData[0] = SPI1->RXDR;
 
     AS5047P_MsgDecode(0);
 
@@ -247,4 +248,5 @@ void SPI1_IRQHandler(void)
         ;
     SPI1->CR1 &= 0xFFBF;
 }
+*/
 #endif

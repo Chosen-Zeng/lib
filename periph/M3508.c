@@ -1,5 +1,4 @@
 #include "M3508.h"
-#include "TIM.h"
 #include "algorithm.h"
 #include "CAN.h"
 
@@ -9,7 +8,7 @@ C620_t C620[8];
 
 C620_PID_t C620_PID_spd[8], C620_PID_pos[8];
 
-void C620_SetCurrent(void *CAN_handle, unsigned short C620_ID)
+void C620_SetCurr(void *CAN_handle, unsigned short C620_ID)
 {
 	unsigned char TxData[16];
 
@@ -56,7 +55,7 @@ void C620_SetSpd(void *CAN_handle, unsigned short C620_ID)
 
 		C620[ID_array].ctrl.curr = C620_PID_spd[ID_array].p + C620_PID_spd[ID_array].i + C620_PID_spd[ID_array].d;
 	}
-	C620_SetCurrent(CAN_handle, C620_ID);
+	C620_SetCurr(CAN_handle, C620_ID);
 }
 
 void C620_SetPos(void *CAN_handle, unsigned short C620_ID)
@@ -81,12 +80,12 @@ void C620_SetPos(void *CAN_handle, unsigned short C620_ID)
 	C620_SetSpd(CAN_handle, C620_ID);
 }
 
-void C620_SetTorque(void *CAN_handle, unsigned short C620_ID)
+void C620_SetTrq(void *CAN_handle, unsigned short C620_ID)
 {
 	for (unsigned char ID_array = (C620_ID == C620_ID2 ? 4 : 0); ID_array < (C620_ID == C620_ID1 ? 4 : 8); ID_array++)
 		C620[ID_array].ctrl.curr = C620[ID_array].ctrl.trq / M3508_fTRQ;
 
-	C620_SetCurrent(CAN_handle, C620_ID);
+	C620_SetCurr(CAN_handle, C620_ID);
 }
 
 #ifdef CAN_SUPPORT
