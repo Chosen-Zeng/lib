@@ -43,14 +43,14 @@ void C620_SetSpd(void *CAN_handle, unsigned short C620_ID)
 		C620_PID_spd[ID_array].pterm = C620[ID_array].ctrl.spd - C620[ID_array].fdbk.spd;
 		C620_PID_spd[ID_array].p = C620_PID_spd[ID_array].pterm * C620_SPD_Kp;
 
-		if (ABS(C620_PID_spd[ID_array].pterm) >= C620_SPD_iSTART) // 积分分离
+		if (ABS(C620_PID_spd[ID_array].pterm) >= C620_SPD_iSTART) // integral separation
 			C620_PID_spd[ID_array].iterm *= 0.4;
 		else
 			C620_PID_spd[ID_array].iterm += C620_PID_spd[ID_array].pterm / FREQ_CTRL;
 
-		C620_PID_spd[ID_array].i = LIMIT_ABS(C620_PID_spd[ID_array].iterm, C620_SPD_iLIMIT) * C620_SPD_Ki; // 积分限幅
+		C620_PID_spd[ID_array].i = LIMIT_ABS(C620_PID_spd[ID_array].iterm, C620_SPD_iLIMIT) * C620_SPD_Ki; // integral limit
 
-		C620_PID_spd[ID_array].dterm = (C620_PID_spd[ID_array].decurr - C620_PID_spd[ID_array].deprev) * FREQ_CTRL; // 微分先行
+		C620_PID_spd[ID_array].dterm = (C620_PID_spd[ID_array].decurr - C620_PID_spd[ID_array].deprev) * FREQ_CTRL; // derivative filtering
 		C620_PID_spd[ID_array].d = C620_PID_spd[ID_array].dterm * C620_SPD_Kd;
 
 		C620[ID_array].ctrl.curr = C620_PID_spd[ID_array].p + C620_PID_spd[ID_array].i + C620_PID_spd[ID_array].d;
@@ -65,14 +65,14 @@ void C620_SetPos(void *CAN_handle, unsigned short C620_ID)
 		C620_PID_pos[ID_array].pterm = C620[ID_array].ctrl.pos - C620[ID_array].fdbk.pos;
 		C620_PID_pos[ID_array].p = C620_PID_pos[ID_array].pterm * C620_POS_Kp;
 
-		if (ABS(C620_PID_pos[ID_array].pterm) >= C620_POS_iSTART) // 积分分离
+		if (ABS(C620_PID_pos[ID_array].pterm) >= C620_POS_iSTART) // integral separation
 			C620_PID_pos[ID_array].iterm = 0;
 		else if (ABS(C620_PID_pos[ID_array].iterm) <= C620_POS_iLIMIT)
 			C620_PID_pos[ID_array].iterm += C620_PID_pos[ID_array].pterm / FREQ_CTRL;
 
-		C620_PID_pos[ID_array].i = LIMIT_ABS(C620_PID_pos[ID_array].iterm, C620_POS_iLIMIT) * C620_POS_Ki; // 积分限幅
+		C620_PID_pos[ID_array].i = LIMIT_ABS(C620_PID_pos[ID_array].iterm, C620_POS_iLIMIT) * C620_POS_Ki; // integral limit
 
-		C620_PID_pos[ID_array].dterm = (C620_PID_pos[ID_array].decurr - C620_PID_pos[ID_array].deprev) * FREQ_CTRL; // 微分先行
+		C620_PID_pos[ID_array].dterm = (C620_PID_pos[ID_array].decurr - C620_PID_pos[ID_array].deprev) * FREQ_CTRL; // derivative filtering
 		C620_PID_pos[ID_array].d = C620_PID_pos[ID_array].dterm * C620_POS_Kd;
 
 		C620[ID_array].ctrl.spd = C620_PID_pos[ID_array].p + C620_PID_pos[ID_array].i + C620_PID_pos[ID_array].d;

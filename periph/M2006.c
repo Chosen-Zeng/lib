@@ -43,14 +43,14 @@ void C610_SetSpd(void *CAN_handle, unsigned short C610_ID)
         C610_PID_spd[ID_array].pterm = C610[ID_array].ctrl.spd - C610[ID_array].fdbk.spd;
         C610_PID_spd[ID_array].p = C610_PID_spd[ID_array].pterm * C610_SPD_Kp;
 
-        if (ABS(C610_PID_spd[ID_array].pterm) >= C610_SPD_iSTART) // 积分分离
+        if (ABS(C610_PID_spd[ID_array].pterm) >= C610_SPD_iSTART) // integral separation
             C610_PID_spd[ID_array].iterm *= 0.4;
         else
             C610_PID_spd[ID_array].iterm += C610_PID_spd[ID_array].pterm / FREQ_CTRL;
 
-        C610_PID_spd[ID_array].i = LIMIT_ABS(C610_PID_spd[ID_array].iterm, C610_SPD_iLIMIT) * C610_SPD_Ki; // 积分限幅
+        C610_PID_spd[ID_array].i = LIMIT_ABS(C610_PID_spd[ID_array].iterm, C610_SPD_iLIMIT) * C610_SPD_Ki; // integral limit
 
-        C610_PID_spd[ID_array].dterm = (C610_PID_spd[ID_array].decurr - C610_PID_spd[ID_array].deprev) * FREQ_CTRL; // 微分先行
+        C610_PID_spd[ID_array].dterm = (C610_PID_spd[ID_array].decurr - C610_PID_spd[ID_array].deprev) * FREQ_CTRL; // derivative filtering
         C610_PID_spd[ID_array].d = C610_PID_spd[ID_array].dterm * C610_SPD_Kd;
 
         C610[ID_array].ctrl.curr = C610_PID_spd[ID_array].p + C610_PID_spd[ID_array].i + C610_PID_spd[ID_array].d;
@@ -65,14 +65,14 @@ void C610_SetPos(void *CAN_handle, unsigned short C610_ID)
         C610_PID_pos[ID_array].pterm = C610[ID_array].ctrl.pos - C610[ID_array].fdbk.pos;
         C610_PID_pos[ID_array].p = C610_PID_pos[ID_array].pterm * C610_POS_Kp;
 
-        if (ABS(C610_PID_pos[ID_array].pterm) >= C610_POS_iSTART) // 积分分离
+        if (ABS(C610_PID_pos[ID_array].pterm) >= C610_POS_iSTART) // integral separation
             C610_PID_pos[ID_array].iterm = 0;
         else if (ABS(C610_PID_pos[ID_array].iterm) <= C610_POS_iLIMIT)
             C610_PID_pos[ID_array].iterm += C610_PID_pos[ID_array].pterm / FREQ_CTRL;
 
-        C610_PID_pos[ID_array].i = LIMIT_ABS(C610_PID_pos[ID_array].iterm, C610_POS_iLIMIT) * C610_POS_Ki; // 积分限幅
+        C610_PID_pos[ID_array].i = LIMIT_ABS(C610_PID_pos[ID_array].iterm, C610_POS_iLIMIT) * C610_POS_Ki; // integral limit
 
-        C610_PID_pos[ID_array].dterm = (C610_PID_pos[ID_array].decurr - C610_PID_pos[ID_array].deprev) * FREQ_CTRL; // 微分先行
+        C610_PID_pos[ID_array].dterm = (C610_PID_pos[ID_array].decurr - C610_PID_pos[ID_array].deprev) * FREQ_CTRL; // derivative filtering
         C610_PID_pos[ID_array].d = C610_PID_pos[ID_array].dterm * C610_POS_Kd;
 
         C610[ID_array].ctrl.spd = C610_PID_pos[ID_array].p + C610_PID_pos[ID_array].i + C610_PID_pos[ID_array].d;

@@ -13,7 +13,7 @@
 
 #define C610_POS_Kp 10 // 16
 #define C610_POS_Ki 12
-#define C610_POS_Kd 0.05 // 1
+#define C610_POS_Kd 0.01 // 1
 #define C610_POS_iSTART 60
 #define C610_POS_iLIMIT 0.8
 
