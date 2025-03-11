@@ -4,9 +4,13 @@
 
 #if defined VESC_NUM && defined VESC_ID_OFFSET
 
+motor_info_t T_MOTOR_AT4130_KV450 = {.curr_max = 75, .spd_max = 9000, .PP = 7},
+             HOBBYWING_V9626_KV160 = {.curr_max = 171.5, .spd_max = 6000, .PP = 21},
+             CUBEMARS_R100_KV90 = {.curr_max = 104, .spd_max = 2000, .PP = 21};
+
 VESC_t VESC[VESC_NUM];
 
-void VESC_SendCmd(void *CAN_handle, unsigned char ID, unsigned short VESC_cmd)
+void VESC_SendCmd(void *CAN_handle, unsigned char ID, unsigned short VESC_cmd, motor_info_t *motor_info)
 {
     unsigned char TxData[4];
 
@@ -14,17 +18,17 @@ void VESC_SendCmd(void *CAN_handle, unsigned char ID, unsigned short VESC_cmd)
     {
     case VESC_SET_CURR:
     {
-        f_2_4u8(LIMIT_ABS(VESC[ID - VESC_ID_OFFSET].ctrl.curr, VESC_MOTOR_CURR_MAX) * VESC_fCURR_W, TxData);
+        f_2_4u8(LIMIT_ABS(VESC[ID - VESC_ID_OFFSET].ctrl.curr, motor_info->curr_max) * VESC_fCURR_W, TxData);
         break;
     }
     case VESC_SET_CURR_BRAKE:
     {
-        f_2_4u8(LIMIT_ABS(VESC[ID - VESC_ID_OFFSET].ctrl.curr, VESC_MOTOR_CURR_MAX) * VESC_fCURR_W, TxData);
+        f_2_4u8(LIMIT_ABS(VESC[ID - VESC_ID_OFFSET].ctrl.curr, motor_info->curr_max) * VESC_fCURR_W, TxData);
         break;
     }
     case VESC_SET_SPD:
     {
-        f_2_4u8(LIMIT_ABS(VESC[ID - VESC_ID_OFFSET].ctrl.spd, VESC_MOTOR_SPD_MAX) * VESC_MOTOR_PP, TxData);
+        f_2_4u8(LIMIT_ABS(VESC[ID - VESC_ID_OFFSET].ctrl.spd, motor_info->spd_max) * motor_info->PP, TxData);
         break;
     }
     case VESC_SET_POS:
@@ -55,7 +59,7 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
         {
         case VESC_STATUS:
         {
-            VESC[(FDCAN_RxHeader.Identifier & 0x00FF) - VESC_ID_OFFSET].fdbk.spd = (float)(RxFifo0[0] << 24 | RxFifo0[1] << 16 | RxFifo0[2] << 8 | RxFifo0[3]) / VESC_MOTOR_PP;
+            VESC[(FDCAN_RxHeader.Identifier & 0x00FF) - VESC_ID_OFFSET].fdbk.spd = (float)(RxFifo0[0] << 24 | RxFifo0[1] << 16 | RxFifo0[2] << 8 | RxFifo0[3]) / HOBBYWING_V9626_KV160.PP;
             break;
         }
         case VESC_STATUS_4:

@@ -5,19 +5,15 @@
 
 #if defined VESC_NUM && defined VESC_ID_OFFSET
 
-#ifdef T_MOTOR_AT4130_KV450
-#define VESC_MOTOR_CURR_MAX 75
-#define VESC_MOTOR_SPD_MAX 9000
-#define VESC_MOTOR_PP 7
-#elif defined HOBBYWING_V9626_KV160
-#define VESC_MOTOR_CURR_MAX 171.5
-#define VESC_MOTOR_SPD_MAX 6000
-#define VESC_MOTOR_PP 21
-#elif defined CUBEMARS_R100_KV90
-#define VESC_MOTOR_CURR_MAX 104
-#define VESC_MOTOR_SPD_MAX 3800
-#define VESC_MOTOR_PP 21
-#endif
+typedef const struct
+{
+    float curr_max;
+    unsigned short spd_max; // spd at 24V
+    unsigned char PP;
+} motor_info_t;
+extern motor_info_t T_MOTOR_AT4130_KV450,
+    HOBBYWING_V9626_KV160,
+    CUBEMARS_R100_KV90;
 
 #define VESC_fPCT_W 100000
 #define VESC_fCURR_W 1000
@@ -74,7 +70,7 @@ typedef struct
 
 extern VESC_t VESC[VESC_NUM];
 
-void VESC_SendCmd(void *CAN_handle, unsigned char ID, unsigned short VESC_cmd);
+void VESC_SendCmd(void *CAN_handle, unsigned char ID, unsigned short VESC_cmd, motor_info_t *motor_info);
 
 #endif
 #endif
