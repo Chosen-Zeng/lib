@@ -81,7 +81,7 @@ extern HaiTai_t HaiTai[HAITAI_NUM];
 extern unsigned char HaiTai_TxData[11], HaiTai_RxData[33];
 
 void HaiTai_CAN_SendCmd(FDCAN_HandleTypeDef *hfdcan, unsigned char ID, unsigned char HAITAI_cmd);
-void HaiTai_RS485_SendCmd(USART_TypeDef *USART_handle, unsigned char ID, unsigned char HAITAI_cmd, DMA_TypeDef *DMA_handle, void *DMA_handle_sub, unsigned char DMA_sub_ID);
+void HaiTai_RS485_SendCmd(USART_info_t *USART_info, unsigned char ID, unsigned char HAITAI_cmd);
 
 #endif
 #endif

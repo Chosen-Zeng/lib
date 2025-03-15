@@ -53,7 +53,7 @@ void HaiTai_CAN_SendCmd(FDCAN_HandleTypeDef *hfdcan, unsigned char ID, unsigned 
 }
 
 unsigned char HaiTai_TxData[11], HaiTai_RxData[33];
-void HaiTai_RS485_SendCmd(USART_TypeDef *USART_handle, unsigned char ID, unsigned char HAITAI_cmd, DMA_TypeDef *DMA_handle, void *DMA_handle_sub, unsigned char DMA_sub_ID)
+void HaiTai_RS485_SendCmd(USART_info_t *UART_info, unsigned char ID, unsigned char HAITAI_cmd)
 {
     HaiTai_TxData[0] = HAITAI_HEAD_SEND;
     HaiTai_TxData[1] = HAITAI_PID;
@@ -101,7 +101,7 @@ void HaiTai_RS485_SendCmd(USART_TypeDef *USART_handle, unsigned char ID, unsigne
 
     *(unsigned short *)&HaiTai_TxData[4 + HaiTai_TxData[4] + 1] = CRC_16_Cal(&CRC_16_Modbus, HaiTai_TxData, 5 + HaiTai_TxData[4]);
 
-    UART_SendArray(USART_handle, HaiTai_TxData, 7 + HaiTai_TxData[4], DMA_handle, DMA_handle_sub, DMA_sub_ID);
+    UART_SendArray(UART_info, HaiTai_TxData, 7 + HaiTai_TxData[4]);
 }
 
 /*

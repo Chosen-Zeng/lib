@@ -69,7 +69,7 @@ extern GO_M8010_6_data_t GO_M8010_6_data[DMA_Stream_PAIR];
 #define GO_M8010_6_MODE_FOC 1
 #define GO_M8010_6_MODE_ENC_CAL 2
 
-void GO_M8010_6_SendCmd(USART_TypeDef *USART_handler, unsigned char ID, DMA_TypeDef *DMA_handle, void *DMA_handle_sub, unsigned char DMA_sub_ID);
+void GO_M8010_6_SendCmd(USART_info_t *USART_info, unsigned char ID);
 
 #endif
 #endif
