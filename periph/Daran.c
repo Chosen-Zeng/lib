@@ -4,27 +4,27 @@
 
 DaRan_t DaRan[DARAN_NUM + 1];
 
-void DaRan_CANFdbkInit(FDCAN_HandleTypeDef *hfdcan, unsigned char ID, float intvl_ms)
+void DaRan_CANFdbkInit(void *CAN_handle, unsigned char ID, float intvl_ms)
 {
-    DaRan_Prop_W(hfdcan, ID, DARAN_PARAM_CAN_FDBK_EN, DARAN_DATA_TYPE_u32, 1);
-    DaRan_Prop_W(hfdcan, ID, DARAN_PARAM_CAN_FDBK_INTVL_ms, DARAN_DATA_TYPE_u32, intvl_ms);
+    DaRan_Prop_W(CAN_handle, ID, DARAN_PARAM_CAN_FDBK_EN, DARAN_DATA_TYPE_u32, 1);
+    DaRan_Prop_W(CAN_handle, ID, DARAN_PARAM_CAN_FDBK_INTVL_ms, DARAN_DATA_TYPE_u32, intvl_ms);
 }
 
 // @note additional param needed in specific mode
-void DaRan_SetPos(FDCAN_HandleTypeDef *hfdcan, unsigned char ID, unsigned char DARAN_CMD_POS_MODE, float param)
+void DaRan_SetPos(void *CAN_handle, unsigned char ID, unsigned char DARAN_CMD_POS_MODE, float param)
 {
     unsigned char TxData[8];
-    unsigned char ID_array = ID == DARAN_ID_BCAST ? DARAN_NUM : ID - DARAN_ID_OFFSET;
+    unsigned char arrID = ID == DARAN_ID_BCAST ? DARAN_NUM : ID - DARAN_ID_OFFSET;
 
-    *(float *)TxData = DaRan[ID_array].ctrl.pos;
-    *(short *)&TxData[4] = LIMIT_RANGE(DaRan[ID_array].ctrl.spd, 32767 / DARAN_fSPD, -32768 / DARAN_fSPD) * DARAN_fSPD;
+    *(float *)TxData = DaRan[arrID].ctrl.pos;
+    *(short *)&TxData[4] = LIMIT_RANGE(DaRan[arrID].ctrl.spd, 32767 / DARAN_fSPD, -32768 / DARAN_fSPD) * DARAN_fSPD;
 
     switch (DARAN_CMD_POS_MODE)
     {
     case DARAN_CMD_POS_MODE_LIMIT:
     case DARAN_CMD_POS_MODE_FDFWD:
     {
-        *(short *)&TxData[6] = LIMIT_RANGE(DaRan[ID_array].ctrl.trq, 32767 * DARAN_SCALING, -32768 * DARAN_SCALING) / DARAN_SCALING;
+        *(short *)&TxData[6] = LIMIT_RANGE(DaRan[arrID].ctrl.trq, 32767 * DARAN_SCALING, -32768 * DARAN_SCALING) / DARAN_SCALING;
         break;
     }
     case DARAN_CMD_POS_MODE_FLTR:
@@ -39,34 +39,34 @@ void DaRan_SetPos(FDCAN_HandleTypeDef *hfdcan, unsigned char ID, unsigned char D
     }
     }
 
-    CAN_SendData(hfdcan, FDCAN_STANDARD_ID, ID << 5 | DARAN_CMD_POS_MODE, TxData, 8);
+    CAN_SendData(CAN_handle, FDCAN_STANDARD_ID, ID << 5 | DARAN_CMD_POS_MODE, TxData, 8);
 }
 
-void DaRan_SetSpd(FDCAN_HandleTypeDef *hfdcan, unsigned char ID, unsigned char DARAN_SPD_MODE, float accel)
+void DaRan_SetSpd(void *CAN_handle, unsigned char ID, unsigned char DARAN_SPD_MODE, float accel)
 {
     unsigned char TxData[8];
-    unsigned char ID_array = ID == DARAN_ID_BCAST ? DARAN_NUM : ID - DARAN_ID_OFFSET;
+    unsigned char arrID = ID == DARAN_ID_BCAST ? DARAN_NUM : ID - DARAN_ID_OFFSET;
 
-    *(float *)TxData = DaRan[ID_array].ctrl.spd / 60;
-    *(short *)&TxData[4] = DARAN_SPD_MODE == DARAN_SPD_MODE_FDFWD ? LIMIT_RANGE(DaRan[ID_array].ctrl.trq, 32767 * DARAN_SCALING, -32768 * DARAN_SCALING) / DARAN_SCALING : LIMIT_RANGE(accel, 32767 * DARAN_SCALING, -32768 * DARAN_SCALING) / DARAN_SCALING;
+    *(float *)TxData = DaRan[arrID].ctrl.spd / 60;
+    *(short *)&TxData[4] = DARAN_SPD_MODE == DARAN_SPD_MODE_FDFWD ? LIMIT_RANGE(DaRan[arrID].ctrl.trq, 32767 * DARAN_SCALING, -32768 * DARAN_SCALING) / DARAN_SCALING : LIMIT_RANGE(accel, 32767 * DARAN_SCALING, -32768 * DARAN_SCALING) / DARAN_SCALING;
     *(unsigned short *)&TxData[6] = DARAN_SPD_MODE;
 
-    CAN_SendData(hfdcan, FDCAN_STANDARD_ID, ID << 5 | DARAN_CMD_SPD, TxData, 8);
+    CAN_SendData(CAN_handle, FDCAN_STANDARD_ID, ID << 5 | DARAN_CMD_SPD, TxData, 8);
 }
 
-void DaRan_SetTrq(FDCAN_HandleTypeDef *hfdcan, unsigned char ID, unsigned char DARAN_TRQ_MODE, float accel)
+void DaRan_SetTrq(void *CAN_handle, unsigned char ID, unsigned char DARAN_TRQ_MODE, float accel)
 {
     unsigned char TxData[8];
-    unsigned char ID_array = ID == DARAN_ID_BCAST ? DARAN_NUM : ID - DARAN_ID_OFFSET;
+    unsigned char arrID = ID == DARAN_ID_BCAST ? DARAN_NUM : ID - DARAN_ID_OFFSET;
 
-    *(float *)TxData = DaRan[ID_array].ctrl.trq;
+    *(float *)TxData = DaRan[arrID].ctrl.trq;
     *(short *)&TxData[4] = DARAN_TRQ_MODE == DARAN_TRQ_MODE_DIRECT ? 0 : LIMIT_RANGE(accel, 32767 * DARAN_SCALING, -32768 * DARAN_SCALING) / DARAN_SCALING;
     *(unsigned short *)&TxData[6] = DARAN_TRQ_MODE;
 
-    CAN_SendData(hfdcan, FDCAN_STANDARD_ID, ID << 5 | DARAN_CMD_TRQ, TxData, 8);
+    CAN_SendData(CAN_handle, FDCAN_STANDARD_ID, ID << 5 | DARAN_CMD_TRQ, TxData, 8);
 }
 
-void DaRan_Prop_W(FDCAN_HandleTypeDef *hfdcan, unsigned char ID, unsigned short DARAN_PARAM, unsigned short DARAN_DATA_TYPE, float param_val)
+void DaRan_Prop_W(void *CAN_handle, unsigned char ID, unsigned short DARAN_PARAM, unsigned short DARAN_DATA_TYPE, float param_val)
 {
     unsigned char TxData[8];
 
@@ -101,10 +101,10 @@ void DaRan_Prop_W(FDCAN_HandleTypeDef *hfdcan, unsigned char ID, unsigned short 
     }
     }
 
-    CAN_SendData(hfdcan, FDCAN_STANDARD_ID, ID << 5 | DARAN_CMD_PROP_W, TxData, 8);
+    CAN_SendData(CAN_handle, FDCAN_STANDARD_ID, ID << 5 | DARAN_CMD_PROP_W, TxData, 8);
 }
 
-void DaRan_Prop_R(FDCAN_HandleTypeDef *hfdcan, unsigned char ID, unsigned short DARAN_PARAM, unsigned short DARAN_DATA_TYPE)
+void DaRan_Prop_R(void *CAN_handle, unsigned char ID, unsigned short DARAN_PARAM, unsigned short DARAN_DATA_TYPE)
 {
     unsigned char TxData[8];
 
@@ -112,7 +112,7 @@ void DaRan_Prop_R(FDCAN_HandleTypeDef *hfdcan, unsigned char ID, unsigned short 
     *(unsigned short *)&TxData[2] = DARAN_DATA_TYPE;
     *(unsigned int *)&TxData[4] = 0;
 
-    CAN_SendData(hfdcan, FDCAN_STANDARD_ID, ID << 5 | DARAN_CMD_PROP_W, TxData, 8);
+    CAN_SendData(CAN_handle, FDCAN_STANDARD_ID, ID << 5 | DARAN_CMD_PROP_W, TxData, 8);
 }
 
 /*

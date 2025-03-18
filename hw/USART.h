@@ -10,8 +10,8 @@ typedef const struct
     USART_TypeDef *USART_handle;
     float timeout;
     DMA_TypeDef *DMA_handle;
-    void *DMA_sub_handle;
-    unsigned char DMA_sub_ID;
+    void *DMA_subhandle;
+    unsigned char DMA_ID;
 } USART_info_t;
 
 static inline unsigned char UART_SendData(USART_info_t *USART_info, unsigned char TxData)
@@ -34,47 +34,41 @@ static inline unsigned char UART_SendData(USART_info_t *USART_info, unsigned cha
 }
 
 #define UART_TIMEOUT_ARRAY 0.0005
-// @note 0.2ms timeout by default; optional DMA use
+// @note 0.5ms timeout by default
 static inline void UART_SendArray(USART_info_t *USART_info, unsigned char TxData[], unsigned char len)
 {
 
 #if (defined STM32H7 || \
      defined STM32F4)
-    if (USART_info->DMA_handle && USART_info->DMA_sub_handle &&
-        USART_info->USART_handle->CR3 & 0x80) // DMAT
+    if (USART_info->DMA_handle && USART_info->DMA_subhandle && ((DMA_Stream_TypeDef *)USART_info->DMA_subhandle)->PAR && // DMA cfg
+        USART_info->USART_handle->CR3 & 0x80)                                                                            // DMAT
     {
         // clear flags
-        if (USART_info->DMA_sub_ID > 5)
-            USART_info->DMA_handle->HIFCR |= 0x20 << (6 * (USART_info->DMA_sub_ID - 4) + 4);
-        else if (USART_info->DMA_sub_ID > 3)
-            USART_info->DMA_handle->HIFCR |= 0x20 << 6 * (USART_info->DMA_sub_ID - 4);
-        else if (USART_info->DMA_sub_ID > 1)
-            USART_info->DMA_handle->LIFCR |= 0x20 << (6 * USART_info->DMA_sub_ID + 4);
+        if (USART_info->DMA_ID > 5)
+            USART_info->DMA_handle->HIFCR |= 0x20 << (6 * (USART_info->DMA_ID - 4) + 4);
+        else if (USART_info->DMA_ID > 3)
+            USART_info->DMA_handle->HIFCR |= 0x20 << 6 * (USART_info->DMA_ID - 4);
+        else if (USART_info->DMA_ID > 1)
+            USART_info->DMA_handle->LIFCR |= 0x20 << (6 * USART_info->DMA_ID + 4);
         else
-            USART_info->DMA_handle->LIFCR |= 0x20 << 6 * USART_info->DMA_sub_ID;
+            USART_info->DMA_handle->LIFCR |= 0x20 << 6 * USART_info->DMA_ID;
 
-        ((DMA_Stream_TypeDef *)USART_info->DMA_sub_handle)->NDTR = len;
-#if defined STM32H7
-        ((DMA_Stream_TypeDef *)USART_info->DMA_sub_handle)->PAR = (unsigned)&USART_info->USART_handle->TDR;
-#elif defined STM32F4
-        ((DMA_Stream_TypeDef *)USART_info->DMA_sub_handle)->PAR = (unsigned)&USART_info->USART_handle->DR;
-#endif
-        ((DMA_Stream_TypeDef *)USART_info->DMA_sub_handle)->M0AR = (unsigned)TxData;
-        ((DMA_Stream_TypeDef *)USART_info->DMA_sub_handle)->CR |= 0x441;
+        ((DMA_Stream_TypeDef *)USART_info->DMA_subhandle)->NDTR = len;
+        ((DMA_Stream_TypeDef *)USART_info->DMA_subhandle)->M0AR = (unsigned)TxData;
+        ((DMA_Stream_TypeDef *)USART_info->DMA_subhandle)->CR |= 1;
     }
     else
 #elif defined STM32F1
-    if (USART_info->DMA_handle && USART_info->DMA_sub_handle &&
-        USART_info->USART_handle->CR3 & 0x80) // DMAT
+    if (USART_info->DMA_handle && USART_info->DMA_subhandle && ((DMA_Channel_TypeDef *)USART_info->DMA_subhandle)->PAR && // DMA cfg
+        USART_info->USART_handle->CR3 & 0x80)                                                                             // DMAT
     {
         // clear flags
-        USART_info->DMA_handle->IFCR |= 0x7 << 4 * (USART_info->DMA_sub_ID - 1);
+        USART_info->DMA_handle->IFCR |= 0x7 << 4 * (USART_info->DMA_ID - 1);
 
-        ((DMA_Channel_TypeDef *)USART_info->DMA_sub_handle)->CCR &= ~1;
-        ((DMA_Channel_TypeDef *)USART_info->DMA_sub_handle)->CNDTR = len;
-        ((DMA_Channel_TypeDef *)USART_info->DMA_sub_handle)->CPAR = (unsigned)&USART_info->USART_handle->DR;
-        ((DMA_Channel_TypeDef *)USART_info->DMA_sub_handle)->CMAR = (unsigned)TxData;
-        ((DMA_Channel_TypeDef *)USART_info->DMA_sub_handle)->CCR |= 1;
+        ((DMA_Channel_TypeDef *)USART_info->DMA_subhandle)->CCR &= ~1;
+        ((DMA_Channel_TypeDef *)USART_info->DMA_subhandle)->CNDTR = len;
+        ((DMA_Channel_TypeDef *)USART_info->DMA_subhandle)->CMAR = (unsigned)TxData;
+        ((DMA_Channel_TypeDef *)USART_info->DMA_subhandle)->CCR |= 1;
     }
     else
 #else
@@ -108,27 +102,24 @@ static inline void UART_SendArray(USART_info_t *USART_info, unsigned char TxData
 
 static inline void Modbus_UART_Read(USART_info_t *USART_info, unsigned char slave_addr, unsigned char MODBUS_R_TYPE, unsigned short addr, unsigned short num)
 {
-    static unsigned char TxData[8];
-
-    TxData[0] = slave_addr;
-    TxData[1] = MODBUS_R_TYPE;
-    TxData[2] = addr << 8;
-    TxData[3] = addr;
-    TxData[4] = num << 8;
-    TxData[5] = num;
-    *(unsigned short *)&TxData[6] = CRC_16_Cal(&CRC_16_Modbus, TxData, 6);
+    unsigned char TxData[8] = {slave_addr,
+                               MODBUS_R_TYPE,
+                               addr << 8,
+                               addr,
+                               num << 8,
+                               num};
+    *(unsigned short *)&TxData[6] = CRC_Calc(&CRC_16_MODBUS, TxData, 6);
 
     UART_SendArray(USART_info, TxData, 8);
 }
 
 static inline void Modbus_UART_WriteSgl(USART_info_t *USART_info, unsigned char slave_addr, unsigned char MODBUS_W_TYPE, unsigned short addr, unsigned short val)
 {
-    static unsigned char TxData[8];
+    unsigned char TxData[8] = {slave_addr,
+                               MODBUS_W_TYPE,
+                               addr << 8,
+                               addr};
 
-    TxData[0] = slave_addr;
-    TxData[1] = MODBUS_W_TYPE;
-    TxData[2] = addr << 8;
-    TxData[3] = addr;
     if (MODBUS_W_TYPE == MODBUS_W_SGL_COIL)
         *(unsigned short *)&TxData[4] = val ? 0xFF : 0;
     else if (MODBUS_W_TYPE == MODBUS_W_SGL_REG)
@@ -136,7 +127,7 @@ static inline void Modbus_UART_WriteSgl(USART_info_t *USART_info, unsigned char 
         TxData[4] = val << 8;
         TxData[5] = val;
     }
-    *(unsigned short *)&TxData[6] = CRC_16_Cal(&CRC_16_Modbus, TxData, 6);
+    *(unsigned short *)&TxData[6] = CRC_Calc(&CRC_16_MODBUS, TxData, 6);
 
     UART_SendArray(USART_info, TxData, 8);
 }
@@ -156,9 +147,9 @@ static inline void Modbus_UART_WriteSgl(USART_info_t *USART_info, unsigned char 
 //         cnt = 0;
 //     }
 //     // overrun
-//     else if (USART3->ISR & 0x80)
+//     else if (USART3->ISR & 0x8)
 //     {
-//         USART3->ICR |= 0x80;
+//         USART3->ICR |= 0x8;
 //     }
 // }
 

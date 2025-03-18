@@ -26,10 +26,10 @@
 #define HAITAI_CTRL_POS_SPD_CFG 0x57
 
 #define HAITAI_fPOS (360.f / 16384)
-#define HAITAI_fSPD (0.1 * 60)
-#define HAITAI_fVOLT 0.2
-#define HAITAI_fCURR 0.03
-#define HAITAI_fTEMP 0.04
+#define HAITAI_fSPD (0.1f * 60)
+#define HAITAI_fVOLT 0.2f
+#define HAITAI_fCURR 0.03f
+#define HAITAI_fTEMP 0.04f
 
 #define HAITAI_PWR_MAX 32767
 #define HAITAI_PWR_MIN -32768
@@ -59,29 +59,20 @@
 
 typedef struct
 {
-    float pos;
-    float spd;
-    float pwr;
-} HaiTai_ctrl_t;
-
-typedef struct
-{
-    float pos_sgl;
-    float pos_mpl;
-    float spd;
-} HaiTai_fdbk_t;
-
-typedef struct
-{
-    HaiTai_ctrl_t ctrl;
-    HaiTai_fdbk_t fdbk;
+    struct
+    {
+        float pos, spd, pwr;
+    } ctrl;
+    struct
+    {
+        float pos_sgl, pos_mpl, spd;
+    } fdbk;
+    unsigned char HaiTai_TxData[11]; // for RS485
 } HaiTai_t;
 extern HaiTai_t HaiTai[HAITAI_NUM];
 
-extern unsigned char HaiTai_TxData[11], HaiTai_RxData[33];
-
-void HaiTai_CAN_SendCmd(FDCAN_HandleTypeDef *hfdcan, unsigned char ID, unsigned char HAITAI_cmd);
-void HaiTai_RS485_SendCmd(USART_info_t *USART_info, unsigned char ID, unsigned char HAITAI_cmd);
+void HaiTai_CAN_SendCmd(void *CAN_handle, unsigned char ID, unsigned char HAITAI_cmd);
+void HaiTai_RS485_SendCmd(USART_info_t *UART_info, unsigned char ID, unsigned char HAITAI_cmd);
 
 #endif
 #endif

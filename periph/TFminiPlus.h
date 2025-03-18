@@ -9,8 +9,7 @@
 
 typedef struct
 {
-    unsigned short dist_cm;
-    unsigned short strength;
+    unsigned short dist_cm, strength;
     float temp;
 } TFminiPlus_t;
 extern TFminiPlus_t TFminiPlus[TFminiPlus_NUM];

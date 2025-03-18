@@ -44,30 +44,17 @@ extern motor_info_t T_MOTOR_AT4130_KV450,
 
 typedef struct
 {
-    float curr;
-    float spd;
-    float pos;
-} VESC_ctrl_t;
+    struct
+    {
+        float curr, spd, pos;
+    } ctrl;
+    struct
+    {
 
-typedef struct
-{
-    // CAN_PACKET_STATUS
-    float spd;
-    float dutycycle;
-
-    // CAN_PACKET_STATUS_4
-    float temp_MOSFET;
-    float temp_motor;
-    float curr_in;
-    float pos;
-} VESC_fdbk_t;
-
-typedef struct
-{
-    VESC_ctrl_t ctrl;
-    VESC_fdbk_t fdbk;
+        float spd, dutycycle,                      // CAN_PACKET_STATUS
+            temp_MOSFET, temp_motor, curr_in, pos; // CAN_PACKET_STATUS_4
+    } fdbk;
 } VESC_t;
-
 extern VESC_t VESC[VESC_NUM];
 
 void VESC_SendCmd(void *CAN_handle, unsigned char ID, unsigned short VESC_cmd, motor_info_t *motor_info);

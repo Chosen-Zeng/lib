@@ -67,7 +67,7 @@ static inline void Timer_Clear(timer_t *timer_struct)
 
 static inline float Timer_GetTimeRatio(timer_t *timer_struct, float duration)
 {
-    return timer_struct->intvl > duration ? 1 : timer_struct->intvl / duration;
+    return Timer_GetElapse(timer_struct) > duration ? 1 : timer_struct->intvl / duration;
 }
 
 #undef TIMER_TIME
