@@ -47,7 +47,7 @@
 
 #define DARAN_PARAM_VOLT 1                  // data type: f
 #define DARAN_PARAM_CURR 2                  // data type: f
-#define DARAN_PARAM_CAN_BAUD 21001          // data type: u32
+#define DARAN_PARAM_CAN_BAUDRATE 21001      // data type: u32
 #define DARAN_PARAM_CAN_FDBK_EN 22001       // data type: u32
 #define DARAN_PARAM_FW 30004                // data type: u32
 #define DARAN_PARAM_CAN_ID 31001            // data type: u32

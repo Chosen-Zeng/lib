@@ -30,12 +30,12 @@
 #define BRT_VAL_READ 0x01 // DLC: 1
 #define BRT_ID_SET 0x02   // DLC: 1
 
-#define BRT_CAN_BAUD_SET 0x03 // DLC: 1
-#define BRT_CAN_BAUD_500Kbps 0x00
-#define BRT_CAN_BAUD_1Mbps 0x01
-#define BRT_CAN_BAUD_250Kbps 0x02
-#define BRT_CAN_BAUD_125Kbps 0x03
-#define BRT_CAN_BAUD_100Kbps 0x04
+#define BRT_CAN_BAUDRATE_SET 0x03 // DLC: 1
+#define BRT_CAN_BAUDRATE_500Kbps 0x00
+#define BRT_CAN_BAUDRATE_1Mbps 0x01
+#define BRT_CAN_BAUDRATE_250Kbps 0x02
+#define BRT_CAN_BAUDRATE_125Kbps 0x03
+#define BRT_CAN_BAUDRATE_100Kbps 0x04
 
 #define BRT_MODE_SET 0x04 // DLC: 1
 #define BRT_MODE_CHECK 0x00
