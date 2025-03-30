@@ -75,11 +75,12 @@ void GO_M8010_6_Stop(USART_info_t *UART_info, unsigned char ID);
 
 #define A1_fTRQ 255.f
 #define A1_fSPD_MOTOR (127 / R2D * A1_GR)
-#define A1_fPOS_MOTOR (16383 / 360.f)
-#define A1_fSPD_ENC (127 / R2D * A1_GR)
+#define A1_fPOS_MOTOR (16383 / 360.f * A1_GR)
+#define A1_fSPD_ENC (127 / R2D)
 #define A1_fPOS_ENC (16383 / 360.f)
 #define A1_fKp 2047.f
 #define A1_fKd 1023.f
+#define A1_fACC_ENC 8.f
 #define A1_fGYRO (2000.f / 32768)
 #define A1_fACC (8.f / 32768)
 #define A1_fTEMP_FOOT 0.5f

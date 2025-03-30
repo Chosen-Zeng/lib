@@ -9,6 +9,8 @@
         argument for printf should change with specific CRC length
 */
 
+#include <stdio.h>
+
 #include "../../hw/CRC.h"
 
 unsigned CRC_tab[256];
@@ -45,7 +47,7 @@ void CRC_TabCalc(CRC_info_t *CRC_info)
 
 int main(void)
 {
-    CRC_TabCalc(&CRC_32_JAMCRC);
+    CRC_TabCalc(&CRC_32_MPEG_2);
 
     for (unsigned char row = 0; row < 32; row++)
     {
@@ -60,5 +62,5 @@ int main(void)
     }
 
     unsigned char test[] = {'1', '2', '3', '4', '5', '6', '7', '8', '9'};
-    printf("Test: 0x%08X", CRC_Calc(&CRC_32_JAMCRC, test, 9));
+    printf("Test: 0x%08X", CRCsw_Calc(&CRC_32_MPEG_2, test, 9));
 }

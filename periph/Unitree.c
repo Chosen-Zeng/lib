@@ -18,7 +18,7 @@ void GO_M8010_6_SendParam(USART_info_t *UART_info, unsigned char ID)
     *(int *)&GO_M8010_6[arrID].TxData[7] = LIMIT_ABS(GO_M8010_6[arrID].ctrl.pos, GO_M8010_6_POS_LIMIT) * GO_M8010_6_fPOS;
     *(unsigned short *)&GO_M8010_6[arrID].TxData[11] = LIMIT(GO_M8010_6[arrID].ctrl.Kp, GO_M8010_6_Kp_LIMIT) * GO_M8010_6_fKp;
     *(unsigned short *)&GO_M8010_6[arrID].TxData[13] = LIMIT(GO_M8010_6[arrID].ctrl.Kd, GO_M8010_6_Kd_LIMIT) * GO_M8010_6_fKd;
-    *(unsigned short *)&GO_M8010_6[arrID].TxData[15] = CRC_Calc(&CRC_16_CCITT, GO_M8010_6[arrID].TxData, 15);
+    *(unsigned short *)&GO_M8010_6[arrID].TxData[15] = CRCsw_Calc(&CRC_16_CCITT, GO_M8010_6[arrID].TxData, 15);
 
     UART_SendArray(UART_info, GO_M8010_6[arrID].TxData, 17);
 }
@@ -29,7 +29,7 @@ void GO_M8010_6_Stop(USART_info_t *UART_info, unsigned char ID)
 
     *(unsigned short *)GO_M8010_6[arrID].TxData = GO_M8010_6_HEAD_SEND;
     GO_M8010_6[arrID].TxData[2] = ID | GO_M8010_6_MODE_STOP << 4;
-    *(unsigned short *)&GO_M8010_6[arrID].TxData[15] = CRC_Calc(&CRC_16_CCITT, GO_M8010_6[arrID].TxData, 15);
+    *(unsigned short *)&GO_M8010_6[arrID].TxData[15] = CRCsw_Calc(&CRC_16_CCITT, GO_M8010_6[arrID].TxData, 15);
 
     UART_SendArray(UART_info, GO_M8010_6[arrID].TxData, 17);
 }
@@ -89,7 +89,6 @@ void GO_M8010_6_Stop(USART_info_t *UART_info, unsigned char ID)
 #endif
 
 #if defined A1_NUM && defined A1_ID_OFFSET
-#warning bug: no CRC algorithm matched
 
 A1_t A1[A1_NUM + 1];
 
@@ -106,7 +105,7 @@ void A1_SendParam(USART_info_t *UART_info, unsigned char ID)
     *(int *)&A1[arrID].TxData[16] = LIMIT_ABS(A1[arrID].ctrl.pos, A1_POS_LIMIT) * A1_fPOS_MOTOR;
     *(unsigned short *)&A1[arrID].TxData[20] = LIMIT(A1[arrID].ctrl.Kp, A1_Kp_LIMIT) * A1_fKp;
     *(unsigned short *)&A1[arrID].TxData[22] = LIMIT(A1[arrID].ctrl.Kd, A1_Kd_LIMIT) * A1_fKd;
-    *(unsigned *)&A1[arrID].TxData[30] = CRC_Calc(&CRC_32_MPEG_2, A1[arrID].TxData, 30);
+    *(unsigned *)&A1[arrID].TxData[30] = CRC_Calc(A1[arrID].TxData, 28, CRC_DATA_WORD);
 
     UART_SendArray(UART_info, A1[arrID].TxData, 34);
 }
@@ -119,7 +118,7 @@ void A1_Stop(USART_info_t *UART_info, unsigned char ID)
     A1[arrID].TxData[2] = ID;
     A1[arrID].TxData[4] = A1_MODE_STOP;
     A1[arrID].TxData[5] = 0xFF;
-    *(unsigned *)&A1[arrID].TxData[30] = CRC_Calc(&CRC_32_MPEG_2, A1[arrID].TxData, 30);
+    *(unsigned *)&A1[arrID].TxData[30] = CRC_Calc(A1[arrID].TxData, 28, CRC_DATA_WORD);
 
     UART_SendArray(UART_info, A1[arrID].TxData, 34);
 }
@@ -132,7 +131,7 @@ void DMA1_Stream1_IRQHandler(void)
         DMA1->LIFCR |= 0x800;
 
         if (*(unsigned short *)RxData_D1S1 == A1_HEAD_RECV &&
-            !CRC_Calc(&CRC_32_MPEG_2, RxData_D1S1, 74))
+            CRC_Calc(RxData_D1S1, 72, CRC_DATA_WORD) != *(unsigned *)&RxData_D1S1[74])
         {
             unsigned char arrID = RxData_D1S1[2] - A1_ID_OFFSET;
 
@@ -144,7 +143,7 @@ void DMA1_Stream1_IRQHandler(void)
             A1[arrID].fdbk.spd.enc = *(short *)&RxData_D1S1[20] / A1_fSPD_ENC;
             A1[arrID].fdbk.spd.enc_fltr = *(float *)&RxData_D1S1[22];
             A1[arrID].fdbk.acc.motor = *(short *)&RxData_D1S1[26] / A1_GR;
-            A1[arrID].fdbk.acc.enc = *(short *)&RxData_D1S1[28];
+            A1[arrID].fdbk.acc.enc = *(short *)&RxData_D1S1[28] / A1_fACC_ENC;
             A1[arrID].fdbk.pos.motor = *(int *)&RxData_D1S1[30] / A1_fPOS_MOTOR;
             // A1[arrID].fdbk.pos.enc = *(int *)&RxData_D1S1[34];
             A1[arrID].fdbk.IMU.board.gyro.x = *(short *)&RxData_D1S1[38] / A1_fGYRO;
