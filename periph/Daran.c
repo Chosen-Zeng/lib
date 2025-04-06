@@ -4,10 +4,9 @@
 
 DaRan_t DaRan[DARAN_NUM + 1];
 
-void DaRan_CANFdbkInit(void *CAN_handle, unsigned char ID, float intvl_ms)
+void DaRan_Init(void *CAN_handle, unsigned char ID, float intvl_ms)
 {
-    DaRan_Prop_W(CAN_handle, ID, DARAN_PARAM_CAN_FDBK_EN, DARAN_DATA_TYPE_u32, 1);
-    DaRan_Prop_W(CAN_handle, ID, DARAN_PARAM_CAN_FDBK_INTVL_ms, DARAN_DATA_TYPE_u32, intvl_ms);
+    DaRan_Prop_W(CAN_handle, ID, DARAN_PARAM_CRASH_DETECT_EN, DARAN_DATA_TYPE_u32, 0);
 }
 
 // @note additional param needed in specific mode

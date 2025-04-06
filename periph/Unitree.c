@@ -11,7 +11,7 @@ void GO_M8010_6_SendParam(USART_info_t *UART_info, unsigned char ID)
 {
     unsigned char arrID = ID - GO_M8010_6_ID_OFFSET;
 
-    *(unsigned short *)GO_M8010_6[arrID].TxData = GO_M8010_6_HEAD_SEND;
+    *(unsigned short *)GO_M8010_6[arrID].TxData = GO_M8010_6_PREAMBLE_SEND;
     GO_M8010_6[arrID].TxData[2] = ID | GO_M8010_6_MODE_FOC << 4;
     *(short *)&GO_M8010_6[arrID].TxData[3] = LIMIT_ABS(GO_M8010_6[arrID].ctrl.trq, GO_M8010_6_TRQ_LIMIT) * GO_M8010_6_fTRQ;
     *(short *)&GO_M8010_6[arrID].TxData[5] = LIMIT_ABS(GO_M8010_6[arrID].ctrl.spd, GO_M8010_6_SPD_LIMIT) * GO_M8010_6_fSPD;
@@ -27,7 +27,7 @@ void GO_M8010_6_Stop(USART_info_t *UART_info, unsigned char ID)
 {
     unsigned char arrID = ID - GO_M8010_6_ID_OFFSET;
 
-    *(unsigned short *)GO_M8010_6[arrID].TxData = GO_M8010_6_HEAD_SEND;
+    *(unsigned short *)GO_M8010_6[arrID].TxData = GO_M8010_6_PREAMBLE_SEND;
     GO_M8010_6[arrID].TxData[2] = ID | GO_M8010_6_MODE_STOP << 4;
     *(unsigned short *)&GO_M8010_6[arrID].TxData[15] = CRCsw_Calc(&CRC_16_CCITT, GO_M8010_6[arrID].TxData, 15);
 
@@ -46,7 +46,7 @@ void GO_M8010_6_Stop(USART_info_t *UART_info, unsigned char ID)
 //         USART3->ICR |= 0x10;
 //         cnt = 0;
 
-//         if (*(unsigned short *)RxData == GO_M8010_6_HEAD_RECV &&
+//         if (*(unsigned short *)RxData == GO_M8010_6_PREAMBLE_RECV &&
 //             !CRC_16_Cal(&CRC_16_CCITT, RxData, 16))
 //         {
 //             uint8_t arrID = (RxData[2] & 0x0F) - GO_M8010_6_ID_OFFSET;
@@ -72,7 +72,7 @@ void GO_M8010_6_Stop(USART_info_t *UART_info, unsigned char ID)
 //     {
 //         DMA1->LIFCR |= 0x200000;
 
-//         if (*(unsigned short *)RxData_D1S2 == GO_M8010_6_HEAD_RECV &&
+//         if (*(unsigned short *)RxData_D1S2 == GO_M8010_6_PREAMBLE_RECV &&
 //             !CRC_Cal(&CRC_16_CCITT, RxData_D1S2, 16))
 //         {
 //             uint8_t arrID = (RxData_D1S2[2] & 0x0F) - GO_M8010_6_ID_OFFSET;
@@ -96,7 +96,7 @@ void A1_SendParam(USART_info_t *UART_info, unsigned char ID)
 {
     unsigned char arrID = ID == A1_ID_BCAST ? A1_NUM : ID - A1_ID_OFFSET;
 
-    *(unsigned short *)A1[arrID].TxData = A1_HEAD_SEND;
+    *(unsigned short *)A1[arrID].TxData = A1_PREAMBLE;
     A1[arrID].TxData[2] = ID;
     A1[arrID].TxData[4] = A1_MODE_FOC;
     A1[arrID].TxData[5] = 0xFF;
@@ -114,7 +114,7 @@ void A1_Stop(USART_info_t *UART_info, unsigned char ID)
 {
     unsigned char arrID = ID == A1_ID_BCAST ? A1_NUM : ID - A1_ID_OFFSET;
 
-    *(unsigned short *)A1[arrID].TxData = A1_HEAD_SEND;
+    *(unsigned short *)A1[arrID].TxData = A1_PREAMBLE;
     A1[arrID].TxData[2] = ID;
     A1[arrID].TxData[4] = A1_MODE_STOP;
     A1[arrID].TxData[5] = 0xFF;
@@ -130,8 +130,8 @@ void DMA1_Stream1_IRQHandler(void)
     {
         DMA1->LIFCR |= 0x800;
 
-        if (*(unsigned short *)RxData_D1S1 == A1_HEAD_RECV &&
-            CRC_Calc(RxData_D1S1, 72, CRC_DATA_WORD) != *(unsigned *)&RxData_D1S1[74])
+        if (*(unsigned short *)RxData_D1S1 == A1_PREAMBLE &&
+            CRC_Calc(RxData_D1S1, 72, CRC_DATA_WORD) == *(unsigned *)&RxData_D1S1[74])
         {
             unsigned char arrID = RxData_D1S1[2] - A1_ID_OFFSET;
 
@@ -145,22 +145,22 @@ void DMA1_Stream1_IRQHandler(void)
             A1[arrID].fdbk.acc.motor = *(short *)&RxData_D1S1[26] / A1_GR;
             A1[arrID].fdbk.acc.enc = *(short *)&RxData_D1S1[28] / A1_fACC_ENC;
             A1[arrID].fdbk.pos.motor = *(int *)&RxData_D1S1[30] / A1_fPOS_MOTOR;
-            // A1[arrID].fdbk.pos.enc = *(int *)&RxData_D1S1[34];
+            A1[arrID].fdbk.pos.enc = *(int *)&RxData_D1S1[34];
             A1[arrID].fdbk.IMU.board.gyro.x = *(short *)&RxData_D1S1[38] / A1_fGYRO;
             A1[arrID].fdbk.IMU.board.gyro.y = *(short *)&RxData_D1S1[40] / A1_fGYRO;
             A1[arrID].fdbk.IMU.board.gyro.z = *(short *)&RxData_D1S1[42] / A1_fGYRO;
             A1[arrID].fdbk.IMU.board.acc.x = *(short *)&RxData_D1S1[44] / A1_fACC;
             A1[arrID].fdbk.IMU.board.acc.y = *(short *)&RxData_D1S1[46] / A1_fACC;
             A1[arrID].fdbk.IMU.board.acc.z = *(short *)&RxData_D1S1[48] / A1_fACC;
-            // A1[arrID].fdbk.IMU.foot.gyro.x = *(short *)&RxData_D1S1[50];
-            // A1[arrID].fdbk.IMU.foot.gyro.y = *(short *)&RxData_D1S1[52];
-            // A1[arrID].fdbk.IMU.foot.gyro.z = *(short *)&RxData_D1S1[54];
-            // A1[arrID].fdbk.IMU.foot.acc.x = *(short *)&RxData_D1S1[56];
-            // A1[arrID].fdbk.IMU.foot.acc.y = *(short *)&RxData_D1S1[58];
-            // A1[arrID].fdbk.IMU.foot.acc.z = *(short *)&RxData_D1S1[60];
-            // A1[arrID].fdbk.IMU.foot.mag.x = *(short *)&RxData_D1S1[62];
-            // A1[arrID].fdbk.IMU.foot.mag.y = *(short *)&RxData_D1S1[64];
-            // A1[arrID].fdbk.IMU.foot.mag.z = *(short *)&RxData_D1S1[66];
+            A1[arrID].fdbk.IMU.foot.gyro.x = *(short *)&RxData_D1S1[50];
+            A1[arrID].fdbk.IMU.foot.gyro.y = *(short *)&RxData_D1S1[52];
+            A1[arrID].fdbk.IMU.foot.gyro.z = *(short *)&RxData_D1S1[54];
+            A1[arrID].fdbk.IMU.foot.acc.x = *(short *)&RxData_D1S1[56];
+            A1[arrID].fdbk.IMU.foot.acc.y = *(short *)&RxData_D1S1[58];
+            A1[arrID].fdbk.IMU.foot.acc.z = *(short *)&RxData_D1S1[60];
+            A1[arrID].fdbk.IMU.foot.mag.x = *(short *)&RxData_D1S1[62];
+            A1[arrID].fdbk.IMU.foot.mag.y = *(short *)&RxData_D1S1[64];
+            A1[arrID].fdbk.IMU.foot.mag.z = *(short *)&RxData_D1S1[66];
             A1[arrID].fdbk.temp.foot = RxData_D1S1[68] * A1_fTEMP_FOOT + A1_TEMP_FOOT_OFFSET;
             A1[arrID].fdbk.footforce = *(unsigned short *)&RxData_D1S1[69] << 16 | RxData_D1S1[71];
             A1[arrID].fdbk.err.foot = RxData_D1S1[72];

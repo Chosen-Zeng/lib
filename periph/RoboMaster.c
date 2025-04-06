@@ -39,20 +39,20 @@ void C610_SetCurr(void *CAN_handle, unsigned short C610_ID)
 
 void C610_SetSpd(void *CAN_handle, unsigned short C610_ID)
 {
+    static float iterm[8];
+
     for (unsigned char arrID = (C610_ID == C610_ID2 ? 4 : 0); arrID < (C610_ID == C610_ID1 ? 4 : 8); arrID++)
     {
-        C610_PID_spd[arrID].pterm = C610[arrID].ctrl.spd - C610[arrID].fdbk.spd;
-        C610_PID_spd[arrID].p = C610_PID_spd[arrID].pterm * C610_SPD_Kp;
+        C610_PID_spd[arrID].p = (C610[arrID].ctrl.spd - C610[arrID].fdbk.spd) * C610_SPD_Kp;
 
-        if (ABS(C610_PID_spd[arrID].pterm) >= C610_SPD_iSTART) // integral separation
-            C610_PID_spd[arrID].iterm *= 0.4;
+        if (ABS(C610[arrID].ctrl.spd - C610[arrID].fdbk.spd) >= C610_SPD_iSTART) // integral separation
+            iterm[arrID] *= 0.4f;
         else
-            C610_PID_spd[arrID].iterm += C610_PID_spd[arrID].pterm / FREQ_CTRL;
+            iterm[arrID] += (C610[arrID].ctrl.spd - C610[arrID].fdbk.spd) / FREQ_CTRL;
 
-        C610_PID_spd[arrID].i = LIMIT_ABS(C610_PID_spd[arrID].iterm, C610_SPD_iLIMIT) * C610_SPD_Ki; // integral limit
+        C610_PID_spd[arrID].i = LIMIT_ABS(iterm[arrID], C610_SPD_iLIMIT) * C610_SPD_Ki; // integral limit
 
-        C610_PID_spd[arrID].dterm = (C610_PID_spd[arrID].decurr - C610_PID_spd[arrID].deprev) * FREQ_CTRL; // derivative filtering
-        C610_PID_spd[arrID].d = C610_PID_spd[arrID].dterm * C610_SPD_Kd;
+        C610_PID_spd[arrID].d = (C610_PID_spd[arrID].decurr - C610_PID_spd[arrID].deprev) * FREQ_CTRL * C610_SPD_Kd; // derivative filtering
 
         C610[arrID].ctrl.curr = C610_PID_spd[arrID].p + C610_PID_spd[arrID].i + C610_PID_spd[arrID].d;
     }
@@ -61,20 +61,20 @@ void C610_SetSpd(void *CAN_handle, unsigned short C610_ID)
 
 void C610_SetPos(void *CAN_handle, unsigned short C610_ID)
 {
+    static float iterm[8];
+
     for (unsigned char arrID = (C610_ID == C610_ID2 ? 4 : 0); arrID < (C610_ID == C610_ID1 ? 4 : 8); arrID++)
     {
-        C610_PID_pos[arrID].pterm = C610[arrID].ctrl.pos - C610[arrID].fdbk.pos;
-        C610_PID_pos[arrID].p = C610_PID_pos[arrID].pterm * C610_POS_Kp;
+        C610_PID_pos[arrID].p = (C610[arrID].ctrl.pos - C610[arrID].fdbk.pos) * C610_POS_Kp;
 
-        if (ABS(C610_PID_pos[arrID].pterm) >= C610_POS_iSTART) // integral separation
-            C610_PID_pos[arrID].iterm = 0;
-        else if (ABS(C610_PID_pos[arrID].iterm) <= C610_POS_iLIMIT)
-            C610_PID_pos[arrID].iterm += C610_PID_pos[arrID].pterm / FREQ_CTRL;
+        if (ABS(C610[arrID].ctrl.pos - C610[arrID].fdbk.pos) >= C610_POS_iSTART) // integral separation
+            iterm[arrID] *= 0;
+        else if (ABS(iterm[arrID]) <= C610_POS_iLIMIT)
+            iterm[arrID] += (C610[arrID].ctrl.pos - C610[arrID].fdbk.pos) / FREQ_CTRL;
 
-        C610_PID_pos[arrID].i = LIMIT_ABS(C610_PID_pos[arrID].iterm, C610_POS_iLIMIT) * C610_POS_Ki; // integral limit
+        C610_PID_pos[arrID].i = LIMIT_ABS(iterm[arrID], C610_POS_iLIMIT) * C610_POS_Ki; // integral limit
 
-        C610_PID_pos[arrID].dterm = (C610_PID_pos[arrID].decurr - C610_PID_pos[arrID].deprev) * FREQ_CTRL; // derivative filtering
-        C610_PID_pos[arrID].d = C610_PID_pos[arrID].dterm * C610_POS_Kd;
+        C610_PID_pos[arrID].d = (C610_PID_pos[arrID].decurr - C610_PID_pos[arrID].deprev) * FREQ_CTRL * C610_POS_Kd; // derivative filtering
 
         C610[arrID].ctrl.spd = C610_PID_pos[arrID].p + C610_PID_pos[arrID].i + C610_PID_pos[arrID].d;
     }
@@ -119,20 +119,20 @@ void C620_SetCurr(void *CAN_handle, unsigned short C620_ID)
 
 void C620_SetSpd(void *CAN_handle, unsigned short C620_ID)
 {
+    static float iterm[8];
+
     for (unsigned char arrID = (C620_ID == C620_ID2 ? 4 : 0); arrID < (C620_ID == C620_ID1 ? 4 : 8); arrID++)
     {
-        C620_PID_spd[arrID].pterm = C620[arrID].ctrl.spd - C620[arrID].fdbk.spd;
-        C620_PID_spd[arrID].p = C620_PID_spd[arrID].pterm * C620_SPD_Kp;
+        C620_PID_spd[arrID].p = (C620[arrID].ctrl.spd - C620[arrID].fdbk.spd) * C620_SPD_Kp;
 
-        if (ABS(C620_PID_spd[arrID].pterm) >= C620_SPD_iSTART) // integral separation
-            C620_PID_spd[arrID].iterm *= 0.4;
+        if (ABS(C620[arrID].ctrl.spd - C620[arrID].fdbk.spd) >= C620_SPD_iSTART) // integral separation
+            iterm[arrID] *= 0.4;
         else
-            C620_PID_spd[arrID].iterm += C620_PID_spd[arrID].pterm / FREQ_CTRL;
+            iterm[arrID] += (C620[arrID].ctrl.spd - C620[arrID].fdbk.spd) / FREQ_CTRL;
 
-        C620_PID_spd[arrID].i = LIMIT_ABS(C620_PID_spd[arrID].iterm, C620_SPD_iLIMIT) * C620_SPD_Ki; // integral limit
+        C620_PID_spd[arrID].i = LIMIT_ABS(iterm[arrID], C620_SPD_iLIMIT) * C620_SPD_Ki; // integral limit
 
-        C620_PID_spd[arrID].dterm = (C620_PID_spd[arrID].decurr - C620_PID_spd[arrID].deprev) * FREQ_CTRL; // derivative filtering
-        C620_PID_spd[arrID].d = C620_PID_spd[arrID].dterm * C620_SPD_Kd;
+        C620_PID_spd[arrID].d = (C620_PID_spd[arrID].decurr - C620_PID_spd[arrID].deprev) * FREQ_CTRL * C620_SPD_Kd; // derivative filtering
 
         C620[arrID].ctrl.curr = C620_PID_spd[arrID].p + C620_PID_spd[arrID].i + C620_PID_spd[arrID].d;
     }
@@ -141,20 +141,20 @@ void C620_SetSpd(void *CAN_handle, unsigned short C620_ID)
 
 void C620_SetPos(void *CAN_handle, unsigned short C620_ID)
 {
+    static float iterm[8];
+
     for (unsigned char arrID = (C620_ID == C620_ID2 ? 4 : 0); arrID < (C620_ID == C620_ID1 ? 4 : 8); arrID++)
     {
-        C620_PID_pos[arrID].pterm = C620[arrID].ctrl.pos - C620[arrID].fdbk.pos;
-        C620_PID_pos[arrID].p = C620_PID_pos[arrID].pterm * C620_POS_Kp;
+        C620_PID_pos[arrID].p = (C620[arrID].ctrl.pos - C620[arrID].fdbk.pos) * C620_POS_Kp;
 
-        if (ABS(C620_PID_pos[arrID].pterm) >= C620_POS_iSTART) // integral separation
-            C620_PID_pos[arrID].iterm = 0;
-        else if (ABS(C620_PID_pos[arrID].iterm) <= C620_POS_iLIMIT)
-            C620_PID_pos[arrID].iterm += C620_PID_pos[arrID].pterm / FREQ_CTRL;
+        if (ABS(C620[arrID].ctrl.pos - C620[arrID].fdbk.pos) >= C620_POS_iSTART) // integral separation
+            iterm[arrID] = 0;
+        else if (ABS(iterm[arrID]) <= C620_POS_iLIMIT)
+            iterm[arrID] += (C620[arrID].ctrl.pos - C620[arrID].fdbk.pos) / FREQ_CTRL;
 
-        C620_PID_pos[arrID].i = LIMIT_ABS(C620_PID_pos[arrID].iterm, C620_POS_iLIMIT) * C620_POS_Ki; // integral limit
+        C620_PID_pos[arrID].i = LIMIT_ABS(iterm[arrID], C620_POS_iLIMIT) * C620_POS_Ki; // integral limit
 
-        C620_PID_pos[arrID].dterm = (C620_PID_pos[arrID].decurr - C620_PID_pos[arrID].deprev) * FREQ_CTRL; // derivative filtering
-        C620_PID_pos[arrID].d = C620_PID_pos[arrID].dterm * C620_POS_Kd;
+        C620_PID_pos[arrID].d = (C620_PID_pos[arrID].decurr - C620_PID_pos[arrID].deprev) * FREQ_CTRL * C620_POS_Kd; // derivative filtering
 
         C620[arrID].ctrl.spd = C620_PID_pos[arrID].p + C620_PID_pos[arrID].i + C620_PID_pos[arrID].d;
     }

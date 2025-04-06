@@ -7,8 +7,7 @@
 
 typedef const struct
 {
-    float curr_max;
-    unsigned short spd_max; // spd at 24V
+    unsigned short spd_max; // speed at 24V
     unsigned char PP;
 } motor_info_t;
 extern motor_info_t T_MOTOR_AT4130_KV450,
@@ -22,6 +21,8 @@ extern motor_info_t T_MOTOR_AT4130_KV450,
 #define VESC_fPCT_R 1000
 #define VESC_fCURR_R 10
 #define VESC_fPOS_R 50
+
+#define VESC_fVOLT 10
 
 #define VESC_SET_DUTYCYCLE (0 << 8)
 #define VESC_SET_CURR (1 << 8)
@@ -50,9 +51,18 @@ typedef struct
     } ctrl;
     struct
     {
+        // CAN_PACKET_STATUS_1
+        float spd, curr, dutycycle;
 
-        float spd, dutycycle,                      // CAN_PACKET_STATUS
-            temp_MOSFET, temp_motor, curr_in, pos; // CAN_PACKET_STATUS_4
+        // CAN_PACKET_STATUS_4
+        struct
+        {
+            float MOSFET, motor;
+        } temp;
+        float curr_in, pos;
+
+        // CAN_PACKET_STATUS_5
+        float tachometer, volt;
     } fdbk;
 } VESC_t;
 extern VESC_t VESC[VESC_NUM];

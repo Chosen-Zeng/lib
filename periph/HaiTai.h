@@ -53,8 +53,8 @@
 #define HAITAI_FAILURE 0
 #define HAITAI_SUCCESS 1
 
-#define HAITAI_HEAD_SEND 0x3E
-#define HAITAI_HEAD_RECV 0x3C
+#define HAITAI_PREAMBLE_SEND 0x3E
+#define HAITAI_PREAMBLE_RECV 0x3C
 #define HAITAI_PID 0
 
 typedef struct
