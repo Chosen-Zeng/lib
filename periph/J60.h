@@ -47,7 +47,11 @@ typedef struct
     } ctrl;
     struct
     {
-        float pos, spd, trq, temp_MOSFET, temp_motor;
+        float pos, spd, trq;
+        struct
+        {
+            float temp_MOSFET, temp_motor
+        } temp;
     } fdbk;
 } J60_t;
 

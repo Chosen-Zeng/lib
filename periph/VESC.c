@@ -4,9 +4,9 @@
 
 #if defined VESC_NUM && defined VESC_ID_OFFSET
 
-motor_info_t T_MOTOR_AT4130_KV450 = {.curr_max = 75, .spd_max = 9000, .PP = 7},
-             HOBBYWING_V9626_KV160 = {.curr_max = 171.5, .spd_max = 6000, .PP = 21},
-             CUBEMARS_R100_KV90 = {.curr_max = 104, .spd_max = 2000, .PP = 21};
+motor_info_t T_MOTOR_AT4130_KV450 = {.spd_max = 9000, .PP = 7},
+             HOBBYWING_V9626_KV160 = {.spd_max = 6000, .PP = 21},
+             CUBEMARS_R100_KV90 = {.spd_max = 2000, .PP = 21};
 
 VESC_t VESC[VESC_NUM];
 
@@ -18,12 +18,12 @@ void VESC_SendCmd(void *CAN_handle, unsigned char ID, unsigned short VESC_cmd, m
     {
     case VESC_SET_CURR:
     {
-        f_2_4u8(LIMIT_ABS(VESC[ID - VESC_ID_OFFSET].ctrl.curr, motor_info->curr_max) * VESC_fCURR_W, TxData);
+        f_2_4u8(VESC[ID - VESC_ID_OFFSET].ctrl.curr * VESC_fCURR_W, TxData);
         break;
     }
     case VESC_SET_CURR_BRAKE:
     {
-        f_2_4u8(LIMIT_ABS(VESC[ID - VESC_ID_OFFSET].ctrl.curr, motor_info->curr_max) * VESC_fCURR_W, TxData);
+        f_2_4u8(VESC[ID - VESC_ID_OFFSET].ctrl.curr * VESC_fCURR_W, TxData);
         break;
     }
     case VESC_SET_SPD:
@@ -47,25 +47,27 @@ void VESC_SendCmd(void *CAN_handle, unsigned char ID, unsigned short VESC_cmd, m
 }
 
 /*
-void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
+void FDCAN2_IT0_IRQHandler(void)
 {
-    unsigned char RxFifo0[8];
-    FDCAN_RxHeaderTypeDef FDCAN_RxHeader;
-    HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &FDCAN_RxHeader, RxFifo0);
-
-    if (hfdcan->Instance == FDCAN1)
+    if (FDCAN2->IR & 0x1)
     {
-        switch ((FDCAN_RxHeader.Identifier & 0xFF00) >> 8)
+        FDCAN2->IR |= 0x1;
+
+        FDCAN_RxHeaderTypeDef FDCAN_RxHeader;
+        unsigned char RxData[8];
+        HAL_FDCAN_GetRxMessage(&hfdcan2, FDCAN_RX_FIFO0, &FDCAN_RxHeader, RxData);
+
+        switch (FDCAN_RxHeader.Identifier)
         {
-        case VESC_STATUS:
+        case (VESC_STATUS_1 | ID):
         {
-            VESC[(FDCAN_RxHeader.Identifier & 0x00FF) - VESC_ID_OFFSET].fdbk.spd = (float)(RxFifo0[0] << 24 | RxFifo0[1] << 16 | RxFifo0[2] << 8 | RxFifo0[3]) / HOBBYWING_V9626_KV160.PP;
+            VESC[1 - VESC_ID_OFFSET].fdbk.spd = (float)(RxData[0] << 24 | RxData[1] << 16 | RxData[2] << 8 | RxData[3]) / HOBBYWING_V9626_KV160.PP;
+            VESC[1 - VESC_ID_OFFSET].fdbk.curr = (float)(RxData[4] << 8 | RxData[5]) / VESC_fCURR_R;
             break;
         }
-        case VESC_STATUS_4:
+        case (VESC_STATUS_5 | ID):
         {
-            VESC[(FDCAN_RxHeader.Identifier & 0x00FF) - VESC_ID_OFFSET].fdbk.curr_in = (float)(RxFifo0[4] << 8 | RxFifo0[5]) / VESC_fCURR_R;
-            VESC[(FDCAN_RxHeader.Identifier & 0x00FF) - VESC_ID_OFFSET].fdbk.pos = (float)(RxFifo0[6] << 8 | RxFifo0[7]) / VESC_fPOS_R;
+            VESC[1 - VESC_ID_OFFSET].fdbk.volt = (float)(RxData[4] << 8 | RxData[5]);
             break;
         }
         }

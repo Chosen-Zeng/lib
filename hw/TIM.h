@@ -1,8 +1,6 @@
 #ifndef __TIM_H
 #define __TIM_H
 
-#include "user.h"
-
 #ifdef TIMER // define TIMER TIMx, TIM freq must be set 1Hz
 typedef struct
 {
@@ -65,7 +63,7 @@ static inline void Timer_Clear(timer_t *timer_struct)
     timer_struct->intvl = timer_struct->curr = timer_struct->prev = 0;
 }
 
-static inline float Timer_GetTimeRatio(timer_t *timer_struct, float duration)
+static inline float Timer_GetRatio(timer_t *timer_struct, float duration)
 {
     return Timer_GetElapse(timer_struct) > duration ? 1 : timer_struct->intvl / duration;
 }

@@ -1,7 +1,6 @@
 #ifndef __USART_H
 #define __USART_H
 
-#include "user.h"
 #include "TIM.h"
 #include "CRC.h"
 
@@ -40,8 +39,7 @@ static inline void UART_SendArray(USART_info_t *USART_info, unsigned char TxData
 
 #if (defined STM32H7 || \
      defined STM32F4)
-    if (USART_info->DMA_handle && USART_info->DMA_subhandle && ((DMA_Stream_TypeDef *)USART_info->DMA_subhandle)->PAR && // DMA cfg
-        USART_info->USART_handle->CR3 & 0x80)                                                                            // DMAT
+    if (USART_info->DMA_handle && USART_info->DMA_subhandle) // DMA cfg
     {
         // clear flags
         if (USART_info->DMA_ID > 5)
@@ -54,20 +52,23 @@ static inline void UART_SendArray(USART_info_t *USART_info, unsigned char TxData
             USART_info->DMA_handle->LIFCR |= 0x20 << 6 * USART_info->DMA_ID;
 
         ((DMA_Stream_TypeDef *)USART_info->DMA_subhandle)->NDTR = len;
+        ((DMA_Stream_TypeDef *)USART_info->DMA_subhandle)->PAR = (unsigned)&USART_info->USART_handle->TDR;
         ((DMA_Stream_TypeDef *)USART_info->DMA_subhandle)->M0AR = (unsigned)TxData;
+        USART_info->USART_handle->CR3 |= 0x80;
         ((DMA_Stream_TypeDef *)USART_info->DMA_subhandle)->CR |= 1;
     }
     else
 #elif defined STM32F1
-    if (USART_info->DMA_handle && USART_info->DMA_subhandle && ((DMA_Channel_TypeDef *)USART_info->DMA_subhandle)->PAR && // DMA cfg
-        USART_info->USART_handle->CR3 & 0x80)                                                                             // DMAT
+    if (USART_info->DMA_handle && USART_info->DMA_subhandle) // DMA cfg
     {
         // clear flags
         USART_info->DMA_handle->IFCR |= 0x7 << 4 * (USART_info->DMA_ID - 1);
 
         ((DMA_Channel_TypeDef *)USART_info->DMA_subhandle)->CCR &= ~1;
         ((DMA_Channel_TypeDef *)USART_info->DMA_subhandle)->CNDTR = len;
+        ((DMA_Channel_TypeDef *)USART_info->DMA_subhandle)->CPAR = (unsigned)&USART_info->USART_handle->DR;
         ((DMA_Channel_TypeDef *)USART_info->DMA_subhandle)->CMAR = (unsigned)TxData;
+        USART_info->USART_handle->CR3 |= 0x80;
         ((DMA_Channel_TypeDef *)USART_info->DMA_subhandle)->CCR |= 1;
     }
     else

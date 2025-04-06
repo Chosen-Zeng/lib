@@ -38,7 +38,7 @@ void BRT_SendCmd(void *CAN_handle, uint8_t ID, uint8_t BRT_func, uint32_t data)
 #endif
 }
 
-__weak void BRT_Init(void *CAN_handle, uint8_t ID)
+void BRT_Init(void *CAN_handle, uint8_t ID)
 {
     BRT_SendCmd(CAN_handle, ID, BRT_ATD_SET, 1000);
     osDelay(500);

@@ -17,8 +17,8 @@ void USART2_IRQHandler(void)
 {
     USART2->ICR |= 0x10;
 
-    if (*(unsigned short *)TFminiPlus_RxData[0] == TFminiPlus_HEAD_DATA  // data head
-        && TFminiPlus_RxData[0][8] == CheckSum(TFminiPlus_RxData[0], 8)) // check sum
+    if (*(unsigned short *)TFminiPlus_RxData[0] == TFminiPlus_PREAMBLE_RECV &&
+        TFminiPlus_RxData[0][8] == CheckSum(TFminiPlus_RxData[0], 8)) // check sum
     {
         TFminiPlus[0].dist_cm = *(unsigned short *)&TFminiPlus_RxData[0][2];
         TFminiPlus[0].strength = *(unsigned short *)&TFminiPlus_RxData[0][4];

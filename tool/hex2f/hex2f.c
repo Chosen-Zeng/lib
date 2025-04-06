@@ -7,7 +7,7 @@ int main(void)
     {
         printf("Start with 0x: ");
         scanf("0x%X", &hex);
-        printf("%f", *(float *)&hex);
+        printf("%f\n", *(float *)&hex);
 
         getchar();
     }

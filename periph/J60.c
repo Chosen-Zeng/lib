@@ -71,9 +71,9 @@ void J60_Init(void *CAN_handle, unsigned char ID)
             J60[arrID].fdbk.spd = (*(uint32_t *)&RxFifo1[2] >> 4 & 0xFFFFF) * J60_fSPD_R - J60_SPD_LIMIT;
             J60[arrID].fdbk.trq = *(unsigned short *)&RxFifo1[5] * J60_fTORQUE - J60_TORQUE_LIMIT;
             if ((*(unsigned char *)&RxFifo1[7] & 1) == J60_TEMP_FLAG_MOSFET)
-                J60[arrID].fdbk.temp_MOSFET = (*(unsigned char *)&RxFifo1[7] >> 1) * J60_fTEMP + J60_TEMP_OFFSET;
+                J60[arrID].fdbk.temp.MOSFET = (*(unsigned char *)&RxFifo1[7] >> 1) * J60_fTEMP + J60_TEMP_OFFSET;
             else
-                J60[arrID].fdbk.temp_motor = (*(unsigned char *)&RxFifo1[7] >> 1) * J60_fTEMP + J60_TEMP_OFFSET;
+                J60[arrID].fdbk.temp.motor = (*(unsigned char *)&RxFifo1[7] >> 1) * J60_fTEMP + J60_TEMP_OFFSET;
 
             break;
         }

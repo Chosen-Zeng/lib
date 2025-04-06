@@ -7,8 +7,8 @@
 
 #define GO_M8010_6_GR (19 / 3.f)
 
-#define GO_M8010_6_HEAD_SEND 0xEEFE
-#define GO_M8010_6_HEAD_RECV 0xEEFD
+#define GO_M8010_6_PREAMBLE_SEND 0xEEFE
+#define GO_M8010_6_PREAMBLE_RECV 0xEEFD
 
 #define GO_M8010_6_MODE_STOP 0
 #define GO_M8010_6_MODE_FOC 1
@@ -64,8 +64,7 @@ void GO_M8010_6_Stop(USART_info_t *UART_info, unsigned char ID);
 
 #define A1_GR 9.1f
 
-#define A1_HEAD_SEND 0xEEFE
-#define A1_HEAD_RECV 0xEEFE
+#define A1_PREAMBLE 0xEEFE
 
 #define A1_ID_BCAST 0xBB
 

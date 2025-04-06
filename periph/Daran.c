@@ -4,10 +4,9 @@
 
 DaRan_t DaRan[DARAN_NUM + 1];
 
-void DaRan_CANFdbkInit(void *CAN_handle, unsigned char ID, float intvl_ms)
+void DaRan_Init(void *CAN_handle, unsigned char ID, float intvl_ms)
 {
-    DaRan_Prop_W(CAN_handle, ID, DARAN_PARAM_CAN_FDBK_EN, DARAN_DATA_TYPE_u32, 1);
-    DaRan_Prop_W(CAN_handle, ID, DARAN_PARAM_CAN_FDBK_INTVL_ms, DARAN_DATA_TYPE_u32, intvl_ms);
+    DaRan_Prop_W(CAN_handle, ID, DARAN_PARAM_CRASH_DETECT_EN, DARAN_DATA_TYPE_u32, 0);
 }
 
 // @note additional param needed in specific mode
@@ -128,7 +127,7 @@ void FDCAN1_IT0_IRQHandler(void)
 
         switch (FDCAN_RxHeader.Identifier)
         {
-        case 1 << 5 | DARAN_CMD_PROP_R:
+        case ID << 5 | DARAN_CMD_PROP_R:
         {
             DaRan[1 - DARAN_ID_OFFSET].fdbk.pos = *(float *)RxData;
             DaRan[1 - DARAN_ID_OFFSET].fdbk.spd = *(short *)&RxData[4] / DARAN_fSPD;

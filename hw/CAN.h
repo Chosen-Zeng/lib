@@ -1,8 +1,6 @@
 #ifndef __CAN_H
 #define __CAN_H
 
-#include "user.h"
-
 #ifdef FDCAN_SUPPORT
 #define CAN_FLTR_TYPE_STD_RANGE 0x00000000
 #define CAN_FLTR_TYPE_STD_DUAL 0x40000000
@@ -26,7 +24,7 @@
 
 #ifdef CAN_SUPPORT
 static inline void
-CAN_SendData(CAN_HandleTypeDef *hcan, uint32_t CAN_ID_Type, uint32_t ID, uint8_t TxData[], uint8_t length)
+CAN_SendData(CAN_HandleTypeDef *hcan, unsigned CAN_ID_Type, unsigned ID, unsigned char TxData[], unsigned char length)
 {
     CAN_TxHeaderTypeDef CAN_TxHeader;
 
@@ -37,15 +35,15 @@ CAN_SendData(CAN_HandleTypeDef *hcan, uint32_t CAN_ID_Type, uint32_t ID, uint8_t
     CAN_TxHeader.TransmitGlobalTime = 0;
 
     if (!HAL_CAN_IsTxMessagePending(hcan, CAN_TX_MAILBOX0))
-        HAL_CAN_AddTxMessage(hcan, &CAN_TxHeader, TxData, (uint32_t *)CAN_TX_MAILBOX0);
+        HAL_CAN_AddTxMessage(hcan, &CAN_TxHeader, TxData, (unsigned *)CAN_TX_MAILBOX0);
     else if (!HAL_CAN_IsTxMessagePending(hcan, CAN_TX_MAILBOX1))
-        HAL_CAN_AddTxMessage(hcan, &CAN_TxHeader, TxData, (uint32_t *)CAN_TX_MAILBOX1);
+        HAL_CAN_AddTxMessage(hcan, &CAN_TxHeader, TxData, (unsigned *)CAN_TX_MAILBOX1);
     else if (!HAL_CAN_IsTxMessagePending(hcan, CAN_TX_MAILBOX2))
-        HAL_CAN_AddTxMessage(hcan, &CAN_TxHeader, TxData, (uint32_t *)CAN_TX_MAILBOX2);
+        HAL_CAN_AddTxMessage(hcan, &CAN_TxHeader, TxData, (unsigned *)CAN_TX_MAILBOX2);
 }
 
 #elif defined FDCAN_SUPPORT
-static inline void CAN_SendData(FDCAN_HandleTypeDef *hfdcan, uint32_t FDCAN_IDType, uint32_t ID, uint8_t TxData[], uint8_t length)
+static inline void CAN_SendData(FDCAN_HandleTypeDef *hfdcan, unsigned FDCAN_IDType, unsigned ID, unsigned char TxData[], unsigned char length)
 {
     FDCAN_TxHeaderTypeDef FDCAN_TxHeader;
     FDCAN_TxHeader.Identifier = ID;
@@ -61,7 +59,7 @@ static inline void CAN_SendData(FDCAN_HandleTypeDef *hfdcan, uint32_t FDCAN_IDTy
     HAL_FDCAN_AddMessageToTxFifoQ(hfdcan, &FDCAN_TxHeader, TxData);
 }
 
-static inline void FDCAN_nBRS_SendData(FDCAN_HandleTypeDef *hfdcan, uint32_t FDCAN_IDType, uint32_t ID, uint8_t TxData[], uint32_t FDCAN_DLC)
+static inline void FDCAN_nBRS_SendData(FDCAN_HandleTypeDef *hfdcan, unsigned FDCAN_IDType, unsigned ID, unsigned char TxData[], unsigned FDCAN_DLC)
 {
     FDCAN_TxHeaderTypeDef FDCAN_TxHeader;
     FDCAN_TxHeader.Identifier = ID;
@@ -77,7 +75,7 @@ static inline void FDCAN_nBRS_SendData(FDCAN_HandleTypeDef *hfdcan, uint32_t FDC
     HAL_FDCAN_AddMessageToTxFifoQ(hfdcan, &FDCAN_TxHeader, TxData);
 }
 
-static inline void FDCAN_BRS_SendData(FDCAN_HandleTypeDef *hfdcan, uint32_t FDCAN_IDType, uint32_t ID, uint8_t TxData[], uint32_t FDCAN_DLC)
+static inline void FDCAN_BRS_SendData(FDCAN_HandleTypeDef *hfdcan, unsigned FDCAN_IDType, unsigned ID, unsigned char TxData[], unsigned FDCAN_DLC)
 {
     FDCAN_TxHeaderTypeDef FDCAN_TxHeader;
     FDCAN_TxHeader.Identifier = ID;
