@@ -1,8 +1,6 @@
 #ifndef __CAN_H
 #define __CAN_H
 
-#include "user.h"
-
 #ifdef FDCAN_SUPPORT
 #define CAN_FLTR_TYPE_STD_RANGE 0x00000000
 #define CAN_FLTR_TYPE_STD_DUAL 0x40000000

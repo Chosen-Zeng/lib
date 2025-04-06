@@ -56,7 +56,7 @@ void HaiTai_RS485_SendCmd(USART_info_t *UART_info, unsigned char ID, unsigned ch
 {
     unsigned char arrID = ID - HAITAI_ID_OFFSET;
 
-    HaiTai[arrID].TxData[0] = HAITAI_HEAD_SEND;
+    HaiTai[arrID].TxData[0] = HAITAI_PREAMBLE_SEND;
     HaiTai[arrID].TxData[1] = HAITAI_PID;
     HaiTai[arrID].TxData[2] = ID;
     HaiTai[arrID].TxData[3] = HAITAI_cmd;

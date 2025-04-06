@@ -1,7 +1,6 @@
 #ifndef __USART_H
 #define __USART_H
 
-#include "user.h"
 #include "TIM.h"
 #include "CRC.h"
 

@@ -5,7 +5,7 @@
 
 #ifdef TFminiPlus_NUM
 
-#define TFminiPlus_HEAD_DATA 0x5959
+#define TFminiPlus_PREAMBLE_RECV 0x5959
 
 typedef struct
 {

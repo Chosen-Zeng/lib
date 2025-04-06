@@ -1,8 +1,6 @@
 #ifndef __TIM_H
 #define __TIM_H
 
-#include "user.h"
-
 #ifdef TIMER // define TIMER TIMx, TIM freq must be set 1Hz
 typedef struct
 {
