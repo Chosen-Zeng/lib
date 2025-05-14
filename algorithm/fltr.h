@@ -7,10 +7,10 @@
 
 typedef struct
 {
-    unsigned len, size, pos;
+    unsigned char len, size, pos;
     float data[MOVAVGFLTR_MAX];
-    float sum;
-    unsigned max_pos, min_pos;
+    double sum;
+    unsigned char max_pos, min_pos;
 } MovAvgFltr_t;
 
 float MovAvgFltr(MovAvgFltr_t *MovAvgFltr_struct, float new_item);

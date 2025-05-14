@@ -4,17 +4,6 @@
 // update and get filtered data
 float MovAvgFltr(MovAvgFltr_t *MovAvgFltr_struct, float new_data)
 {
-    // init filter struct
-    if (!MovAvgFltr_struct->len)
-    {
-        MovAvgFltr_struct->pos = 0;
-        MovAvgFltr_struct->data[0] = FLT_MIN;
-        MovAvgFltr_struct->data[1] = FLT_MAX;
-        MovAvgFltr_struct->sum = 0;
-        MovAvgFltr_struct->max_pos = 0;
-        MovAvgFltr_struct->min_pos = 1;
-    }
-
     // handle exception
     if (ABS(new_data) > FLT_MAX)
         return MovAvgFltr_struct->len ? MovAvgFltr_struct->sum / MovAvgFltr_struct->len : 0;
@@ -22,8 +11,28 @@ float MovAvgFltr(MovAvgFltr_t *MovAvgFltr_struct, float new_data)
     // update max & min position
     if (new_data > MovAvgFltr_struct->data[MovAvgFltr_struct->max_pos])
         MovAvgFltr_struct->max_pos = MovAvgFltr_struct->pos;
+    else if (MovAvgFltr_struct->pos == MovAvgFltr_struct->max_pos)
+    {
+        unsigned char temp_pos = MovAvgFltr_struct->pos;
+
+        MovAvgFltr_struct->max_pos = temp_pos + 1 == (MovAvgFltr_struct->size < 2 || MovAvgFltr_struct->size >= MOVAVGFLTR_MAX ? MOVAVGFLTR_MAX : MovAvgFltr_struct->size) ? temp_pos = 0 : ++temp_pos; // set next data as max data
+
+        while ((temp_pos + 1 == (MovAvgFltr_struct->size < 2 || MovAvgFltr_struct->size >= MOVAVGFLTR_MAX ? MOVAVGFLTR_MAX : MovAvgFltr_struct->size) ? temp_pos = 0 : ++temp_pos) != MovAvgFltr_struct->pos) // turn to next data if not finish a cycle
+            if (MovAvgFltr_struct->data[temp_pos] > MovAvgFltr_struct->data[MovAvgFltr_struct->max_pos])
+                MovAvgFltr_struct->max_pos = temp_pos;
+    }
     if (new_data < MovAvgFltr_struct->data[MovAvgFltr_struct->min_pos])
         MovAvgFltr_struct->min_pos = MovAvgFltr_struct->pos;
+    else if (MovAvgFltr_struct->pos == MovAvgFltr_struct->min_pos)
+    {
+        unsigned char temp_pos = MovAvgFltr_struct->pos;
+
+        MovAvgFltr_struct->min_pos = temp_pos + 1 == (MovAvgFltr_struct->size < 2 || MovAvgFltr_struct->size >= MOVAVGFLTR_MAX ? MOVAVGFLTR_MAX : MovAvgFltr_struct->size) ? temp_pos = 0 : ++temp_pos; // set next data as max data
+
+        while ((temp_pos + 1 == (MovAvgFltr_struct->size < 2 || MovAvgFltr_struct->size >= MOVAVGFLTR_MAX ? MOVAVGFLTR_MAX : MovAvgFltr_struct->size) ? temp_pos = 0 : ++temp_pos) != MovAvgFltr_struct->pos) // turn to next data if not finish a cycle
+            if (MovAvgFltr_struct->data[temp_pos] < MovAvgFltr_struct->data[MovAvgFltr_struct->min_pos])
+                MovAvgFltr_struct->min_pos = temp_pos;
+    }
 
     // return filtered value
     if (MovAvgFltr_struct->len == (MovAvgFltr_struct->size < 2 || MovAvgFltr_struct->size >= MOVAVGFLTR_MAX ? MOVAVGFLTR_MAX : MovAvgFltr_struct->size))
@@ -34,7 +43,7 @@ float MovAvgFltr(MovAvgFltr_t *MovAvgFltr_struct, float new_data)
     else
     {
         MovAvgFltr_struct->sum += MovAvgFltr_struct->data[MovAvgFltr_struct->len] = new_data;
-        MovAvgFltr_struct->len++;
+        ++MovAvgFltr_struct->len;
     }
 
     if (++MovAvgFltr_struct->pos == (MovAvgFltr_struct->size < 2 || MovAvgFltr_struct->size >= MOVAVGFLTR_MAX ? MOVAVGFLTR_MAX : MovAvgFltr_struct->size))
@@ -86,7 +95,7 @@ unsigned char MovAvgFltr_GetNewTargetStatus(MovAvgFltr_t *MovAvgFltr_struct, flo
 // clear filter
 void MovAvgFltr_Clear(MovAvgFltr_t *MovAvgFltr_struct)
 {
-    MovAvgFltr_struct->len = 0;
+    MovAvgFltr_struct->pos = MovAvgFltr_struct->sum = MovAvgFltr_struct->len = 0;
 }
 
 // get filtered data
