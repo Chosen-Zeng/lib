@@ -8,8 +8,7 @@
 typedef struct
 {
     unsigned char len, size, pos;
-    float data[MOVAVGFLTR_MAX];
-    double sum;
+    float data[MOVAVGFLTR_MAX], sum;
     unsigned char max_pos, min_pos;
 } MovAvgFltr_t;
 

@@ -46,8 +46,15 @@ float MovAvgFltr(MovAvgFltr_t *MovAvgFltr_struct, float new_data)
         ++MovAvgFltr_struct->len;
     }
 
+    // a cycle finished
     if (++MovAvgFltr_struct->pos == (MovAvgFltr_struct->size < 2 || MovAvgFltr_struct->size >= MOVAVGFLTR_MAX ? MOVAVGFLTR_MAX : MovAvgFltr_struct->size))
-        MovAvgFltr_struct->pos = 0;
+    {
+        MovAvgFltr_struct->sum = MovAvgFltr_struct->pos = 0;
+
+        // calculate sum
+        for (unsigned char temp_pos = 0; temp_pos < MovAvgFltr_struct->len; ++temp_pos)
+            MovAvgFltr_struct->sum += MovAvgFltr_struct->data[temp_pos];
+    }
 
     return MovAvgFltr_struct->sum / MovAvgFltr_struct->len;
 }
