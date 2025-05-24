@@ -1,5 +1,5 @@
 /*
-    src addr 0 by default
+    source address: 0 (default)
 */
 
 #include "HighTorque.h"

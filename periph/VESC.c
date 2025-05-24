@@ -17,32 +17,28 @@ void VESC_SendCmd(void *CAN_handle, unsigned char ID, unsigned short VESC_cmd, m
     switch (VESC_cmd)
     {
     case VESC_SET_CURR:
-    {
-        f_2_4u8(VESC[ID - VESC_ID_OFFSET].ctrl.curr * VESC_fCURR_W, TxData);
-        break;
-    }
     case VESC_SET_CURR_BRAKE:
     {
-        f_2_4u8(VESC[ID - VESC_ID_OFFSET].ctrl.curr * VESC_fCURR_W, TxData);
+        f_2_u8(VESC[ID - VESC_ID_OFFSET].ctrl.curr * VESC_fCURR_W, TxData);
         break;
     }
     case VESC_SET_SPD:
     {
-        f_2_4u8(LIMIT_ABS(VESC[ID - VESC_ID_OFFSET].ctrl.spd, motor_info->spd_max) * motor_info->PP, TxData);
+        f_2_u8(LIMIT_ABS(VESC[ID - VESC_ID_OFFSET].ctrl.spd, motor_info->spd_max) * motor_info->PP, TxData);
         break;
     }
     case VESC_SET_POS:
     {
-        f_2_4u8(LIMIT(VESC[ID - VESC_ID_OFFSET].ctrl.pos, VESC_POS_MAX) * VESC_fPOS_W, TxData);
+        f_2_u8(LIMIT(VESC[ID - VESC_ID_OFFSET].ctrl.pos, VESC_POS_MAX) * VESC_fPOS_W, TxData);
         break;
     }
     default:
         return;
     }
 #ifdef CAN_SUPPORT
-    CAN_SendData(CAN_handle, CAN_ID_EXT, VESC_cmd | ID, TxData, 4);
+    CAN_SendData(CAN_handle, CAN_ID_EXT, VESC_cmd << 8 | ID, TxData, 4);
 #elif defined FDCAN_SUPPORT
-    CAN_SendData(CAN_handle, FDCAN_EXTENDED_ID, VESC_cmd | ID, TxData, 4);
+    CAN_SendData(CAN_handle, FDCAN_EXTENDED_ID, VESC_cmd << 8 | ID, TxData, 4);
 #endif
 }
 
@@ -59,13 +55,13 @@ void FDCAN2_IT0_IRQHandler(void)
 
         switch (FDCAN_RxHeader.Identifier)
         {
-        case (VESC_STATUS_1 | ID):
+        case (VESC_STATUS_1 << 8 | ID):
         {
             VESC[1 - VESC_ID_OFFSET].fdbk.spd = (float)(RxData[0] << 24 | RxData[1] << 16 | RxData[2] << 8 | RxData[3]) / HOBBYWING_V9626_KV160.PP;
             VESC[1 - VESC_ID_OFFSET].fdbk.curr = (float)(RxData[4] << 8 | RxData[5]) / VESC_fCURR_R;
             break;
         }
-        case (VESC_STATUS_5 | ID):
+        case (VESC_STATUS_5 << 8 | ID):
         {
             VESC[1 - VESC_ID_OFFSET].fdbk.volt = (float)(RxData[4] << 8 | RxData[5]);
             break;

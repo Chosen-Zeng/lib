@@ -11,14 +11,14 @@
 // limit X to MIN ~ MAX
 #define LIMIT_RANGE(X, MIN, MAX) (X > (MAX) ? (X = (MAX)) : (X < (MIN) ? (X = (MIN)) : X))
 
-// limit X to +-Y
+// limit X to +-Y, Y >= 0
 #define LIMIT_ABS(X, Y) (ABS(X) > (Y) ? (X >= 0 ? (X = (Y)) : (X = -(Y))) : X)
 
-static inline void f_2_4u8(float num, unsigned char array[4])
+static inline void f_2_u8(float num, unsigned char arr[4])
 {
     for (int count = 0; count < 4; count++)
     {
-        array[count] = (int)num >> 8 * (3 - count);
+        arr[count] = (int)num >> 8 * (3 - count);
     }
 }
 
