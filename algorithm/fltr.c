@@ -4,8 +4,20 @@
 // update and get filtered data
 float MovAvgFltr(MovAvgFltr_t *MovAvgFltr_struct, float NewData)
 {
+    // store new data
+    if (MovAvgFltr_struct->len == (MovAvgFltr_struct->size < 2 || MovAvgFltr_struct->size >= MOVAVGFLTR_MAX ? MOVAVGFLTR_MAX : MovAvgFltr_struct->size))
+    {
+        MovAvgFltr_struct->sum += NewData - MovAvgFltr_struct->data[MovAvgFltr_struct->pos];
+        MovAvgFltr_struct->data[MovAvgFltr_struct->pos] = NewData;
+    }
+    else
+    {
+        MovAvgFltr_struct->sum += MovAvgFltr_struct->data[MovAvgFltr_struct->pos] = NewData;
+        ++MovAvgFltr_struct->len;
+    }
+
     // update max & min position
-    if (NewData > MovAvgFltr_struct->data[MovAvgFltr_struct->max_pos])
+    if (MovAvgFltr_struct->data[MovAvgFltr_struct->pos] > MovAvgFltr_struct->data[MovAvgFltr_struct->max_pos])
         MovAvgFltr_struct->max_pos = MovAvgFltr_struct->pos;
     else if (MovAvgFltr_struct->pos == MovAvgFltr_struct->max_pos)
     {
@@ -17,7 +29,7 @@ float MovAvgFltr(MovAvgFltr_t *MovAvgFltr_struct, float NewData)
             if (MovAvgFltr_struct->data[temp_pos] > MovAvgFltr_struct->data[MovAvgFltr_struct->max_pos])
                 MovAvgFltr_struct->max_pos = temp_pos;
     }
-    if (NewData < MovAvgFltr_struct->data[MovAvgFltr_struct->min_pos])
+    if (MovAvgFltr_struct->data[MovAvgFltr_struct->pos] < MovAvgFltr_struct->data[MovAvgFltr_struct->min_pos])
         MovAvgFltr_struct->min_pos = MovAvgFltr_struct->pos;
     else if (MovAvgFltr_struct->pos == MovAvgFltr_struct->min_pos)
     {
@@ -30,21 +42,10 @@ float MovAvgFltr(MovAvgFltr_t *MovAvgFltr_struct, float NewData)
                 MovAvgFltr_struct->min_pos = temp_pos;
     }
 
-    // return filtered value
-    if (MovAvgFltr_struct->len == (MovAvgFltr_struct->size < 2 || MovAvgFltr_struct->size >= MOVAVGFLTR_MAX ? MOVAVGFLTR_MAX : MovAvgFltr_struct->size))
-    {
-        MovAvgFltr_struct->sum += NewData - MovAvgFltr_struct->data[MovAvgFltr_struct->pos];
-        MovAvgFltr_struct->data[MovAvgFltr_struct->pos] = NewData;
-    }
-    else
-    {
-        MovAvgFltr_struct->sum += MovAvgFltr_struct->data[MovAvgFltr_struct->len] = NewData;
-        ++MovAvgFltr_struct->len;
-    }
-
-    // a cycle finished
+    // move to next position
     if (++MovAvgFltr_struct->pos == (MovAvgFltr_struct->size < 2 || MovAvgFltr_struct->size >= MOVAVGFLTR_MAX ? MOVAVGFLTR_MAX : MovAvgFltr_struct->size))
     {
+        // new cycle
         MovAvgFltr_struct->sum = MovAvgFltr_struct->pos = 0;
 
         // calculate sum
