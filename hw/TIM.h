@@ -70,6 +70,6 @@ static inline float Timer_GetRatio(timer_t *timer_struct, float duration)
 
 #undef TIMER_TIME
 #else
-#error No TIM for timer defined.
+#warning No TIM for timer defined.
 #endif
 #endif

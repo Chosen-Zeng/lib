@@ -12,24 +12,25 @@ VESC_t VESC[VESC_NUM];
 
 void VESC_SendCmd(void *CAN_handle, unsigned char ID, unsigned short VESC_cmd, motor_info_t *motor_info)
 {
-    unsigned char TxData[4];
+    unsigned char TxData[4],
+        arrID = ID - VESC_ID_OFFSET;
 
     switch (VESC_cmd)
     {
     case VESC_SET_CURR:
     case VESC_SET_CURR_BRAKE:
     {
-        f_2_u8(VESC[ID - VESC_ID_OFFSET].ctrl.curr * VESC_fCURR_W, TxData);
+        f_2_u8(VESC[arrID].ctrl.curr * VESC_fCURR_W, TxData);
         break;
     }
     case VESC_SET_SPD:
     {
-        f_2_u8(LIMIT_ABS(VESC[ID - VESC_ID_OFFSET].ctrl.spd, motor_info->spd_max) * motor_info->PP, TxData);
+        f_2_u8(LIMIT_ABS(VESC[arrID].ctrl.spd, motor_info->spd_max) * motor_info->PP, TxData);
         break;
     }
     case VESC_SET_POS:
     {
-        f_2_u8(LIMIT(VESC[ID - VESC_ID_OFFSET].ctrl.pos, VESC_POS_MAX) * VESC_fPOS_W, TxData);
+        f_2_u8(LIMIT(VESC[arrID].ctrl.pos, VESC_POS_MAX) * VESC_fPOS_W, TxData);
         break;
     }
     default:
