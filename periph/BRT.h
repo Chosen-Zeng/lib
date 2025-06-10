@@ -1,9 +1,9 @@
-#ifndef __BRITER_H
-#define __BRITER_H
+#ifndef __BRT_H
+#define __BRT_H
 
 #include "user.h"
 
-#if defined BRT_NUM && defined BRT_ID_OFFSET
+#if defined BRT_NUM
 
 #define BRT_LAP_MPL // type selection: BRT_LAP_SGL/BRT_LAP_MPL
 #if defined BRT_LAP_SGL || defined BRT_LAP_MPL

@@ -13,7 +13,7 @@ typedef struct
 
 //  @brief     update intvl of the specific time struct
 //  @attention intvl must < 1s
-static inline float Timer_GetInterval(timer_t *timer_struct)
+static inline float Timer_GetIntvl(timer_t *timer_struct)
 {
     if (timer_struct->prev != 0 && timer_struct->curr != 0)
     {
@@ -70,6 +70,6 @@ static inline float Timer_GetRatio(timer_t *timer_struct, float duration)
 
 #undef TIMER_TIME
 #else
-#error No TIM for timer defined.
+#warning No TIM for timer defined.
 #endif
 #endif
