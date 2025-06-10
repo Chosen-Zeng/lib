@@ -5,8 +5,8 @@
 #if defined VESC_NUM && defined VESC_ID_OFFSET
 
 motor_info_t T_MOTOR_AT4130_KV450 = {.spd_max = 9000, .PP = 7},
-             HOBBYWING_V9626_KV160 = {.spd_max = 6000, .PP = 21},
-             CUBEMARS_R100_KV90 = {.spd_max = 2000, .PP = 21};
+             HOBBYWING_V9626_KV160 = {.curr_max = 171.5, .spd_max = 6000, .PP = 21},
+             CUBEMARS_R100_KV90 = {.curr_max = 90.5, .spd_max = 2000, .PP = 21};
 
 VESC_t VESC[VESC_NUM];
 

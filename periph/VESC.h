@@ -7,8 +7,9 @@
 
 typedef const struct
 {
-    unsigned short spd_max; // speed at 24V
-    unsigned char PP;
+    const float curr_max;
+    const unsigned short spd_max; // speed at 24V
+    const unsigned char PP;
 } motor_info_t;
 extern motor_info_t T_MOTOR_AT4130_KV450,
     HOBBYWING_V9626_KV160,
