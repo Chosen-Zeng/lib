@@ -3,13 +3,12 @@
 
 #include <float.h>
 
-#define MOVAVGFLTR_MAX 32
+#define MOVAVGFLTR_NUM_DEFAULT 32
 
 typedef struct
 {
-    unsigned char len, size, pos;
-    float data[MOVAVGFLTR_MAX], sum;
-    unsigned char max_pos, min_pos;
+    unsigned short size, len, pos, max_pos, min_pos;
+    float sum, *data;
 } MovAvgFltr_t;
 
 float MovAvgFltr(MovAvgFltr_t *MovAvgFltr_struct, float NewData);
