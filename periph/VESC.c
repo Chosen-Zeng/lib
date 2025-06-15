@@ -6,7 +6,8 @@
 
 motor_info_t T_MOTOR_AT4130_KV450 = {.spd_max = 9000, .PP = 7},
              HOBBYWING_V9626_KV160 = {.curr_max = 171.5, .spd_max = 6000, .PP = 21},
-             CUBEMARS_R100_KV90 = {.curr_max = 90.5, .spd_max = 2000, .PP = 21};
+             CUBEMARS_R100_KV90 = {.curr_max = 90.5, .spd_max = 3740, .PP = 21},
+             CUBEMARS_RO100_KV55 = {.curr_max = 62, .spd_max = 2550, .PP = 21};
 
 VESC_t VESC[VESC_NUM];
 

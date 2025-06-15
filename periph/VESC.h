@@ -13,7 +13,8 @@ typedef const struct
 } motor_info_t;
 extern motor_info_t T_MOTOR_AT4130_KV450,
     HOBBYWING_V9626_KV160,
-    CUBEMARS_R100_KV90;
+    CUBEMARS_R100_KV90,
+    CUBEMARS_RO100_KV55;
 
 #define VESC_fPCT_W 100000
 #define VESC_fCURR_W 1000
