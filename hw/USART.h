@@ -76,10 +76,10 @@ static inline void UART_SendArray(USART_info_t *USART_info, unsigned char TxData
 #warning No DMA cfg.
 #endif
     {
-#ifdef TIMER
-        timer_t USART_time = timer_InitStruct;
+#ifdef TIMsw
+        TIMsw_t USART_time = TIMsw_InitStruct;
         unsigned short cnt = 0;
-        while (!Timer_CheckTimeout(&USART_time, USART_info->timeout ? USART_info->timeout : UART_TIMEOUT_ARRAY) && cnt < len)
+        while (!TIMsw_CheckTimeout(&USART_time, USART_info->timeout ? USART_info->timeout : UART_TIMEOUT_ARRAY) && cnt < len)
             if (!UART_SendData(USART_info, TxData[cnt]))
                 cnt++;
 #else

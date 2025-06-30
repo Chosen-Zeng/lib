@@ -11,6 +11,7 @@ typedef struct
     float sum, *data;
 } MovAvgFltr_t;
 
+float *MovAvgFltr_Init(MovAvgFltr_t *MovAvgFltr_struct);
 float MovAvgFltr(MovAvgFltr_t *MovAvgFltr_struct, float NewData);
 unsigned char MovAvgFltr_GetStatus(MovAvgFltr_t *MovAvgFltr_struct, float err_lim);
 unsigned char MovAvgFltr_GetNewStatus(MovAvgFltr_t *MovAvgFltr_struct, float NewData, float err_lim);
