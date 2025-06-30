@@ -11,18 +11,6 @@
 #define C610_fCURR (10.f / 10000)
 #define C610_fPOS (360.f / 8192)
 
-#define C610_POS_Kp 10 // 16
-#define C610_POS_Ki 12
-#define C610_POS_Kd 0.01f // 1
-#define C610_POS_iSTART 60
-#define C610_POS_iLIMIT 0.8f
-
-#define C610_SPD_Kp 0.4f
-#define C610_SPD_Ki 0.25f
-#define C610_SPD_Kd 1e-4f // 2.7e-3f
-#define C610_SPD_iSTART 100
-#define C610_SPD_iLIMIT 10 // 5
-
 #define C610_CURR_LIMIT 10
 
 #define C610_ID1 0x200
@@ -47,18 +35,6 @@ void C610_SetTrq(void *CAN_handle, unsigned short C610_ID);
 #define C620_fPOS (360.f / 8192)
 #define C620_fCURR (20.f / 16384)
 
-#define C620_POS_Kp 19
-#define C620_POS_Ki 3
-#define C620_POS_Kd 0.05f // 0.35f
-#define C620_POS_iSTART 2
-#define C620_POS_iLIMIT 2
-
-#define C620_SPD_Kp 0.4f
-#define C620_SPD_Ki 0.6f
-#define C620_SPD_Kd 0.0015f
-#define C620_SPD_iSTART 50
-#define C620_SPD_iLIMIT 10
-
 #define C620_CURR_LIMIT 20
 
 #define C620_ID1 0x200
@@ -79,7 +55,7 @@ extern C620_t C620[8];
 
 typedef struct
 {
-	float p, i, d, deprev, decurr;
+	float Kp, p, Ki, i, i_start, i_lim, Kd, d, deprev, decurr;
 } PID_t;
 extern PID_t C610_PID_spd[8], C610_PID_pos[8], C620_PID_spd[8], C620_PID_pos[8];
 
