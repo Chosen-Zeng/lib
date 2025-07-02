@@ -1,7 +1,7 @@
 #ifndef __TFminiPlus_H
 #define __TFminiPlus_H
 
-#include "user.h"
+#include "usr.h"
 
 #ifdef TFminiPlus_NUM
 

@@ -1,7 +1,7 @@
 #ifndef __HAITAI_H
 #define __HAITAI_H
 
-#include "user.h"
+#include "usr.h"
 
 #if defined HAITAI_NUM && defined HAITAI_ID_OFFSET
 

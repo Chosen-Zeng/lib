@@ -1,7 +1,7 @@
 #ifndef __ROBOMASTER_H
 #define __ROBOMASTER_H
 
-#include "user.h"
+#include "usr.h"
 
 #ifdef FREQ_CTRL
 

@@ -1,7 +1,7 @@
 #ifndef __J60_H
 #define __J60_H
 
-#include "user.h"
+#include "usr.h"
 
 #if defined J60_NUM && defined J60_ID_OFFSET
 

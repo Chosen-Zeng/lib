@@ -1,7 +1,7 @@
 #ifndef __HIGHTORQUE_H
 #define __HIGHTORQUE_H
 
-#include "user.h"
+#include "usr.h"
 
 #if defined HIGHTORQUE_ID_OFFSET && defined HIGHTORQUE_NUM
 

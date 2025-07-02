@@ -1,8 +1,6 @@
 #ifndef __FLTR_H
 #define __FLTR_H
 
-#include <float.h>
-
 #define MOVAVGFLTR_NUM_DEFAULT 32
 
 typedef struct

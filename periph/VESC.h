@@ -1,14 +1,13 @@
 #ifndef __VESC_H
 #define __VESC_H
 
-#include "user.h"
+#include "usr.h"
 
 #if defined VESC_NUM && defined VESC_ID_OFFSET
 
 typedef const struct
 {
     const float curr_max;
-    const unsigned short spd_max; // speed at 24V
     const unsigned char PP;
 } motor_info_t;
 extern motor_info_t T_MOTOR_AT4130_KV450,
@@ -20,8 +19,9 @@ extern motor_info_t T_MOTOR_AT4130_KV450,
 #define VESC_fCURR_W 1000
 #define VESC_fPOS_W 1000000
 
-#define VESC_fPCT_R 1000
 #define VESC_fCURR_R 10
+#define VESC_fPCT_R 1000
+#define VESC_fTEMP 10
 #define VESC_fPOS_R 50
 
 #define VESC_fVOLT 10
@@ -56,6 +56,10 @@ typedef struct
         // CAN_PACKET_STATUS_1
         float spd, curr, dutycycle;
 
+        // CAN_PACKET_STATUS_2
+
+        // CAN_PACKET_STATUS_3
+
         // CAN_PACKET_STATUS_4
         struct
         {
@@ -64,7 +68,9 @@ typedef struct
         float curr_in, pos;
 
         // CAN_PACKET_STATUS_5
-        float tachometer, volt;
+        float /* tachometer, */ volt;
+
+        // CAN_PACKET_STATUS_6
     } fdbk;
 } VESC_t;
 extern VESC_t VESC[VESC_NUM];

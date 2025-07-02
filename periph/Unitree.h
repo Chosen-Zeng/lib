@@ -1,7 +1,7 @@
 #ifndef __UNITREE_H
 #define __UNITREE_H
 
-#include "user.h"
+#include "usr.h"
 
 #if defined GO_M8010_6_NUM && defined GO_M8010_6_ID_OFFSET
 

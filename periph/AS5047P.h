@@ -1,7 +1,7 @@
 #ifndef __AS5047P_H
 #define __AS5047P_H
 
-#include "user.h"
+#include "usr.h"
 #include "SPI.h"
 
 #if defined AS5047P_NUM
