@@ -12,6 +12,8 @@ HighTorque_t HighTorque[HIGHTORQUE_NUM + 1];
 
 void HighTorque_SetMixParam_f(void *FDCAN_handle, unsigned char ID)
 {
+    float temp;
+
     unsigned char arrID = ID == HIGHTORQUE_ADDR_BCAST ? HIGHTORQUE_NUM : ID - HIGHTORQUE_ID_OFFSET;
     unsigned char TxData[32] = {HIGHTORQUE_DATA_W | HIGHTORQUE_DATA_TYPE_8b | 1,
                                 HIGHTORQUE_REG_MODE,
@@ -26,8 +28,8 @@ void HighTorque_SetMixParam_f(void *FDCAN_handle, unsigned char ID)
                                 HIGHTORQUE_NOP,
                                 HIGHTORQUE_NOP};
 
-    *(float *)&TxData[6] = HighTorque[arrID].ctrl.pos / 360;
-    *(float *)&TxData[10] = HighTorque[arrID].ctrl.spd / 360;
+    *(float *)&TxData[6] = temp = HighTorque[arrID].ctrl.pos / 360;
+    *(float *)&TxData[10] = temp = HighTorque[arrID].ctrl.spd / 360;
     *(float *)&TxData[14] = HighTorque[arrID].ctrl.trq;
     *(float *)&TxData[18] = LIMIT(HighTorque[arrID].ctrl.Kp, HIGHTORQUE_NO_LIMIT_FLOAT);
     *(float *)&TxData[22] = LIMIT(HighTorque[arrID].ctrl.Kd, HIGHTORQUE_NO_LIMIT_FLOAT);
@@ -49,13 +51,15 @@ void HighTorque_SwitchMode(void *FDCAN_handle, unsigned char ID, unsigned char H
 // ineffective currently
 void HighTorque_SetSpdLimit(void *FDCAN_handle, unsigned char ID, float spd, float acc)
 {
+    float temp;
+
     unsigned char TxData[12] = {HIGHTORQUE_DATA_W | HIGHTORQUE_DATA_TYPE_FLOAT | 2,
                                 HIGHTORQUE_REG_SPD_LIMIT,
                                 [10] = HIGHTORQUE_DATA_R | HIGHTORQUE_DATA_TYPE_FLOAT | 2,
                                 HIGHTORQUE_REG_SPD_LIMIT};
 
-    *(float *)&TxData[2] = ABS(spd) / 360;
-    *(float *)&TxData[6] = ABS(acc) / 360;
+    *(float *)&TxData[2] = temp = ABS(spd) / 360;
+    *(float *)&TxData[6] = temp = ABS(acc) / 360;
 
     FDCAN_nBRS_SendData(FDCAN_handle, FDCAN_EXTENDED_ID, HIGHTORQUE_ADDR_RE | ID, TxData, FDCAN_DLC_BYTES_12);
 }

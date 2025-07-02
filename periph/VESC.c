@@ -21,17 +21,17 @@ void VESC_SendCmd(void *CAN_handle, unsigned char ID, unsigned short VESC_cmd, m
     case VESC_SET_CURR:
     case VESC_SET_CURR_BRAKE:
     {
-        f_2_u8(VESC[arrID].ctrl.curr * VESC_fCURR_W, TxData);
+        f_to_u8_rev(VESC[arrID].ctrl.curr * VESC_fCURR_W, TxData);
         break;
     }
     case VESC_SET_SPD:
     {
-        f_2_u8(LIMIT_ABS(VESC[arrID].ctrl.spd, motor_info->spd_max) * motor_info->PP, TxData);
+        f_to_u8_rev(LIMIT_ABS(VESC[arrID].ctrl.spd, motor_info->spd_max) * motor_info->PP, TxData);
         break;
     }
     case VESC_SET_POS:
     {
-        f_2_u8(LIMIT(VESC[arrID].ctrl.pos, VESC_POS_MAX) * VESC_fPOS_W, TxData);
+        f_to_u8_rev(LIMIT(VESC[arrID].ctrl.pos, VESC_POS_MAX) * VESC_fPOS_W, TxData);
         break;
     }
     default:

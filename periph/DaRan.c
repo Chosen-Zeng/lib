@@ -43,10 +43,12 @@ void DaRan_SetPos(void *CAN_handle, unsigned char ID, unsigned char DARAN_CMD_PO
 
 void DaRan_SetSpd(void *CAN_handle, unsigned char ID, unsigned char DARAN_SPD_MODE, float accel)
 {
+    float temp;
+
     unsigned char TxData[8];
     unsigned char arrID = ID == DARAN_ID_BCAST ? DARAN_NUM : ID - DARAN_ID_OFFSET;
 
-    *(float *)TxData = DaRan[arrID].ctrl.spd / 60;
+    *(float *)TxData = temp = DaRan[arrID].ctrl.spd / 60;
     *(short *)&TxData[4] = DARAN_SPD_MODE == DARAN_SPD_MODE_FDFWD ? LIMIT_RANGE(DaRan[arrID].ctrl.trq, 32767 * DARAN_SCALING, -32768 * DARAN_SCALING) / DARAN_SCALING : LIMIT_RANGE(accel, 32767 * DARAN_SCALING, -32768 * DARAN_SCALING) / DARAN_SCALING;
     *(unsigned short *)&TxData[6] = DARAN_SPD_MODE;
 
