@@ -9,13 +9,13 @@ typedef struct
     float sum, *data;
 } MovAvgFltr_t;
 
-float *MovAvgFltr_Init(MovAvgFltr_t *MovAvgFltr_struct);
-float MovAvgFltr(MovAvgFltr_t *MovAvgFltr_struct, float NewData);
-unsigned char MovAvgFltr_GetStatus(MovAvgFltr_t *MovAvgFltr_struct, float err_lim);
-unsigned char MovAvgFltr_GetNewStatus(MovAvgFltr_t *MovAvgFltr_struct, float NewData, float err_lim);
-unsigned char MovAvgFltr_GetTargetStatus(MovAvgFltr_t *MovAvgFltr_struct, float target, float err_lim);
-unsigned char MovAvgFltr_GetNewTargetStatus(MovAvgFltr_t *MovAvgFltr_struct, float NewData, float target, float err_lim);
-void MovAvgFltr_Clear(MovAvgFltr_t *MovAvgFltr_struct);
-float MovAvgFltr_GetData(MovAvgFltr_t *MovAvgFltr_struct);
+float *MovAvgFltr_Init(MovAvgFltr_t *const MovAvgFltr_struct);
+float MovAvgFltr(MovAvgFltr_t *const MovAvgFltr_struct, const float NewData);
+unsigned char MovAvgFltr_GetStatus(MovAvgFltr_t *const MovAvgFltr_struct, const float err_lim);
+unsigned char MovAvgFltr_GetNewStatus(MovAvgFltr_t *const MovAvgFltr_struct, const float NewData, const float err_lim);
+unsigned char MovAvgFltr_GetTargetStatus(MovAvgFltr_t *const MovAvgFltr_struct, const float target, const float err_lim);
+unsigned char MovAvgFltr_GetNewTargetStatus(MovAvgFltr_t *const MovAvgFltr_struct, const float NewData, const float target, const float err_lim);
+void MovAvgFltr_Clear(MovAvgFltr_t *const MovAvgFltr_struct);
+float MovAvgFltr_GetData(MovAvgFltr_t *const MovAvgFltr_struct);
 
 #endif

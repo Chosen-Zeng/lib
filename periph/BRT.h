@@ -5,28 +5,6 @@
 
 #if defined BRT_NUM
 
-#define BRT_LAP_MPL // type selection: BRT_LAP_SGL/BRT_LAP_MPL
-#if defined BRT_LAP_SGL || defined BRT_LAP_MPL
-
-#define BRT_RES 4096 // define resolution
-#ifdef BRT_RES
-#define BRT_fANGLE (360.f / BRT_RES)
-
-#ifdef BRT_LAP_MPL
-#define BRT_LAP 24 // define lap
-#ifndef BRT_LAP
-#error No lap defined.
-#endif
-#endif
-
-#else
-#error No resolution defined.
-#endif
-
-#else
-#warning No type selected.
-#endif
-
 #define BRT_VAL_READ 0x01 // DLC: 1
 #define BRT_ID_SET 0x02   // DLC: 1
 
@@ -57,25 +35,30 @@
 #define BRT_POS_CURR_SET 0x0D // DLC: 4
 // 0x0E
 
-// single-lap only
-#ifdef BRT_LAP_SGL
+// single-lap instruction
 #define BRT_VAL_MPL_READ 0x08 // DLC: 1
 #define BRT_VAL_LAP_READ 0x09 // DLC: 1
 
-// multi-lap only
-#elif defined BRT_LAP_MPL
+// multi-lap instruction
 #define BRT_5LAP_SET 0x0F // DLC: 1
-#endif
 
-#ifdef DEBUG
-#define BRT_ERROR 0
-#define BRT_SUCCESS 1
-#endif
+typedef struct
+{
+    const unsigned char ID;
+    const struct
+    {
+        unsigned char lap;
+        unsigned short res;
+    } info;
 
-extern float BRT[BRT_NUM];
+    float angle;
+} BRT_t;
+extern BRT_t BRT[BRT_NUM];
 
-void BRT_Init(void *CAN_handle, uint8_t ID);
-void BRT_SendCmd(void *CAN_handle, uint8_t ID, uint8_t BRT_func, uint32_t data);
+void BRT_Init(CAN_handle_t *const CAN_handle, const unsigned char arrID);
+void BRT_SendCmd(CAN_handle_t *const CAN_handle, const unsigned char arrID, const unsigned char BRT_func, unsigned data);
+
+bool BRT_MsgHandler(const unsigned CAN_ID, const unsigned char arrID, const unsigned char RxData[7]);
 
 #endif
 #endif

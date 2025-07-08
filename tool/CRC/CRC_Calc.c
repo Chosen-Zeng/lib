@@ -28,19 +28,19 @@ unsigned ReverseBits(unsigned data, unsigned char blen)
     return reserve;
 }
 
-void CRC_TabCalc(CRC_info_t *CRC_info)
+void CRC_TabCalc(CRC_handle_t *const CRC_handle)
 {
     unsigned char cnt = 0;
 
     do
     {
-        unsigned CRC_val = cnt << CRC_info->len - 8;
+        unsigned CRC_val = cnt << CRC_handle->len - 8;
 
         for (unsigned char cnt = 0; cnt < 8; cnt++)
-            CRC_val = CRC_val & (1 << CRC_info->len - 1) ? (CRC_val << 1) ^ CRC_info->poly
-                                                         : CRC_val << 1;
+            CRC_val = CRC_val & (1 << CRC_handle->len - 1) ? (CRC_val << 1) ^ CRC_handle->poly
+                                                           : CRC_val << 1;
 
-        CRC_tab[CRC_info->refin ? ReverseBits(cnt, 8) : cnt] = (CRC_info->refout ? ReverseBits(CRC_val, CRC_info->len) : CRC_val);
+        CRC_tab[CRC_handle->refin ? ReverseBits(cnt, 8) : cnt] = (CRC_handle->refout ? ReverseBits(CRC_val, CRC_handle->len) : CRC_val);
 
     } while (++cnt);
 }

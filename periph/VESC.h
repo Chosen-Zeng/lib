@@ -3,12 +3,12 @@
 
 #include "usr.h"
 
-#if defined VESC_NUM && defined VESC_ID_OFFSET
+#ifdef VESC_NUM
 
 typedef const struct
 {
-    const float curr_max;
-    const unsigned char PP;
+    float curr_max;
+    unsigned char PP;
 } motor_info_t;
 extern motor_info_t T_MOTOR_AT4130_KV450,
     HOBBYWING_V9626_KV160,
@@ -47,6 +47,9 @@ extern motor_info_t T_MOTOR_AT4130_KV450,
 
 typedef struct
 {
+    const unsigned char ID;
+    motor_info_t *const motor;
+
     struct
     {
         float curr, spd, pos;
@@ -75,7 +78,8 @@ typedef struct
 } VESC_t;
 extern VESC_t VESC[VESC_NUM];
 
-void VESC_SendCmd(void *CAN_handle, unsigned char ID, unsigned short VESC_cmd, motor_info_t *motor_info);
+void VESC_SendCmd(CAN_handle_t *const CAN_handle, const unsigned char arrID, const unsigned short VESC_cmd);
+bool VESC_MsgHandler(const unsigned CAN_ID, const unsigned char arrID, const unsigned char RxData[8]);
 
 #endif
 #endif

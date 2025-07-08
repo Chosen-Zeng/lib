@@ -3,7 +3,7 @@
 
 #include "usr.h"
 
-#if defined GO_M8010_6_NUM && defined GO_M8010_6_ID_OFFSET
+#ifdef GO_M8010_6_NUM
 
 #define GO_M8010_6_GR (19 / 3.f)
 
@@ -39,6 +39,8 @@ enum GO_M8010_6_ERR
 
 typedef struct
 {
+    const unsigned char ID;
+
     struct
     {
         float trq, spd, pos, Kp, Kd;
@@ -55,18 +57,21 @@ typedef struct
 } GO_M8010_6_t;
 extern GO_M8010_6_t GO_M8010_6[GO_M8010_6_NUM];
 
-void GO_M8010_6_SendParam(USART_info_t *USART_info, unsigned char ID);
-void GO_M8010_6_Stop(USART_info_t *UART_info, unsigned char ID);
+void GO_M8010_6_SendParam(USART_handle_t *const USART_handle, const unsigned char arrID);
+void GO_M8010_6_Stop(USART_handle_t *const UART_info, const unsigned char arrID);
+
+bool GO_M8010_6_MsgHandler(const unsigned char arrID, const unsigned char RxData[17]);
 
 #endif
 
-#if defined A1_NUM && defined A1_ID_OFFSET
+#ifdef A1_NUM
 
 #define A1_GR 9.1f
 
 #define A1_PREAMBLE 0xEEFE
 
 #define A1_ID_BCAST 0xBB
+#define A1_BCAST_ARRID A1_NUM
 
 #define A1_MODE_STOP 0
 #define A1_MODE_SPIN 5
@@ -93,6 +98,7 @@ void GO_M8010_6_Stop(USART_info_t *UART_info, unsigned char ID);
 
 typedef struct
 {
+    const unsigned char ID;
     struct
     {
         float trq, spd, pos, Kp, Kd;
@@ -140,8 +146,10 @@ typedef struct
 } A1_t;
 extern A1_t A1[A1_NUM + 1];
 
-void A1_SendParam(USART_info_t *UART_info, unsigned char ID);
-void A1_Stop(USART_info_t *UART_info, unsigned char ID);
+void A1_SendParam(USART_handle_t *const UART_info, const unsigned char arrID);
+void A1_Stop(USART_handle_t *const UART_info, const unsigned char arrID);
+
+bool A1_MsgHandler(const unsigned char arrID, const unsigned char RxData[78]);
 
 #endif
 #endif

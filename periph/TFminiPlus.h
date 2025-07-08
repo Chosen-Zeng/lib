@@ -14,7 +14,7 @@ typedef struct
 } TFminiPlus_t;
 extern TFminiPlus_t TFminiPlus[TFminiPlus_NUM];
 
-extern unsigned char TFminiPlus_RxData[TFminiPlus_NUM][9];
+bool TFminiPlus_MsgHandler(const unsigned char RxData[9]);
 
 #endif
 #endif

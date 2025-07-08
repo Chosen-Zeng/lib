@@ -13,7 +13,7 @@ typedef struct
 
 //  @brief     update intvl of the specific time struct
 //  @attention intvl must < 1s
-static inline float TIMsw_GetIntvl(TIMsw_t *timer_struct)
+static inline float TIMsw_GetIntvl(TIMsw_t *const timer_struct)
 {
     if (timer_struct->prev != 0 && timer_struct->curr != 0)
     {
@@ -33,7 +33,7 @@ static inline float TIMsw_GetIntvl(TIMsw_t *timer_struct)
 
 //  @brief     update elapse of the specific time struct
 //  @attention intvl must < 1s
-static inline float TIMsw_GetElapse(TIMsw_t *timer_struct)
+static inline float TIMsw_GetElapse(TIMsw_t *const timer_struct)
 {
     if (timer_struct->prev != 0 && timer_struct->curr != 0)
     {
@@ -52,18 +52,18 @@ static inline float TIMsw_GetElapse(TIMsw_t *timer_struct)
 }
 
 // @return timeout or not
-static inline unsigned char TIMsw_CheckTimeout(TIMsw_t *timer_struct, float timeout)
+static inline unsigned char TIMsw_CheckTimeout(TIMsw_t *const timer_struct, const float timeout)
 {
     TIMsw_GetElapse(timer_struct);
     return timer_struct->intvl >= timeout;
 }
 
-static inline void TIMsw_Clear(TIMsw_t *timer_struct)
+static inline void TIMsw_Clear(TIMsw_t *const timer_struct)
 {
     timer_struct->intvl = timer_struct->curr = timer_struct->prev = 0;
 }
 
-static inline float TIMsw_GetRatio(TIMsw_t *timer_struct, float duration)
+static inline float TIMsw_GetRatio(TIMsw_t *const timer_struct, const float duration)
 {
     return TIMsw_GetElapse(timer_struct) > duration ? 1 : timer_struct->intvl / duration;
 }

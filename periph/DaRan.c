@@ -1,19 +1,16 @@
 #include "DaRan.h"
 
-#if defined DARAN_NUM && defined DARAN_ID_OFFSET
+#ifdef DARAN_NUM
 
-DaRan_t DaRan[DARAN_NUM + 1];
-
-void DaRan_Init(void *CAN_handle, unsigned char ID, float intvl_ms)
+void DaRan_Init(CAN_handle_t *const CAN_handle, const unsigned char arrID)
 {
-    DaRan_Prop_W(CAN_handle, ID, DARAN_PARAM_CRASH_DETECT_EN, DARAN_DATA_TYPE_u32, 0);
+    DaRan_Prop_W(CAN_handle, arrID, DARAN_PARAM_CRASH_DETECT_EN, DARAN_DATA_TYPE_u32, 0);
 }
 
 // @note additional param needed in specific mode
-void DaRan_SetPos(void *CAN_handle, unsigned char ID, unsigned char DARAN_CMD_POS_MODE, float param)
+void DaRan_SetPos(CAN_handle_t *const CAN_handle, const unsigned char arrID, const unsigned char DARAN_CMD_POS_MODE, float param)
 {
     unsigned char TxData[8];
-    unsigned char arrID = ID == DARAN_ID_BCAST ? DARAN_NUM : ID - DARAN_ID_OFFSET;
 
     *(float *)TxData = DaRan[arrID].ctrl.pos;
     *(short *)&TxData[4] = LIMIT_RANGE(DaRan[arrID].ctrl.spd, 32767 / DARAN_fSPD, -32768 / DARAN_fSPD) * DARAN_fSPD;
@@ -38,36 +35,46 @@ void DaRan_SetPos(void *CAN_handle, unsigned char ID, unsigned char DARAN_CMD_PO
     }
     }
 
-    CAN_SendData(CAN_handle, FDCAN_STANDARD_ID, ID << 5 | DARAN_CMD_POS_MODE, TxData, 8);
+#ifdef CAN_SUPPORT
+    CAN_SendData(CAN_handle, CAN_ID_STD, DaRan[arrID].ID << 5 | DARAN_CMD_POS_MODE, TxData, 8);
+#elif defined FDCAN_SUPPORT
+    CAN_SendData(CAN_handle, FDCAN_STANDARD_ID, DaRan[arrID].ID << 5 | DARAN_CMD_POS_MODE, TxData, 8);
+#endif
 }
 
-void DaRan_SetSpd(void *CAN_handle, unsigned char ID, unsigned char DARAN_SPD_MODE, float accel)
+void DaRan_SetSpd(CAN_handle_t *const CAN_handle, const unsigned char arrID, const unsigned char DARAN_SPD_MODE, float accel)
 {
     float temp;
 
     unsigned char TxData[8];
-    unsigned char arrID = ID == DARAN_ID_BCAST ? DARAN_NUM : ID - DARAN_ID_OFFSET;
 
     *(float *)TxData = temp = DaRan[arrID].ctrl.spd / 60;
     *(short *)&TxData[4] = DARAN_SPD_MODE == DARAN_SPD_MODE_FDFWD ? LIMIT_RANGE(DaRan[arrID].ctrl.trq, 32767 * DARAN_SCALING, -32768 * DARAN_SCALING) / DARAN_SCALING : LIMIT_RANGE(accel, 32767 * DARAN_SCALING, -32768 * DARAN_SCALING) / DARAN_SCALING;
     *(unsigned short *)&TxData[6] = DARAN_SPD_MODE;
 
-    CAN_SendData(CAN_handle, FDCAN_STANDARD_ID, ID << 5 | DARAN_CMD_SPD, TxData, 8);
+#ifdef CAN_SUPPORT
+    CAN_SendData(CAN_handle, CAN_ID_STD, DaRan[arrID].ID << 5 | DARAN_CMD_SPD, TxData, 8);
+#elif defined FDCAN_SUPPORT
+    CAN_SendData(CAN_handle, FDCAN_STANDARD_ID, DaRan[arrID].ID << 5 | DARAN_CMD_SPD, TxData, 8);
+#endif
 }
 
-void DaRan_SetTrq(void *CAN_handle, unsigned char ID, unsigned char DARAN_TRQ_MODE, float accel)
+void DaRan_SetTrq(CAN_handle_t *const CAN_handle, const unsigned char arrID, const unsigned char DARAN_TRQ_MODE, float accel)
 {
     unsigned char TxData[8];
-    unsigned char arrID = ID == DARAN_ID_BCAST ? DARAN_NUM : ID - DARAN_ID_OFFSET;
 
     *(float *)TxData = DaRan[arrID].ctrl.trq;
     *(short *)&TxData[4] = DARAN_TRQ_MODE == DARAN_TRQ_MODE_DIRECT ? 0 : LIMIT_RANGE(accel, 32767 * DARAN_SCALING, -32768 * DARAN_SCALING) / DARAN_SCALING;
     *(unsigned short *)&TxData[6] = DARAN_TRQ_MODE;
 
-    CAN_SendData(CAN_handle, FDCAN_STANDARD_ID, ID << 5 | DARAN_CMD_TRQ, TxData, 8);
+#ifdef CAN_SUPPORT
+    CAN_SendData(CAN_handle, CAN_ID_STD, DaRan[arrID].ID << 5 | DARAN_CMD_TRQ, TxData, 8);
+#elif defined FDCAN_SUPPORT
+    CAN_SendData(CAN_handle, FDCAN_STANDARD_ID, DaRan[arrID].ID << 5 | DARAN_CMD_TRQ, TxData, 8);
+#endif
 }
 
-void DaRan_Prop_W(void *CAN_handle, unsigned char ID, unsigned short DARAN_PARAM, unsigned short DARAN_DATA_TYPE, float param_val)
+void DaRan_Prop_W(CAN_handle_t *const CAN_handle, const unsigned char arrID, const const unsigned short DARAN_PARAM, const unsigned short DARAN_DATA_TYPE, float param)
 {
     unsigned char TxData[8];
 
@@ -77,35 +84,39 @@ void DaRan_Prop_W(void *CAN_handle, unsigned char ID, unsigned short DARAN_PARAM
     {
     case DARAN_DATA_TYPE_f:
     {
-        *(float *)&TxData[4] = param_val;
+        *(float *)&TxData[4] = param;
         break;
     }
     case DARAN_DATA_TYPE_u16:
     {
-        *(unsigned short *)&TxData[4] = param_val;
+        *(unsigned short *)&TxData[4] = LIMIT(param, 1 << 16 - 1);
         break;
     }
     case DARAN_DATA_TYPE_s16:
     {
-        *(short *)&TxData[4] = param_val;
+        *(short *)&TxData[4] = LIMIT_RANGE(param, 1 << 15 - 1, -1 << 15);
         break;
     }
     case DARAN_DATA_TYPE_u32:
     {
-        *(unsigned int *)&TxData[4] = param_val;
+        *(unsigned int *)&TxData[4] = LIMIT(param, 1 << 32 - 1);
         break;
     }
     case DARAN_DATA_TYPE_s32:
     {
-        *(int *)&TxData[4] = param_val;
+        *(int *)&TxData[4] = LIMIT_RANGE(param, 1 << 31 - 1, -1 << 31);
         break;
     }
     }
 
-    CAN_SendData(CAN_handle, FDCAN_STANDARD_ID, ID << 5 | DARAN_CMD_PROP_W, TxData, 8);
+#ifdef CAN_SUPPORT
+    CAN_SendData(CAN_handle, CAN_ID_STD, DaRan[arrID].ID << 5 | DARAN_CMD_PROP_W, TxData, 8);
+#elif defined FDCAN_SUPPORT
+    CAN_SendData(CAN_handle, FDCAN_STANDARD_ID, DaRan[arrID].ID << 5 | DARAN_CMD_PROP_W, TxData, 8);
+#endif
 }
 
-void DaRan_Prop_R(void *CAN_handle, unsigned char ID, unsigned short DARAN_PARAM, unsigned short DARAN_DATA_TYPE)
+void DaRan_Prop_R(CAN_handle_t *const const CAN_handle, const const unsigned char arrID, const const unsigned short DARAN_PARAM, const unsigned short DARAN_DATA_TYPE)
 {
     unsigned char TxData[8];
 
@@ -113,31 +124,26 @@ void DaRan_Prop_R(void *CAN_handle, unsigned char ID, unsigned short DARAN_PARAM
     *(unsigned short *)&TxData[2] = DARAN_DATA_TYPE;
     *(unsigned int *)&TxData[4] = 0;
 
-    CAN_SendData(CAN_handle, FDCAN_STANDARD_ID, ID << 5 | DARAN_CMD_PROP_W, TxData, 8);
+#ifdef CAN_SUPPORT
+    CAN_SendData(CAN_handle, CAN_ID_STD, DaRan[arrID].ID << 5 | DARAN_CMD_PROP_W, TxData, 8);
+#elif defined FDCAN_SUPPORT
+    CAN_SendData(CAN_handle, FDCAN_STANDARD_ID, DaRan[arrID].ID << 5 | DARAN_CMD_PROP_W, TxData, 8);
+#endif
 }
 
-/*
-void FDCAN1_IT0_IRQHandler(void)
+bool DaRan_MsgHandler(const unsigned CAN_ID, const unsigned char arrID, const unsigned char RxData[8])
 {
-    if (FDCAN1->IR & 0x1)
+    if (CAN_ID == (DaRan[arrID].ID << 5 | DARAN_CMD_PROP_R))
     {
-        FDCAN1->IR |= 0x1;
+        DaRan[arrID].fdbk.pos = *(float *)RxData;
+        DaRan[arrID].fdbk.spd = *(short *)&RxData[4] / DARAN_fSPD;
+        DaRan[arrID].fdbk.trq = *(short *)&RxData[6] * DARAN_SCALING;
 
-        FDCAN_RxHeaderTypeDef FDCAN_RxHeader;
-        uint8_t RxData[64];
-        HAL_FDCAN_GetRxMessage(&hfdcan1, FDCAN_RX_FIFO0, &FDCAN_RxHeader, RxData);
-
-        switch (FDCAN_RxHeader.Identifier)
-        {
-        case ID << 5 | DARAN_CMD_PROP_R:
-        {
-            DaRan[1 - DARAN_ID_OFFSET].fdbk.pos = *(float *)RxData;
-            DaRan[1 - DARAN_ID_OFFSET].fdbk.spd = *(short *)&RxData[4] / DARAN_fSPD;
-            DaRan[1 - DARAN_ID_OFFSET].fdbk.trq = *(short *)&RxData[6] * DARAN_SCALING;
-            break;
-        }
-        }
+        return true;
     }
+    return false;
 }
-*/
+
+#else
+#error DARAN_NUM undefined
 #endif

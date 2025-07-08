@@ -2,11 +2,9 @@
 #include "algorithm.h"
 #include "CAN.h"
 
-#if defined J60_NUM && defined J60_ID_OFFSET
+#ifdef J60_NUM
 
-J60_t J60[J60_NUM];
-
-void J60_SendCmd(void *CAN_handle, unsigned char ID, unsigned short J60_cmd, float data)
+void J60_SendCmd(CAN_handle_t *const CAN_handle, const unsigned char arrID, const unsigned short J60_cmd, float data)
 {
     unsigned char TxData[8], len = 0;
 
@@ -15,7 +13,6 @@ void J60_SendCmd(void *CAN_handle, unsigned char ID, unsigned short J60_cmd, flo
     case J60_MOTOR_CONTROL:
     {
         len = 8;
-        unsigned char arrID = ID - J60_ID_OFFSET;
 
         *(unsigned long *)TxData = (unsigned long)(LIMIT_ABS(J60[arrID].ctrl.pos, J60_POS_LIMIT) + J60_POS_LIMIT) / J60_fPOS_W;
         *(unsigned long *)TxData |= (unsigned long)(LIMIT_ABS(J60[arrID].ctrl.spd, J60_SPD_LIMIT) + J60_SPD_LIMIT) / J60_fSPD_W << 16;
@@ -41,45 +38,34 @@ void J60_SendCmd(void *CAN_handle, unsigned char ID, unsigned short J60_cmd, flo
     }
     }
 #ifdef CAN_SUPPORT
-    CAN_SendData(CAN_handle, CAN_ID_STD, J60_cmd | ID, TxData, len);
+    CAN_SendData(CAN_handle, CAN_ID_STD, J60_cmd << 5 | J60_MSG_SEND << 4 | J60[arrID].ID, TxData, len);
 #elif defined FDCAN_SUPPORT
-    CAN_SendData(CAN_handle, FDCAN_STANDARD_ID, J60_cmd | ID, TxData, len);
+    CAN_SendData(CAN_handle, FDCAN_STANDARD_ID, J60_cmd << 5 | J60_MSG_SEND << 4 | J60[arrID].ID, TxData, len);
 #endif
 }
 
-void J60_Init(void *CAN_handle, unsigned char ID)
+void J60_Init(CAN_handle_t *const CAN_handle, const unsigned char arrID)
 {
-    J60_SendCmd(CAN_handle, ID, J60_MOTOR_ENABLE, 0);
+    J60_SendCmd(CAN_handle, arrID, J60_MOTOR_ENABLE, 0);
 }
 
-#ifdef CAN_SUPPORT
-/*void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
+bool J60_MsgHandler(const unsigned CAN_ID, const unsigned char arrID, const unsigned char RxData[8])
 {
-    CAN_RxHeaderTypeDef CAN_RxHeader;
-    unsigned char RxFifo1[8];
-    HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO1, &CAN_RxHeader, RxFifo1);
-
-    if (hcan->Instance == CAN1)
+    if (CAN_ID == (J60_MOTOR_CONTROL << 5 | J60_MSG_RECV << 4 | J60[arrID].ID))
     {
-        switch (CAN_RxHeader.StdId & 0x7E0)
-        {
-        case J60_MOTOR_CONTROL:
-        {
-            unsigned char arrID = (CAN_RxHeader.StdId & 0xF) - J60_ID_OFFSET;
+        J60[arrID].fdbk.pos = (*(unsigned *)RxData & 0xFFFFF) * J60_fPOS_R - J60_POS_LIMIT;
+        J60[arrID].fdbk.spd = (*(unsigned *)&RxData[2] >> 4 & 0xFFFFF) * J60_fSPD_R - J60_SPD_LIMIT;
+        J60[arrID].fdbk.trq = *(unsigned short *)&RxData[5] * J60_fTORQUE - J60_TORQUE_LIMIT;
+        if ((*(unsigned char *)&RxData[7] & 1) == J60_TEMP_FLAG_MOSFET)
+            J60[arrID].fdbk.temp.MOSFET = (*(unsigned char *)&RxData[7] >> 1) * J60_fTEMP + J60_TEMP_OFFSET;
+        else
+            J60[arrID].fdbk.temp.motor = (*(unsigned char *)&RxData[7] >> 1) * J60_fTEMP + J60_TEMP_OFFSET;
 
-            J60[arrID].fdbk.pos = (*(uint32_t *)RxFifo1 & 0xFFFFF) * J60_fPOS_R - J60_POS_LIMIT;
-            J60[arrID].fdbk.spd = (*(uint32_t *)&RxFifo1[2] >> 4 & 0xFFFFF) * J60_fSPD_R - J60_SPD_LIMIT;
-            J60[arrID].fdbk.trq = *(unsigned short *)&RxFifo1[5] * J60_fTORQUE - J60_TORQUE_LIMIT;
-            if ((*(unsigned char *)&RxFifo1[7] & 1) == J60_TEMP_FLAG_MOSFET)
-                J60[arrID].fdbk.temp.MOSFET = (*(unsigned char *)&RxFifo1[7] >> 1) * J60_fTEMP + J60_TEMP_OFFSET;
-            else
-                J60[arrID].fdbk.temp.motor = (*(unsigned char *)&RxFifo1[7] >> 1) * J60_fTEMP + J60_TEMP_OFFSET;
-
-            break;
-        }
-        }
+        return true;
     }
-}*/
-#elif defined FDCAN_SUPPORT
-#endif
+    return false;
+}
+
+#else
+#error J60_NUM undefined
 #endif

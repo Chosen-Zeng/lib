@@ -183,34 +183,34 @@ typedef const struct
         const unsigned short *tab16;
         const unsigned *tab32;
     };
-} CRC_info_t;
-static CRC_info_t CRC_16_MODBUS = {.len = 16, .poly = 0x8005, .init = 0xFFFF, .xorout = 0, .refin = true, .refout = true, .tab16 = CRC_16_MODBUS_tab},
-                  CRC_16_CCITT = {.len = 16, .poly = 0x1021, .init = 0, .xorout = 0, .refin = true, .refout = true, .tab16 = CRC_16_CCITT_tab},
-                  CRC_32_MPEG_2 = {.len = 32, .poly = 0x04C11DB7, .init = 0xFFFFFFFF, .xorout = 0, .refin = false, .refout = false, .tab32 = CRC_32_MPEG_2_tab},
-                  CRC_32_BZIP2 = {.len = 32, .poly = 0x04C11DB7, .init = 0xFFFFFFFF, .xorout = 0xFFFFFFFF, .refin = false, .refout = false, .tab32 = CRC_32_BZIP2_tab},
-                  CRC_32_JAMCRC = {.len = 32, .poly = 0x04C11DB7, .init = 0xFFFFFFFF, .xorout = 0, .refin = true, .refout = true, .tab32 = CRC_32_JAMCRC_tab};
+} CRC_handle_t;
+static CRC_handle_t CRC_16_MODBUS = {.len = 16, .poly = 0x8005, .init = 0xFFFF, .xorout = 0, .refin = true, .refout = true, .tab16 = CRC_16_MODBUS_tab},
+                    CRC_16_CCITT = {.len = 16, .poly = 0x1021, .init = 0, .xorout = 0, .refin = true, .refout = true, .tab16 = CRC_16_CCITT_tab},
+                    CRC_32_MPEG_2 = {.len = 32, .poly = 0x04C11DB7, .init = 0xFFFFFFFF, .xorout = 0, .refin = false, .refout = false, .tab32 = CRC_32_MPEG_2_tab},
+                    CRC_32_BZIP2 = {.len = 32, .poly = 0x04C11DB7, .init = 0xFFFFFFFF, .xorout = 0xFFFFFFFF, .refin = false, .refout = false, .tab32 = CRC_32_BZIP2_tab},
+                    CRC_32_JAMCRC = {.len = 32, .poly = 0x04C11DB7, .init = 0xFFFFFFFF, .xorout = 0, .refin = true, .refout = true, .tab32 = CRC_32_JAMCRC_tab};
 
 // CRC calc by byte
-static inline unsigned CRCsw_Calc(CRC_info_t *CRC_info, const unsigned char str[], unsigned char len)
+static inline unsigned CRCsw_Calc(CRC_handle_t *const CRC_handle, const unsigned char str[], const unsigned char len)
 {
-    unsigned CRC_val = CRC_info->init;
+    unsigned CRC_val = CRC_handle->init;
     for (unsigned char cnt = 0; cnt < len; cnt++)
-        switch (CRC_info->len)
+        switch (CRC_handle->len)
         {
         case 16:
         {
-            CRC_val = CRC_info->refout ? CRC_info->tab16[(CRC_val ^ str[cnt]) & 0xFF] ^ (CRC_val >> 8)
-                                       : CRC_info->tab16[(CRC_val ^ str[cnt]) & 0xFF] ^ (CRC_val << 8);
+            CRC_val = CRC_handle->refout ? CRC_handle->tab16[(CRC_val ^ str[cnt]) & 0xFF] ^ (CRC_val >> 8)
+                                         : CRC_handle->tab16[(CRC_val ^ str[cnt]) & 0xFF] ^ (CRC_val << 8);
             break;
         }
         case 32:
         {
-            CRC_val = CRC_info->refout ? CRC_info->tab32[(CRC_val ^ str[cnt]) & 0xFF] ^ (CRC_val >> 8)
-                                       : CRC_32_MPEG_2_tab[(CRC_val >> 24) ^ str[cnt]] ^ (CRC_val << 8);
+            CRC_val = CRC_handle->refout ? CRC_handle->tab32[(CRC_val ^ str[cnt]) & 0xFF] ^ (CRC_val >> 8)
+                                         : CRC_32_MPEG_2_tab[(CRC_val >> 24) ^ str[cnt]] ^ (CRC_val << 8);
             break;
         }
         }
-    return CRC_val ^ CRC_info->xorout;
+    return CRC_val ^ CRC_handle->xorout;
 }
 
 // hw CRC
@@ -230,16 +230,16 @@ static inline unsigned CRCsw_Calc(CRC_info_t *CRC_info, const unsigned char str[
 #define CRC_DATA_HALFWORD 2
 #define CRC_DATA_WORD 4
 
-static inline void CRC_Init(bool refout_sts, unsigned CRC_REFIN_size, unsigned char CRC_POLY_size, unsigned init, unsigned poly)
+static inline void CRC_Init(const bool refout, const unsigned CRC_REFIN_size, const unsigned char CRC_POLY_size, const unsigned init, const unsigned poly)
 {
     CRC->POL = poly;
     CRC->INIT = init;
-    CRC->CR = refout_sts << 7 |
+    CRC->CR = refout << 7 |
               CRC_REFIN_size << 5 |
               CRC_POLY_size << 3;
 }
 
-static inline unsigned CRC_Calc(unsigned char data[], unsigned char len, unsigned char CRC_DATA_size)
+static inline unsigned CRC_Calc(const unsigned char data[], const unsigned char len, const unsigned char CRC_DATA_size)
 {
     CRC->CR |= 1; // reset CRC val
     for (unsigned char cnt = 0; cnt < len;)

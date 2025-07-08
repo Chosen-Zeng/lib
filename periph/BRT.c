@@ -1,19 +1,11 @@
 #include "BRT.h"
 #include "CAN.h"
 
-#if defined BRT_NUM
+#ifdef BRT_NUM
 
-float BRT[BRT_NUM];
-
-#define nDEBUG
-
-#ifdef DEBUG
-uint8_t BRT_status;
-#endif
-
-void BRT_SendCmd(void *CAN_handle, uint8_t ID, uint8_t BRT_func, uint32_t data)
+void BRT_SendCmd(CAN_handle_t *const CAN_handle, const unsigned char arrID, const unsigned char BRT_func, const unsigned data)
 {
-    unsigned char TxData[7] = {3 + 1, ID, BRT_func};
+    unsigned char TxData[7] = {3 + 1, BRT[arrID].ID, BRT_func};
     switch (BRT_func)
     {
     case BRT_ATD_SET:
@@ -37,69 +29,36 @@ void BRT_SendCmd(void *CAN_handle, uint8_t ID, uint8_t BRT_func, uint32_t data)
 #endif
 }
 
-void BRT_Init(void *CAN_handle, uint8_t ID)
+void BRT_Init(CAN_handle_t *const CAN_handle, const unsigned char arrID)
 {
-    BRT_SendCmd(CAN_handle, ID, BRT_ATD_SET, 1000);
-    osDelay(500);
-    BRT_SendCmd(CAN_handle, ID, BRT_MODE_SET, BRT_MODE_VAL);
-    osDelay(500);
-    BRT_SendCmd(CAN_handle, ID, BRT_INC_DIRCT_SET, BRT_INC_DIRCT_CW);
-    osDelay(500);
-    BRT_SendCmd(CAN_handle, ID, BRT_POS_0_SET, 0);
-    osDelay(500);
+    BRT_SendCmd(CAN_handle, arrID, BRT_ATD_SET, 1000);
+    BRT_SendCmd(CAN_handle, arrID, BRT_MODE_SET, BRT_MODE_VAL);
+    BRT_SendCmd(CAN_handle, arrID, BRT_INC_DIRCT_SET, BRT_INC_DIRCT_CW);
+    BRT_SendCmd(CAN_handle, arrID, BRT_POS_0_SET, 0);
 }
 
-void FDCAN1_IT0_IRQHandler(void)
+bool BRT_MsgHandler(const unsigned CAN_ID, const unsigned char arrID, const unsigned char RxData[7])
 {
-    if (FDCAN1->IR & 0x1)
+    if (CAN_ID == BRT[arrID].ID &&
+        BRT[arrID].ID == RxData[1] &&
+        BRT_VAL_READ == RxData[2])
     {
-        FDCAN1->IR |= 0x1;
+        static float BRT_curr[BRT_NUM], BRT_prev[BRT_NUM];
 
-        FDCAN_RxHeaderTypeDef FDCAN_RxHeader;
-        unsigned char RxData[32];
-        HAL_FDCAN_GetRxMessage(&hfdcan1, FDCAN_RX_FIFO0, &FDCAN_RxHeader, RxData);
+        BRT_curr[arrID] = *(unsigned *)&TxData[3] * 360.f / BRT_handle[arrID].res;
 
-        switch (FDCAN_RxHeader.Identifier)
-        {
-        case BRT_ID:
-        {
-            switch (RxData[2])
-            {
-            case BRT_VAL_READ:
-            {
-                static float BRT_curr[BRT_NUM], BRT_prev[BRT_NUM];
+        if (ABS(BRT_curr[arrID] - BRT_prev[arrID]) >= 180 * BRT_handle[arrID].lap)
+            BRT[arrID] += (BRT_curr[arrID] > BRT_prev[arrID] ? -360 : 360) * BRT_handle[arrID].lap + BRT_curr[arrID] - BRT_prev[arrID];
+        else
+            BRT[arrID] += BRT_curr[arrID] - BRT_prev[arrID];
 
-#ifdef BRT_LAP_SGL
-                BRT_curr[BRT_arrID] = *(unsigned *)&TxData[3] * BRT_fANGLE;
+        BRT_prev[arrID] = BRT_curr[arrID];
 
-                if (ABS(BRT_curr[BRT_arrID] - BRT_prev[BRT_arrID]) >= 180)
-                    BRT[BRT_arrID] += (BRT_curr[BRT_arrID] > BRT_prev[BRT_arrID] ? -360 : 360) + BRT_curr[BRT_arrID] - BRT_prev[BRT_arrID];
-                else
-                    BRT[BRT_arrID] += BRT_curr[BRT_arrID] - BRT_prev[BRT_arrID];
-                BRT_prev[BRT_arrID] = BRT_curr[BRT_arrID];
-#endif
-#ifdef BRT_LAP_MPL
-                BRT_curr[BRT_arrID] = *(unsigned *)&TxData[3] * BRT_fANGLE;
-
-                if (ABS(BRT_curr[BRT_arrID] - BRT_prev[BRT_arrID]) >= BRT_LAP * 180)
-                    BRT[BRT_arrID] += BRT_LAP * (BRT_prev[BRT_arrID] > BRT_curr[BRT_arrID] ? 360 : -360) + BRT_curr[BRT_arrID] - BRT_prev[BRT_arrID];
-                else
-                    BRT[BRT_arrID] += BRT_curr[BRT_arrID] - BRT_prev[BRT_arrID];
-                BRT_prev[BRT_arrID] = BRT_curr[BRT_arrID];
-#endif
-                break;
-            }
-#ifdef DEBUG
-            default:
-            {
-                BRT_status = TxData[3] ? BRT_ERROR : BRT_SUCCESS;
-
-                break;
-            }
-#endif
-            }
-        }
-        }
+        return true;
     }
+    return false;
 }
+
+#else
+#error BRT_NUM undefined
 #endif

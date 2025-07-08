@@ -2,10 +2,9 @@
 
 #ifdef TFminiPlus_NUM
 
-unsigned char TFminiPlus_RxData[TFminiPlus_NUM][9];
 TFminiPlus_t TFminiPlus[TFminiPlus_NUM];
 
-static unsigned char CheckSum(unsigned char data[], unsigned char len)
+static unsigned char CheckSum(const unsigned char data[], unsigned char len)
 {
     unsigned char retval = 0;
     while (len--)
@@ -13,16 +12,20 @@ static unsigned char CheckSum(unsigned char data[], unsigned char len)
     return retval;
 }
 
-void USART2_IRQHandler(void)
+bool TFminiPlus_MsgHandler(const unsigned char RxData[9])
 {
-    USART2->ICR |= 0x10;
-
-    if (*(unsigned short *)TFminiPlus_RxData[0] == TFminiPlus_PREAMBLE_RECV &&
-        TFminiPlus_RxData[0][8] == CheckSum(TFminiPlus_RxData[0], 8)) // check sum
+    if (TFminiPlus_PREAMBLE_RECV == *(unsigned short *)RxData &&
+        CheckSum(RxData, 8) == RxData[8]) // check sum
     {
-        TFminiPlus[0].dist_cm = *(unsigned short *)&TFminiPlus_RxData[0][2];
-        TFminiPlus[0].strength = *(unsigned short *)&TFminiPlus_RxData[0][4];
-        TFminiPlus[0].temp = *(unsigned short *)&TFminiPlus_RxData[0][6] / 8.f - 256;
+        TFminiPlus[0].dist_cm = *(unsigned short *)&RxData[2];
+        TFminiPlus[0].strength = *(unsigned short *)&RxData[4];
+        TFminiPlus[0].temp = *(unsigned short *)&RxData[6] / 8.f - 256;
+
+        return true;
     }
+    return false;
 }
+
+#else
+#error TFminiPlus_NUM undefined
 #endif

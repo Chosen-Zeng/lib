@@ -4,6 +4,10 @@
 #include "usr.h"
 
 #ifdef FREQ_CTRL
+typedef struct
+{
+	float Kp, p, Ki, i, i_start, i_lim, Kd, d, deprev, decurr;
+} PID_t;
 
 #define M2006_fTRQ 0.18f
 #define M2006_GR 36.f
@@ -16,6 +20,8 @@
 #define C610_ID1 0x200
 #define C610_ID2 0x1FF
 
+extern PID_t C610_PID_spd[C610_NUM], C610_PID_pos[C610_NUM];
+
 typedef struct
 {
 	struct
@@ -23,11 +29,13 @@ typedef struct
 		float pos, spd, curr, trq;
 	} ctrl, fdbk;
 } C610_t;
-extern C610_t C610[8];
+extern C610_t C610[C610_NUM];
 
-void C610_SetPos(void *CAN_handle, unsigned short C610_ID);
-void C610_SetSpd(void *CAN_handle, unsigned short C610_ID);
-void C610_SetTrq(void *CAN_handle, unsigned short C610_ID);
+void C610_SetPos(CAN_handle_t *const CAN_handle, const unsigned short C610_ID);
+void C610_SetSpd(CAN_handle_t *const CAN_handle, const unsigned short C610_ID);
+void C610_SetTrq(CAN_handle_t *const CAN_handle, const unsigned short C610_ID);
+
+bool C610_MsgHandler(unsigned CAN_ID, unsigned char RxData[8]);
 
 #define M3508_fTRQ 0.3f
 #define M3508_GR (3591.f / 187)
@@ -40,6 +48,9 @@ void C610_SetTrq(void *CAN_handle, unsigned short C610_ID);
 #define C620_ID1 0x200
 #define C620_ID2 0x1FF
 
+extern PID_t C620_PID_spd[C620_NUM],
+	C620_PID_pos[C620_NUM];
+
 typedef struct
 {
 	struct
@@ -51,17 +62,13 @@ typedef struct
 		float pos, spd, trq, curr, temp;
 	} fdbk;
 } C620_t;
-extern C620_t C620[8];
+extern C620_t C620[C620_NUM];
 
-typedef struct
-{
-	float Kp, p, Ki, i, i_start, i_lim, Kd, d, deprev, decurr;
-} PID_t;
-extern PID_t C610_PID_spd[8], C610_PID_pos[8], C620_PID_spd[8], C620_PID_pos[8];
+void C620_SetPos(CAN_handle_t *const CAN_handle, const unsigned short C620_ID);
+void C620_SetSpd(CAN_handle_t *const CAN_handle, const unsigned short C620_ID);
+void C620_SetTrq(CAN_handle_t *const CAN_handle, const unsigned short C620_ID);
 
-void C620_SetPos(void *CAN_handle, unsigned short C620_ID);
-void C620_SetSpd(void *CAN_handle, unsigned short C620_ID);
-void C620_SetTrq(void *CAN_handle, unsigned short C620_ID);
+bool C620_MsgHandler(unsigned CAN_ID, unsigned char RxData[8]);
 
 #endif
 #endif

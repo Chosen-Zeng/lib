@@ -3,7 +3,7 @@
 
 #include "usr.h"
 
-#if defined HAITAI_NUM && defined HAITAI_ID_OFFSET
+#ifdef HAITAI_NUM
 
 #define HAITAI_SYS_INFO 0x0A
 #define HAITAI_SYS_DATA 0x0B
@@ -31,12 +31,12 @@
 #define HAITAI_fCURR 0.03f
 #define HAITAI_fTEMP 0.04f
 
-#define HAITAI_PWR_MAX 32767
-#define HAITAI_PWR_MIN -32768
-#define HAITAI_SPD_MAX (32767 * HAITAI_fSPD)
-#define HAITAI_SPD_MIN (-32768 * HAITAI_fSPD)
-#define HAITAI_POS_MIN -131072
-#define HAITAI_POS_MAX 131071
+#define HAITAI_PWR_MAX (1 << 15 - 1)
+#define HAITAI_PWR_MIN (-1 << 15)
+#define HAITAI_SPD_MAX ((1 << 15 - 1) * HAITAI_fSPD)
+#define HAITAI_SPD_MIN ((-1 << 15) * HAITAI_fSPD)
+#define HAITAI_POS_MAX (1 << 17 - 1)
+#define HAITAI_POS_MIN (-1 << 17)
 
 #define HAITAI_POS_SPD_LIM_R 0
 #define HAITAI_POS_SPD_LIM_W 1
@@ -50,15 +50,16 @@
 #define HAITAI_MODE_SPD 3 // fdbk status
 #define HAITAI_MODE_POS 5 // fdbk status
 
-#define HAITAI_FAILURE 0
-#define HAITAI_SUCCESS 1
-
 #define HAITAI_PREAMBLE_SEND 0x3E
 #define HAITAI_PREAMBLE_RECV 0x3C
-#define HAITAI_PID 0
+#ifndef HAITAI_PID
+#define HAITAI_PID 0 // PID 0 by default
+#endif
 
 typedef struct
 {
+    const unsigned char ID;
+
     struct
     {
         float pos, spd, pwr;
@@ -67,12 +68,15 @@ typedef struct
     {
         float pos_sgl, pos_mpl, spd;
     } fdbk;
-    unsigned char HaiTai_TxData[11]; // for RS485
+    unsigned char TxData[11]; // for RS485
 } HaiTai_t;
 extern HaiTai_t HaiTai[HAITAI_NUM];
 
-void HaiTai_CAN_SendCmd(void *CAN_handle, unsigned char ID, unsigned char HAITAI_cmd);
-void HaiTai_RS485_SendCmd(USART_info_t *UART_info, unsigned char ID, unsigned char HAITAI_cmd);
+void HaiTai_SendCmd_CAN(CAN_handle_t *const CAN_handle, const unsigned char arrID, const unsigned char HAITAI_cmd);
+void HaiTai_SendCmd_RS485(USART_handle_t *const UART_info, const unsigned char arrID, const unsigned char HAITAI_cmd);
+
+bool HaiTai_MsgHandler_CAN(const unsigned CAN_ID, const unsigned char arrID, const unsigned char RxData[8]);
+bool HaiTai_MsgHandler_RS485(const unsigned char arrID, const unsigned char RxData[15]);
 
 #endif
 #endif
