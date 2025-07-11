@@ -4,12 +4,12 @@
 #ifdef TIMsw // define TIMER TIMx, TIM frequency must be set 1Hz
 typedef struct
 {
-    float intvl, curr, prev;
+    double intvl, curr, prev;
 } TIMsw_t;
 
-#define TIMsw_InitStruct {0, 0, 0}
+#define TIMsw_InitStruct (TIMsw_t){0, 0, 0}
 
-#define TIMsw_TIME ((float)(TIMsw->CNT + 1) / (TIMsw->ARR + 1))
+#define TIMsw_TIME ((double)(TIMsw->CNT + 1) / (TIMsw->ARR + 1))
 
 //  @brief     update intvl of the specific time struct
 //  @attention intvl must < 1s
@@ -52,7 +52,7 @@ static inline float TIMsw_GetElapse(TIMsw_t *const timer_struct)
 }
 
 // @return timeout or not
-static inline unsigned char TIMsw_CheckTimeout(TIMsw_t *const timer_struct, const float timeout)
+static inline bool TIMsw_CheckTimeout(TIMsw_t *const timer_struct, const float timeout)
 {
     TIMsw_GetElapse(timer_struct);
     return timer_struct->intvl >= timeout;
