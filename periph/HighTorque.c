@@ -5,7 +5,7 @@
 #ifdef FDCAN_SUPPORT
 #ifdef HIGHTORQUE_NUM
 
-void HighTorque_SetMixParam_f(CAN_handle_t *const CAN_handle, const unsigned char arrID)
+void HighTorque_SetMixParam_f(CAN_handle_t *const CAN_handle, const unsigned char idx)
 {
     float temp;
 
@@ -22,16 +22,16 @@ void HighTorque_SetMixParam_f(CAN_handle_t *const CAN_handle, const unsigned cha
                                 HIGHTORQUE_NOP,
                                 HIGHTORQUE_NOP};
 
-    *(float *)&TxData[6] = temp = HighTorque[arrID].ctrl.pos / 360;
-    *(float *)&TxData[10] = temp = HighTorque[arrID].ctrl.spd / 360;
-    *(float *)&TxData[14] = HighTorque[arrID].ctrl.trq;
-    *(float *)&TxData[18] = LIMIT(HighTorque[arrID].ctrl.Kp, HIGHTORQUE_NO_LIMIT_FLOAT);
-    *(float *)&TxData[22] = LIMIT(HighTorque[arrID].ctrl.Kd, HIGHTORQUE_NO_LIMIT_FLOAT);
+    *(float *)&TxData[6] = temp = HighTorque[idx].ctrl.pos / 360;
+    *(float *)&TxData[10] = temp = HighTorque[idx].ctrl.spd / 360;
+    *(float *)&TxData[14] = HighTorque[idx].ctrl.trq;
+    *(float *)&TxData[18] = LIMIT(HighTorque[idx].ctrl.Kp, HIGHTORQUE_NO_LIMIT_FLOAT);
+    *(float *)&TxData[22] = LIMIT(HighTorque[idx].ctrl.Kd, HIGHTORQUE_NO_LIMIT_FLOAT);
 
-    FDCAN_nBRS_SendData(CAN_handle, FDCAN_EXTENDED_ID, HIGHTORQUE_ID_RE | HighTorque[arrID].ID, TxData, FDCAN_DLC_BYTES_32);
+    FDCAN_nBRS_SendData(CAN_handle, FDCAN_EXTENDED_ID, HIGHTORQUE_ID_RE | HighTorque[idx].ID, TxData, FDCAN_DLC_BYTES_32);
 }
 
-void HighTorque_SwitchMode(CAN_handle_t *const CAN_handle, const unsigned char arrID, const unsigned char HIGHTORQUE_MODE)
+void HighTorque_SwitchMode(CAN_handle_t *const CAN_handle, const unsigned char idx, const unsigned char HIGHTORQUE_MODE)
 {
     unsigned char TxData[5] = {HIGHTORQUE_DATA_W | HIGHTORQUE_DATA_TYPE_8b | 1,
                                HIGHTORQUE_REG_MODE,
@@ -39,11 +39,11 @@ void HighTorque_SwitchMode(CAN_handle_t *const CAN_handle, const unsigned char a
                                HIGHTORQUE_DATA_R | HIGHTORQUE_DATA_TYPE_8b | 1,
                                HIGHTORQUE_REG_MODE};
 
-    FDCAN_nBRS_SendData(CAN_handle, FDCAN_EXTENDED_ID, HIGHTORQUE_ID_RE | HighTorque[arrID].ID, TxData, 5);
+    FDCAN_nBRS_SendData(CAN_handle, FDCAN_EXTENDED_ID, HIGHTORQUE_ID_RE | HighTorque[idx].ID, TxData, 5);
 }
 
 // ineffective currently
-void HighTorque_SetSpdLimit(CAN_handle_t *const CAN_handle, const unsigned char arrID, const float spd, const float acc)
+void HighTorque_SetSpdLimit(CAN_handle_t *const CAN_handle, const unsigned char idx, const float spd, const float acc)
 {
     float temp;
 
@@ -55,21 +55,21 @@ void HighTorque_SetSpdLimit(CAN_handle_t *const CAN_handle, const unsigned char 
     *(float *)&TxData[2] = temp = ABS(spd) / 360;
     *(float *)&TxData[6] = temp = ABS(acc) / 360;
 
-    FDCAN_nBRS_SendData(CAN_handle, FDCAN_EXTENDED_ID, HIGHTORQUE_ID_RE | HighTorque[arrID].ID, TxData, FDCAN_DLC_BYTES_12);
+    FDCAN_nBRS_SendData(CAN_handle, FDCAN_EXTENDED_ID, HIGHTORQUE_ID_RE | HighTorque[idx].ID, TxData, FDCAN_DLC_BYTES_12);
 }
 
-bool HighTorque_MsgHandler(const unsigned CAN_ID, const unsigned char arrID, const unsigned char RxData[20])
+bool HighTorque_MsgHandler(const unsigned CAN_ID, const unsigned char idx, const unsigned char RxData[20])
 {
-    if (CAN_ID == (HighTorque[arrID].ID << 8 | HIGHTORQUE_ID_SRC) &&
+    if (CAN_ID == (HighTorque[idx].ID << 8 | HIGHTORQUE_ID_SRC) &&
         RxData[0] == (HIGHTORQUE_DATA_RE | HIGHTORQUE_DATA_TYPE_FLOAT | 3) &&
         RxData[1] == HIGHTORQUE_REG_POS_FDBK &&
         RxData[14] == (HIGHTORQUE_DATA_RE | HIGHTORQUE_DATA_TYPE_FLOAT | 1) &&
         RxData[15] == HIGHTORQUE_REG_TEMP)
     {
-        HighTorque[arrID].fdbk.pos = *(float *)&RxData[2] * 360;
-        HighTorque[arrID].fdbk.spd = *(float *)&RxData[6] * 360;
-        HighTorque[arrID].fdbk.trq = *(float *)&RxData[10];
-        HighTorque[arrID].fdbk.temp = *(float *)&RxData[16];
+        HighTorque[idx].fdbk.pos = *(float *)&RxData[2] * 360;
+        HighTorque[idx].fdbk.spd = *(float *)&RxData[6] * 360;
+        HighTorque[idx].fdbk.trq = *(float *)&RxData[10];
+        HighTorque[idx].fdbk.temp = *(float *)&RxData[16];
 
         return true;
     }

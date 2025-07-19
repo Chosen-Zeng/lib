@@ -57,10 +57,10 @@ typedef struct
 } GO_M8010_6_t;
 extern GO_M8010_6_t GO_M8010_6[GO_M8010_6_NUM];
 
-void GO_M8010_6_SendParam(USART_handle_t *const USART_handle, const unsigned char arrID);
-void GO_M8010_6_Stop(USART_handle_t *const UART_info, const unsigned char arrID);
+void GO_M8010_6_SendParam(USART_handle_t *const USART_handle, const unsigned char idx);
+void GO_M8010_6_Stop(USART_handle_t *const UART_info, const unsigned char idx);
 
-bool GO_M8010_6_MsgHandler(const unsigned char arrID, const unsigned char RxData[17]);
+bool GO_M8010_6_MsgHandler(const unsigned char idx, const unsigned char RxData[17]);
 
 #endif
 
@@ -146,10 +146,10 @@ typedef struct
 } A1_t;
 extern A1_t A1[A1_NUM + 1];
 
-void A1_SendParam(USART_handle_t *const UART_info, const unsigned char arrID);
-void A1_Stop(USART_handle_t *const UART_info, const unsigned char arrID);
+void A1_SendParam(USART_handle_t *const UART_info, const unsigned char idx);
+void A1_Stop(USART_handle_t *const UART_info, const unsigned char idx);
 
-bool A1_MsgHandler(const unsigned char arrID, const unsigned char RxData[78]);
+bool A1_MsgHandler(const unsigned char idx, const unsigned char RxData[78]);
 
 #endif
 #endif

@@ -55,10 +55,10 @@ typedef struct
 } BRT_t;
 extern BRT_t BRT[BRT_NUM];
 
-void BRT_Init(CAN_handle_t *const CAN_handle, const unsigned char arrID);
-void BRT_SendCmd(CAN_handle_t *const CAN_handle, const unsigned char arrID, const unsigned char BRT_func, unsigned data);
+void BRT_Init(CAN_handle_t *const CAN_handle, const unsigned char idx);
+void BRT_SendCmd(CAN_handle_t *const CAN_handle, const unsigned char idx, const unsigned char BRT_func, unsigned data);
 
-bool BRT_MsgHandler(const unsigned CAN_ID, const unsigned char arrID, const unsigned char RxData[7]);
+bool BRT_MsgHandler(const unsigned CAN_ID, const unsigned char idx, const unsigned char RxData[7]);
 
 #endif
 #endif

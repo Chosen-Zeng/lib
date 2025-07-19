@@ -72,11 +72,11 @@ typedef struct
 } HaiTai_t;
 extern HaiTai_t HaiTai[HAITAI_NUM];
 
-void HaiTai_SendCmd_CAN(CAN_handle_t *const CAN_handle, const unsigned char arrID, const unsigned char HAITAI_cmd);
-void HaiTai_SendCmd_RS485(USART_handle_t *const UART_info, const unsigned char arrID, const unsigned char HAITAI_cmd);
+void HaiTai_SendCmd_CAN(CAN_handle_t *const CAN_handle, const unsigned char idx, const unsigned char HAITAI_cmd);
+void HaiTai_SendCmd_RS485(USART_handle_t *const UART_info, const unsigned char idx, const unsigned char HAITAI_cmd);
 
-bool HaiTai_MsgHandler_CAN(const unsigned CAN_ID, const unsigned char arrID, const unsigned char RxData[8]);
-bool HaiTai_MsgHandler_RS485(const unsigned char arrID, const unsigned char RxData[15]);
+bool HaiTai_MsgHandler_CAN(const unsigned CAN_ID, const unsigned char idx, const unsigned char RxData[8]);
+bool HaiTai_MsgHandler_RS485(const unsigned char idx, const unsigned char RxData[15]);
 
 #endif
 #endif

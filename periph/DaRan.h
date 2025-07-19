@@ -8,7 +8,7 @@
 #define DARAN_SCALING 0.01f
 
 #define DARAN_ID_BCAST 0
-#define DARAN_BCAST_arrID DARAN_NUM
+#define DARAN_BCAST_idx DARAN_NUM
 
 #define DARAN_DATA_TYPE_f 0
 #define DARAN_DATA_TYPE_u16 1
@@ -109,14 +109,14 @@ typedef struct
 } DaRan_t;
 extern DaRan_t DaRan[DARAN_NUM + 1];
 
-void DaRan_Init(CAN_handle_t *const CAN_handle, const unsigned char arrID);
-void DaRan_SetPos(CAN_handle_t *const CAN_handle, const unsigned char arrID, const unsigned char DARAN_CMD_POS_MODE, float param);
-void DaRan_SetSpd(CAN_handle_t *const CAN_handle, const unsigned char arrID, const unsigned char DARAN_SPD_MODE, float accel);
-void DaRan_SetTrq(CAN_handle_t *const CAN_handle, const unsigned char arrID, const unsigned char DARAN_TRQ_MODE, float accel);
-void DaRan_Prop_W(CAN_handle_t *const CAN_handle, const unsigned char arrID, const unsigned short DARAN_PARAM, const unsigned short DARAN_DATA_TYPE, float param);
-void DaRan_Prop_R(CAN_handle_t *const CAN_handle, const unsigned char arrID, const unsigned short DARAN_PARAM, const unsigned short DARAN_DATA_TYPE);
+void DaRan_Init(CAN_handle_t *const CAN_handle, const unsigned char idx);
+void DaRan_SetPos(CAN_handle_t *const CAN_handle, const unsigned char idx, const unsigned char DARAN_CMD_POS_MODE, float param);
+void DaRan_SetSpd(CAN_handle_t *const CAN_handle, const unsigned char idx, const unsigned char DARAN_SPD_MODE, float accel);
+void DaRan_SetTrq(CAN_handle_t *const CAN_handle, const unsigned char idx, const unsigned char DARAN_TRQ_MODE, float accel);
+void DaRan_Prop_W(CAN_handle_t *const CAN_handle, const unsigned char idx, const unsigned short DARAN_PARAM, const unsigned short DARAN_DATA_TYPE, float param);
+void DaRan_Prop_R(CAN_handle_t *const CAN_handle, const unsigned char idx, const unsigned short DARAN_PARAM, const unsigned short DARAN_DATA_TYPE);
 
-bool DaRan_MsgHandler(unsigned CAN_ID, unsigned char arrID, unsigned char RxData[8]);
+bool DaRan_MsgHandler(unsigned CAN_ID, unsigned char idx, unsigned char RxData[8]);
 
 #endif
 #endif

@@ -11,8 +11,8 @@ typedef struct
 
 #define TIMsw_TIME ((double)(TIMsw->CNT + 1) / (TIMsw->ARR + 1))
 
-//  @brief     update intvl of the specific time struct
-//  @attention intvl must < 1s
+//  @brief     update intvl of the specific time structure
+//  @attention interval must < 1s
 static inline float TIMsw_GetIntvl(TIMsw_t *const timer_struct)
 {
     if (timer_struct->prev != 0 && timer_struct->curr != 0)
@@ -31,8 +31,8 @@ static inline float TIMsw_GetIntvl(TIMsw_t *const timer_struct)
     return timer_struct->intvl;
 }
 
-//  @brief     update elapse of the specific time struct
-//  @attention intvl must < 1s
+//  @brief     update elapse of the specific time structure
+//  @attention interval must < 1s
 static inline float TIMsw_GetElapse(TIMsw_t *const timer_struct)
 {
     if (timer_struct->prev != 0 && timer_struct->curr != 0)
@@ -69,6 +69,6 @@ static inline float TIMsw_GetRatio(TIMsw_t *const timer_struct, const float dura
 }
 
 #else
-#error No TIM for timer defined.
+#error No TIM for timer defined
 #endif
 #endif

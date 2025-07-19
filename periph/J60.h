@@ -61,10 +61,10 @@ typedef struct
 } J60_t;
 extern J60_t J60[J60_NUM];
 
-void J60_SendCmd(CAN_handle_t *const CAN_handle, const unsigned char arrID, const unsigned short J60_CMD, float data);
-void J60_Init(CAN_handle_t *const CAN_handle, const unsigned char arrID);
+void J60_SendCmd(CAN_handle_t *const CAN_handle, const unsigned char idx, const unsigned short J60_CMD, float data);
+void J60_Init(CAN_handle_t *const CAN_handle, const unsigned char idx);
 
-bool J60_MsgHandler(const unsigned CAN_ID, const unsigned char arrID, const unsigned char RxData[8]);
+bool J60_MsgHandler(const unsigned CAN_ID, const unsigned char idx, const unsigned char RxData[8]);
 
 #endif
 #endif

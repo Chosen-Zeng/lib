@@ -78,8 +78,8 @@ typedef struct
 } VESC_t;
 extern VESC_t VESC[VESC_NUM];
 
-void VESC_SendCmd(CAN_handle_t *const CAN_handle, const unsigned char arrID, const unsigned short VESC_cmd);
-bool VESC_MsgHandler(const unsigned CAN_ID, const unsigned char arrID, const unsigned char RxData[8]);
+void VESC_SendCmd(CAN_handle_t *const CAN_handle, const unsigned char idx, const unsigned short VESC_cmd);
+bool VESC_MsgHandler(const unsigned CAN_ID, const unsigned char idx, const unsigned char RxData[8]);
 
 #endif
 #endif

@@ -9,7 +9,7 @@
 #define HIGHTORQUE_ID_SRC 0 // source address 0 by default
 #endif
 #define HIGHTORQUE_ID_BCAST 0x7F
-#define HIGHTORQUE_BCAST_arrID HIGHTORQUE_NUM
+#define HIGHTORQUE_BCAST_idx HIGHTORQUE_NUM
 
 #define HIGHTORQUE_NOP 0x50
 
@@ -106,11 +106,11 @@ typedef struct
 } HighTorque_t;
 extern HighTorque_t HighTorque[HIGHTORQUE_NUM + 1];
 
-void HighTorque_SetMixParam_f(CAN_handle_t *const CAN_handle, const unsigned char arrID);
-void HighTorque_SwitchMode(CAN_handle_t *const CAN_handle, const unsigned char arrID, const unsigned char HIGHTORQUE_MODE);
-void HighTorque_SetSpdLimit(CAN_handle_t *const CAN_handle, const unsigned char arrID, const float spd, const float acc);
+void HighTorque_SetMixParam_f(CAN_handle_t *const CAN_handle, const unsigned char idx);
+void HighTorque_SwitchMode(CAN_handle_t *const CAN_handle, const unsigned char idx, const unsigned char HIGHTORQUE_MODE);
+void HighTorque_SetSpdLimit(CAN_handle_t *const CAN_handle, const unsigned char idx, const float spd, const float acc);
 
-bool HighTorque_MsgHandler(const unsigned CAN_ID, const unsigned char arrID, const unsigned char RxData[20]);
+bool HighTorque_MsgHandler(const unsigned CAN_ID, const unsigned char idx, const unsigned char RxData[20]);
 
 #endif
 #endif
