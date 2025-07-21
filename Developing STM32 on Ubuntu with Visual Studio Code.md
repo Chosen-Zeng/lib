@@ -144,3 +144,8 @@ use another variable to receive and assign value
 ```C
     *(float *)&data[] = temp = /* FP calculation expression */;
 ```
+### `DMA` transfer error
+*DTCMRAM area(0x20000000~0x24000000) of STM32H7 series cannot be accessed by DMA*
+- revise *linker script*, define data section where DMA can reach
+- revise *startup file*, copy initialization value of DMA data from flash to specified section  
+see [reference](https://github.com/UESTC-LIMITI/pushshot/commit/2589e23b484a350432268ed21b9a0c651cb40f9c)
