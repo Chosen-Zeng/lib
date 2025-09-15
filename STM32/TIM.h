@@ -69,6 +69,6 @@ static inline float TIMsw_GetRatio(TIMsw_t *const timer_struct, const float dura
 }
 
 #else
-#error No TIM for timer defined
+#error No TIM defined for TIMsw
 #endif
 #endif

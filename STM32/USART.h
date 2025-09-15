@@ -62,7 +62,7 @@ static inline void UART_SendArray(USART_handle_t *const USART_handle, const unsi
     if (USART_handle->DMA_handle && USART_handle->DMA_subhandle) // DMA cfg
     {
         // clear flags
-        USART_handle->DMA_handle->IFCR |= 0x7 << 4 * (USART_handle->DMA_ID - 1);
+        USART_handle->DMA_handle->IFCR |= 0x1 << 4 * (USART_handle->DMA_ID - 1);
 
         ((DMA_Channel_TypeDef *)USART_handle->DMA_subhandle)->CCR &= ~1;
         ((DMA_Channel_TypeDef *)USART_handle->DMA_subhandle)->CNDTR = len;

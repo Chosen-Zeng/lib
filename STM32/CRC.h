@@ -232,8 +232,10 @@ static inline unsigned CRCsw_Calc(CRC_handle_t *const CRC_handle, const unsigned
 
 static inline void CRC_Init(const bool refout, const unsigned CRC_REFIN_size, const unsigned char CRC_POLY_size, const unsigned init, const unsigned poly)
 {
+#ifdef STM32H7
     CRC->POL = poly;
     CRC->INIT = init;
+#endif
     CRC->CR = refout << 7 |
               CRC_REFIN_size << 5 |
               CRC_POLY_size << 3;
