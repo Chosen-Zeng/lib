@@ -5,28 +5,28 @@
 
 #ifdef HAITAI_NUM
 
-#define HAITAI_SYS_INFO 0x0A
-#define HAITAI_SYS_DATA 0x0B
-#define HAITAI_SYS_PARAM_R 0x0C
-#define HAITAI_SYS_PARAM_W 0x0D
-#define HAITAI_SYS_PARAM_P 0x0E
-#define HAITAI_SYS_PARAM_RST 0x0F
-#define HAITAI_ENC_CAL 0x20
-#define HAITAI_ENC_0POS 0x21
-#define HAITAI_ENC_INFO 0x2F
-#define HAITAI_STATUS_INFO 0x40
+#define HAITAI_SYS_INFO         0x0A
+#define HAITAI_SYS_DATA         0x0B
+#define HAITAI_SYS_PARAM_R      0x0C
+#define HAITAI_SYS_PARAM_W      0x0D
+#define HAITAI_SYS_PARAM_P      0x0E
+#define HAITAI_SYS_PARAM_RST    0x0F
+#define HAITAI_ENC_CAL          0x20
+#define HAITAI_ENC_0POS         0x21
+#define HAITAI_ENC_INFO         0x2F
+#define HAITAI_STATUS_INFO      0x40
 #define HAITAI_STATUS_CLEAR_ERR 0x41
-#define HAITAI_CTRL_OFF 0x50
-#define HAITAI_CTRL_0POS_MPL 0x51
-#define HAITAI_CTRL_0POS_SGL 0x52
-#define HAITAI_CTRL_PWR 0x53
-#define HAITAI_CTRL_SPD 0x54
-#define HAITAI_CTRL_POS_ABS 0x55
-#define HAITAI_CTRL_POS_REL 0x56
+#define HAITAI_CTRL_OFF         0x50
+#define HAITAI_CTRL_0POS_MPL    0x51
+#define HAITAI_CTRL_0POS_SGL    0x52
+#define HAITAI_CTRL_PWR         0x53
+#define HAITAI_CTRL_SPD         0x54
+#define HAITAI_CTRL_POS_ABS     0x55
+#define HAITAI_CTRL_POS_REL     0x56
 #define HAITAI_CTRL_POS_SPD_CFG 0x57
 
-#define HAITAI_fPOS (360.f / 16384)
-#define HAITAI_fSPD (0.1f * 60)
+#define HAITAI_fPOS  (360.f / 16384)
+#define HAITAI_fSPD  (0.1f * 60)
 #define HAITAI_fVOLT 0.2f
 #define HAITAI_fCURR 0.03f
 #define HAITAI_fTEMP 0.04f
@@ -56,17 +56,17 @@
 #define HAITAI_PID 0 // PID 0 by default
 #endif
 
-typedef struct
-{
+typedef struct {
     const unsigned char ID;
-
-    struct
-    {
-        float pos, spd, pwr;
+    struct {
+        float pos,
+            spd,
+            pwr;
     } ctrl;
-    struct
-    {
-        float pos_sgl, pos_mpl, spd;
+    struct {
+        float pos_sgl,
+            pos_mpl,
+            spd;
     } fdbk;
     unsigned char TxData[11]; // for RS485
 } HaiTai_t;

@@ -1,12 +1,11 @@
 #include "Unitree.h"
+#include "CRC.h"
 #include "USART.h"
 #include "algorithm.h"
-#include "CRC.h"
 
 #ifdef GO_M8010_6_NUM
 
-void GO_M8010_6_SendParam(USART_handle_t *const UART_infoconst, const unsigned char idx)
-{
+void GO_M8010_6_SendParam(USART_handle_t *const UART_infoconst, const unsigned char idx) {
     *(unsigned short *)GO_M8010_6[idx].TxData = GO_M8010_6_PREAMBLE_SEND;
     GO_M8010_6[idx].TxData[2] = GO_M8010_6[idx].ID | GO_M8010_6_MODE_FOC << 4;
     *(short *)&GO_M8010_6[idx].TxData[3] = LIMIT_ABS(GO_M8010_6[idx].ctrl.trq, GO_M8010_6_TRQ_LIMIT) * GO_M8010_6_fTRQ;
@@ -19,8 +18,7 @@ void GO_M8010_6_SendParam(USART_handle_t *const UART_infoconst, const unsigned c
     UART_SendArray(UART_info, GO_M8010_6[idx].TxData, 17);
 }
 
-void GO_M8010_6_Stop(USART_handle_t *const UART_info, const unsigned char idx)
-{
+void GO_M8010_6_Stop(USART_handle_t *const UART_info, const unsigned char idx) {
     *(unsigned short *)GO_M8010_6[idx].TxData = GO_M8010_6_PREAMBLE_SEND;
     GO_M8010_6[idx].TxData[2] = GO_M8010_6[idx].ID | GO_M8010_6_MODE_STOP << 4;
     *(unsigned short *)&GO_M8010_6[idx].TxData[15] = CRCsw_Calc(&CRC_16_CCITT, GO_M8010_6[idx].TxData, 15);
@@ -28,12 +26,10 @@ void GO_M8010_6_Stop(USART_handle_t *const UART_info, const unsigned char idx)
     UART_SendArray(UART_info, GO_M8010_6[idx].TxData, 17);
 }
 
-bool GO_M8010_6_MsgHandler(const unsigned char idx, const unsigned char RxData[16])
-{
+bool GO_M8010_6_MsgHandler(const unsigned char idx, const unsigned char RxData[16]) {
     if (*(unsigned short *)RxData == GO_M8010_6_PREAMBLE_RECV &&
         GO_M8010_6[idx].ID == (RxData[2] & 0xF) &&
-        !CRC_16_Cal(&CRC_16_CCITT, RxData, 16))
-    {
+        !CRC_16_Cal(&CRC_16_CCITT, RxData, 16)) {
         GO_M8010_6[idx].fdbk.mode = (RxData[2] & 0x70) >> 4;
         GO_M8010_6[idx].fdbk.trq = *(short *)&RxData[3] / GO_M8010_6_fTRQ;
         GO_M8010_6[idx].fdbk.spd = *(short *)&RxData[5] / GO_M8010_6_fSPD;
@@ -50,8 +46,7 @@ bool GO_M8010_6_MsgHandler(const unsigned char idx, const unsigned char RxData[1
 
 #ifdef A1_NUM
 
-void A1_SendParam(USART_handle_t *const UART_info, const unsigned char idx)
-{
+void A1_SendParam(USART_handle_t *const UART_info, const unsigned char idx) {
     *(unsigned short *)A1[idx].TxData = A1_PREAMBLE;
     A1[idx].TxData[2] = A1[idx].ID;
     A1[idx].TxData[4] = A1_MODE_FOC;
@@ -66,8 +61,7 @@ void A1_SendParam(USART_handle_t *const UART_info, const unsigned char idx)
     UART_SendArray(UART_info, A1[idx].TxData, 34);
 }
 
-void A1_Stop(USART_handle_t *const UART_info, const unsigned char idx)
-{
+void A1_Stop(USART_handle_t *const UART_info, const unsigned char idx) {
     *(unsigned short *)A1[idx].TxData = A1_PREAMBLE;
     A1[idx].TxData[2] = A1[idx].ID;
     A1[idx].TxData[4] = A1_MODE_STOP;
@@ -77,12 +71,10 @@ void A1_Stop(USART_handle_t *const UART_info, const unsigned char idx)
     UART_SendArray(UART_info, A1[idx].TxData, 34);
 }
 
-bool A1_MsgHandler(const unsigned char idx, const unsigned char RxData[78])
-{
+bool A1_MsgHandler(const unsigned char idx, const unsigned char RxData[78]) {
     if (*(unsigned short *)RxData == A1_PREAMBLE &&
         A1[idx].ID == RxData[2] &&
-        CRC_Calc(RxData, 72, CRC_DATA_WORD) == *(unsigned *)&RxData[74])
-    {
+        CRC_Calc(RxData, 72, CRC_DATA_WORD) == *(unsigned *)&RxData[74]) {
         A1[idx].fdbk.temp.motor = RxData[6];
         A1[idx].fdbk.err.motor = RxData[7];
         A1[idx].fdbk.trq = *(short *)&RxData[12] / A1_fTRQ;
@@ -113,9 +105,9 @@ bool A1_MsgHandler(const unsigned char idx, const unsigned char RxData[78])
         A1[idx].fdbk.footforce = *(unsigned short *)&RxData[69] << 16 | RxData[71];
         A1[idx].fdbk.err.foot = RxData[72];
 
-        return true;
+        return false;
     }
-    return false;
+    return true;
 }
 #endif
 

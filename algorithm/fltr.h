@@ -3,8 +3,7 @@
 
 #define MOVAVGFLTR_NUM_DEFAULT 32
 
-typedef struct
-{
+typedef struct {
     unsigned short size, len, pos, max_pos, min_pos;
     float sum, *data;
 } MovAvgFltr_t;

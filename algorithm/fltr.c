@@ -4,26 +4,21 @@
 #include <stdlib.h>
 #warning 'calloc' used, attention heap size
 
-inline float *MovAvgFltr_Init(MovAvgFltr_t *const MovAvgFltr_struct)
-{
+inline float *MovAvgFltr_Init(MovAvgFltr_t *const MovAvgFltr_struct) {
     return MovAvgFltr_struct->data = calloc(sizeof(float), MovAvgFltr_struct->size ? MovAvgFltr_struct->size : (MovAvgFltr_struct->size = MOVAVGFLTR_NUM_DEFAULT));
 }
 
 // update and get filtered data
-float MovAvgFltr(MovAvgFltr_t *const MovAvgFltr_struct, const float NewData)
-{
+float MovAvgFltr(MovAvgFltr_t *const MovAvgFltr_struct, const float NewData) {
     if (!MovAvgFltr_struct->data &&
         !MovAvgFltr_Init(MovAvgFltr_struct))
         return 0;
 
     // store new data
-    if (MovAvgFltr_struct->len == MovAvgFltr_struct->size)
-    {
+    if (MovAvgFltr_struct->len == MovAvgFltr_struct->size) {
         MovAvgFltr_struct->sum += NewData - MovAvgFltr_struct->data[MovAvgFltr_struct->pos];
         MovAvgFltr_struct->data[MovAvgFltr_struct->pos] = NewData;
-    }
-    else
-    {
+    } else {
         MovAvgFltr_struct->sum += MovAvgFltr_struct->data[MovAvgFltr_struct->pos] = NewData;
         ++MovAvgFltr_struct->len;
     }
@@ -31,8 +26,7 @@ float MovAvgFltr(MovAvgFltr_t *const MovAvgFltr_struct, const float NewData)
     // update max & min position: sequential search
     if (MovAvgFltr_struct->data[MovAvgFltr_struct->pos] > MovAvgFltr_struct->data[MovAvgFltr_struct->max_pos])
         MovAvgFltr_struct->max_pos = MovAvgFltr_struct->pos;
-    else if (MovAvgFltr_struct->pos == MovAvgFltr_struct->max_pos)
-    {
+    else if (MovAvgFltr_struct->pos == MovAvgFltr_struct->max_pos) {
         unsigned char temp_pos = MovAvgFltr_struct->pos;
 
         MovAvgFltr_struct->max_pos = temp_pos + 1 == MovAvgFltr_struct->size ? temp_pos = 0 : ++temp_pos; // set next data as max data
@@ -43,8 +37,7 @@ float MovAvgFltr(MovAvgFltr_t *const MovAvgFltr_struct, const float NewData)
     }
     if (MovAvgFltr_struct->data[MovAvgFltr_struct->pos] < MovAvgFltr_struct->data[MovAvgFltr_struct->min_pos])
         MovAvgFltr_struct->min_pos = MovAvgFltr_struct->pos;
-    else if (MovAvgFltr_struct->pos == MovAvgFltr_struct->min_pos)
-    {
+    else if (MovAvgFltr_struct->pos == MovAvgFltr_struct->min_pos) {
         unsigned char temp_pos = MovAvgFltr_struct->pos;
 
         MovAvgFltr_struct->min_pos = temp_pos + 1 == MovAvgFltr_struct->size ? temp_pos = 0 : ++temp_pos; // set next data as max data
@@ -55,8 +48,7 @@ float MovAvgFltr(MovAvgFltr_t *const MovAvgFltr_struct, const float NewData)
     }
 
     // move to next position
-    if (++MovAvgFltr_struct->pos == MovAvgFltr_struct->size)
-    {
+    if (++MovAvgFltr_struct->pos == MovAvgFltr_struct->size) {
         // new cycle
         MovAvgFltr_struct->sum = MovAvgFltr_struct->pos = 0;
 
@@ -69,8 +61,7 @@ float MovAvgFltr(MovAvgFltr_t *const MovAvgFltr_struct, const float NewData)
 }
 
 // @return filtered data within limit or not
-unsigned char MovAvgFltr_GetStatus(MovAvgFltr_t *const MovAvgFltr_struct, const float err_lim)
-{
+unsigned char MovAvgFltr_GetStatus(MovAvgFltr_t *const MovAvgFltr_struct, const float err_lim) {
     if (MovAvgFltr_struct->len != MovAvgFltr_struct->size) // not fully filtered
         return 0;
 
@@ -81,8 +72,7 @@ unsigned char MovAvgFltr_GetStatus(MovAvgFltr_t *const MovAvgFltr_struct, const 
 }
 
 // filter data, return whether within limit or not
-unsigned char MovAvgFltr_GetNewStatus(MovAvgFltr_t *const MovAvgFltr_struct, const float NewData, const float err_lim)
-{
+unsigned char MovAvgFltr_GetNewStatus(MovAvgFltr_t *const MovAvgFltr_struct, const float NewData, const float err_lim) {
     if (!MovAvgFltr_struct->data &&
         !MovAvgFltr_Init(MovAvgFltr_struct))
         return 0;
@@ -95,8 +85,7 @@ unsigned char MovAvgFltr_GetNewStatus(MovAvgFltr_t *const MovAvgFltr_struct, con
 }
 
 // @return filtered data within limit or not
-unsigned char MovAvgFltr_GetTargetStatus(MovAvgFltr_t *const MovAvgFltr_struct, const float target, const float err_lim)
-{
+unsigned char MovAvgFltr_GetTargetStatus(MovAvgFltr_t *const MovAvgFltr_struct, const float target, const float err_lim) {
     if (MovAvgFltr_struct->len != MovAvgFltr_struct->size) // not fully filtered
         return 0;
 
@@ -104,8 +93,7 @@ unsigned char MovAvgFltr_GetTargetStatus(MovAvgFltr_t *const MovAvgFltr_struct, 
 }
 
 // filter data, return whether within limit or not
-unsigned char MovAvgFltr_GetNewTargetStatus(MovAvgFltr_t *const MovAvgFltr_struct, const float NewData, const float target, const float err_lim)
-{
+unsigned char MovAvgFltr_GetNewTargetStatus(MovAvgFltr_t *const MovAvgFltr_struct, const float NewData, const float target, const float err_lim) {
     if (!MovAvgFltr_struct->data &&
         !MovAvgFltr_Init(MovAvgFltr_struct))
         return 0;
@@ -115,13 +103,11 @@ unsigned char MovAvgFltr_GetNewTargetStatus(MovAvgFltr_t *const MovAvgFltr_struc
 }
 
 // clear filter
-inline void MovAvgFltr_Clear(MovAvgFltr_t *const MovAvgFltr_struct)
-{
+inline void MovAvgFltr_Clear(MovAvgFltr_t *const MovAvgFltr_struct) {
     MovAvgFltr_struct->pos = MovAvgFltr_struct->sum = MovAvgFltr_struct->len = 0;
 }
 
 // get filtered data
-inline float MovAvgFltr_GetData(MovAvgFltr_t *const MovAvgFltr_struct)
-{
+inline float MovAvgFltr_GetData(MovAvgFltr_t *const MovAvgFltr_struct) {
     return MovAvgFltr_struct->len ? MovAvgFltr_struct->sum / MovAvgFltr_struct->len : 0;
 }

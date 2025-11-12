@@ -14,12 +14,9 @@
 // limit X to +-Y, Y >= 0
 #define LIMIT_ABS(X, Y) (ABS(X) > (Y) ? (X >= 0 ? (X = (Y)) : (X = -(Y))) : X)
 
-static inline void f_to_u8_rev(const float num, unsigned char arr[4])
-{
+static inline void f_to_u8_rev(const float num, unsigned char arr[4]) {
     for (int count = 0; count < 4; count++)
-    {
         arr[count] = (int)num >> 8 * (3 - count);
-    }
 }
 
 #endif

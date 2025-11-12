@@ -1,6 +1,6 @@
 #include "RoboMaster.h"
-#include "algorithm.h"
 #include "CAN.h"
+#include "algorithm.h"
 
 #ifdef FREQ_CTRL
 
@@ -21,18 +21,15 @@ PID_t C610_PID_spd[8], C610_PID_pos[8];
 // i_start 100
 // i_lim 5
 
-void C610_SetCurr(CAN_handle_t *const CAN_handle, const unsigned short C610_ID)
-{
+void C610_SetCurr(CAN_handle_t *const CAN_handle, const unsigned short C610_ID) {
     unsigned char TxData[C610_ID == (C610_ID1 | C610_ID2) ? 16 : 8];
 
-    for (unsigned char idx = (C610_ID == C610_ID2 ? 4 : 0), offset = idx; idx < (C610_ID == C610_ID1 ? 4 : 8); ++idx)
-    {
+    for (unsigned char idx = (C610_ID == C610_ID2 ? 4 : 0), offset = idx; idx < (C610_ID == C610_ID1 ? 4 : 8); ++idx) {
         TxData[(idx - offset) * 2] = (short)(LIMIT_ABS(C610[idx].ctrl.curr, C610_CURR_LIMIT) / C610_fCURR) >> 8;
         TxData[(idx - offset) * 2 + 1] = (short)(C610[idx].ctrl.curr / C610_fCURR);
     }
 
-    if (C610_ID == (C610_ID1 | C610_ID2))
-    {
+    if (C610_ID == (C610_ID1 | C610_ID2)) {
 #ifdef CAN_SUPPORT
         CAN_SendData(CAN_handle, CAN_ID_STD, C610_ID1, TxData, 8);
         CAN_SendData(CAN_handle, CAN_ID_STD, C610_ID2, &TxData[8], 8);
@@ -40,8 +37,7 @@ void C610_SetCurr(CAN_handle_t *const CAN_handle, const unsigned short C610_ID)
         CAN_SendData(CAN_handle, FDCAN_STANDARD_ID, C610_ID1, TxData, 8);
         CAN_SendData(CAN_handle, FDCAN_STANDARD_ID, C610_ID2, &TxData[8], 8);
 #endif
-    }
-    else
+    } else
 #ifdef CAN_SUPPORT
         CAN_SendData(CAN_handle, CAN_ID_STD, C610_ID, TxData, 8);
 #elif defined FDCAN_SUPPORT
@@ -49,12 +45,10 @@ void C610_SetCurr(CAN_handle_t *const CAN_handle, const unsigned short C610_ID)
 #endif
 }
 
-void C610_SetSpd(CAN_handle_t *const CAN_handle, const unsigned short C610_ID)
-{
+void C610_SetSpd(CAN_handle_t *const CAN_handle, const unsigned short C610_ID) {
     static float iterm[8];
 
-    for (unsigned char idx = (C610_ID == C610_ID2 ? 4 : 0); idx < (C610_ID == C610_ID1 ? 4 : 8); ++idx)
-    {
+    for (unsigned char idx = (C610_ID == C610_ID2 ? 4 : 0); idx < (C610_ID == C610_ID1 ? 4 : 8); ++idx) {
         C610_PID_spd[idx].p = (C610[idx].ctrl.spd - C610[idx].fdbk.spd) * C610_PID_spd[idx].Kp;
 
         if (ABS(C610[idx].ctrl.spd - C610[idx].fdbk.spd) >= C610_PID_spd[idx].i_start) // integral separation
@@ -71,12 +65,10 @@ void C610_SetSpd(CAN_handle_t *const CAN_handle, const unsigned short C610_ID)
     C610_SetCurr(CAN_handle, C610_ID);
 }
 
-void C610_SetPos(CAN_handle_t *const CAN_handle, const unsigned short C610_ID)
-{
+void C610_SetPos(CAN_handle_t *const CAN_handle, const unsigned short C610_ID) {
     static float iterm[8];
 
-    for (unsigned char idx = (C610_ID == C610_ID2 ? 4 : 0); idx < (C610_ID == C610_ID1 ? 4 : 8); ++idx)
-    {
+    for (unsigned char idx = (C610_ID == C610_ID2 ? 4 : 0); idx < (C610_ID == C610_ID1 ? 4 : 8); ++idx) {
         C610_PID_pos[idx].p = (C610[idx].ctrl.pos - C610[idx].fdbk.pos) * C610_PID_pos[idx].Kp;
 
         if (ABS(C610[idx].ctrl.pos - C610[idx].fdbk.pos) >= C610_PID_pos[idx].i_start) // integral separation
@@ -93,18 +85,15 @@ void C610_SetPos(CAN_handle_t *const CAN_handle, const unsigned short C610_ID)
     C610_SetSpd(CAN_handle, C610_ID);
 }
 
-void C610_SetTrq(CAN_handle_t *const CAN_handle, const unsigned short C610_ID)
-{
+void C610_SetTrq(CAN_handle_t *const CAN_handle, const unsigned short C610_ID) {
     for (unsigned char idx = (C610_ID == C610_ID2 ? 4 : 0); idx < (C610_ID == C610_ID1 ? 4 : 8); ++idx)
         C610[idx].ctrl.curr = C610[idx].ctrl.trq / M2006_fTRQ;
 
     C610_SetCurr(CAN_handle, C610_ID);
 }
 
-bool C610_MsgHandler(unsigned CAN_ID, unsigned char RxData[8])
-{
-    if (CAN_ID >= 0x201 && CAN_ID <= 0x208)
-    {
+bool C610_MsgHandler(unsigned CAN_ID, unsigned char RxData[8]) {
+    if (CAN_ID >= 0x201 && CAN_ID <= 0x208) {
         static float pos_prev[8], pos_curr[8];
         unsigned char idx = CAN_ID - 0x201;
 
@@ -125,9 +114,9 @@ bool C610_MsgHandler(unsigned CAN_ID, unsigned char RxData[8])
         C610_PID_pos[idx].deprev = C610_PID_pos[idx].decurr;
         C610_PID_pos[idx].decurr = C610[idx].ctrl.pos - C610[idx].fdbk.pos;
 
-        return true;
+        return false;
     }
-    return false;
+    return true;
 }
 
 C620_t C620[8];
@@ -147,18 +136,15 @@ PID_t C620_PID_spd[8], C620_PID_pos[8];
 // i_start 50
 // i_lim 10
 
-void C620_SetCurr(CAN_handle_t *const CAN_handle, const unsigned short C620_ID)
-{
+void C620_SetCurr(CAN_handle_t *const CAN_handle, const unsigned short C620_ID) {
     unsigned char TxData[C620_ID == (C620_ID1 | C620_ID2) ? 16 : 8];
 
-    for (unsigned char idx = (C620_ID == C620_ID2 ? 4 : 0), offset = idx; idx < (C620_ID == C620_ID1 ? 4 : 8); ++idx)
-    {
+    for (unsigned char idx = (C620_ID == C620_ID2 ? 4 : 0), offset = idx; idx < (C620_ID == C620_ID1 ? 4 : 8); ++idx) {
         TxData[(idx - offset) * 2] = (short)(LIMIT_ABS(C620[idx].ctrl.curr, C620_CURR_LIMIT) / C620_fCURR) >> 8;
         TxData[(idx - offset) * 2 + 1] = (short)(C620[idx].ctrl.curr / C620_fCURR);
     }
 
-    if (C620_ID == (C620_ID1 | C620_ID2))
-    {
+    if (C620_ID == (C620_ID1 | C620_ID2)) {
 #ifdef CAN_SUPPORT
         CAN_SendData(CAN_handle, CAN_ID_STD, C620_ID1, TxData, 8);
         CAN_SendData(CAN_handle, CAN_ID_STD, C620_ID2, &TxData[8], 8);
@@ -166,8 +152,7 @@ void C620_SetCurr(CAN_handle_t *const CAN_handle, const unsigned short C620_ID)
         CAN_SendData(CAN_handle, FDCAN_STANDARD_ID, C620_ID1, TxData, 8);
         CAN_SendData(CAN_handle, FDCAN_STANDARD_ID, C620_ID2, &TxData[8], 8);
 #endif
-    }
-    else
+    } else
 #ifdef CAN_SUPPORT
         CAN_SendData(CAN_handle, CAN_ID_STD, C620_ID, TxData, 8);
 #elif defined FDCAN_SUPPORT
@@ -175,12 +160,10 @@ void C620_SetCurr(CAN_handle_t *const CAN_handle, const unsigned short C620_ID)
 #endif
 }
 
-void C620_SetSpd(CAN_handle_t *const CAN_handle, const unsigned short C620_ID)
-{
+void C620_SetSpd(CAN_handle_t *const CAN_handle, const unsigned short C620_ID) {
     static float iterm[8];
 
-    for (unsigned char idx = (C620_ID == C620_ID2 ? 4 : 0); idx < (C620_ID == C620_ID1 ? 4 : 8); ++idx)
-    {
+    for (unsigned char idx = (C620_ID == C620_ID2 ? 4 : 0); idx < (C620_ID == C620_ID1 ? 4 : 8); ++idx) {
         C620_PID_spd[idx].p = (C620[idx].ctrl.spd - C620[idx].fdbk.spd) * C620_PID_spd[idx].Kp;
 
         if (ABS(C620[idx].ctrl.spd - C620[idx].fdbk.spd) >= C620_PID_spd[idx].i_start) // integral separation
@@ -197,12 +180,10 @@ void C620_SetSpd(CAN_handle_t *const CAN_handle, const unsigned short C620_ID)
     C620_SetCurr(CAN_handle, C620_ID);
 }
 
-void C620_SetPos(CAN_handle_t *const CAN_handle, const unsigned short C620_ID)
-{
+void C620_SetPos(CAN_handle_t *const CAN_handle, const unsigned short C620_ID) {
     static float iterm[8];
 
-    for (unsigned char idx = (C620_ID == C620_ID2 ? 4 : 0); idx < (C620_ID == C620_ID1 ? 4 : 8); ++idx)
-    {
+    for (unsigned char idx = (C620_ID == C620_ID2 ? 4 : 0); idx < (C620_ID == C620_ID1 ? 4 : 8); ++idx) {
         C620_PID_pos[idx].p = (C620[idx].ctrl.pos - C620[idx].fdbk.pos) * C620_PID_pos[idx].Kp;
 
         if (ABS(C620[idx].ctrl.pos - C620[idx].fdbk.pos) >= C620_PID_pos[idx].i_start) // integral separation
@@ -219,18 +200,15 @@ void C620_SetPos(CAN_handle_t *const CAN_handle, const unsigned short C620_ID)
     C620_SetSpd(CAN_handle, C620_ID);
 }
 
-void C620_SetTrq(CAN_handle_t *const CAN_handle, const unsigned short C620_ID)
-{
+void C620_SetTrq(CAN_handle_t *const CAN_handle, const unsigned short C620_ID) {
     for (unsigned char idx = (C620_ID == C620_ID2 ? 4 : 0); idx < (C620_ID == C620_ID1 ? 4 : 8); ++idx)
         C620[idx].ctrl.curr = C620[idx].ctrl.trq / M3508_fTRQ;
 
     C620_SetCurr(CAN_handle, C620_ID);
 }
 
-bool C620_MsgHandler(unsigned CAN_ID, unsigned char RxData[8])
-{
-    if (CAN_ID >= 0x201 && CAN_ID <= 0x208)
-    {
+bool C620_MsgHandler(unsigned CAN_ID, unsigned char RxData[8]) {
+    if (CAN_ID >= 0x201 && CAN_ID <= 0x208) {
         static float pos_prev[8], pos_curr[8];
         unsigned char idx = CAN_ID - 0x201;
 
@@ -252,9 +230,9 @@ bool C620_MsgHandler(unsigned CAN_ID, unsigned char RxData[8])
         C620_PID_pos[idx].deprev = C620_PID_pos[idx].decurr;
         C620_PID_pos[idx].decurr = C620[idx].ctrl.pos - C620[idx].fdbk.pos;
 
-        return true;
+        return false;
     }
-    return false;
+    return true;
 }
 
 #else

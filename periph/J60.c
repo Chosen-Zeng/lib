@@ -1,17 +1,14 @@
 #include "J60.h"
-#include "algorithm.h"
 #include "CAN.h"
+#include "algorithm.h"
 
 #ifdef J60_NUM
 
-void J60_SendCmd(CAN_handle_t *const CAN_handle, const unsigned char idx, const unsigned short J60_cmd, float data)
-{
+void J60_SendCmd(CAN_handle_t *const CAN_handle, const unsigned char idx, const unsigned short J60_cmd, float data) {
     unsigned char TxData[8], len = 0;
 
-    switch (J60_cmd)
-    {
-    case J60_MOTOR_CONTROL:
-    {
+    switch (J60_cmd) {
+    case J60_MOTOR_CONTROL: {
         len = 8;
 
         *(unsigned long *)TxData = (unsigned long)(LIMIT_ABS(J60[idx].ctrl.pos, J60_POS_LIMIT) + J60_POS_LIMIT) / J60_fPOS_W;
@@ -22,15 +19,13 @@ void J60_SendCmd(CAN_handle_t *const CAN_handle, const unsigned char idx, const 
 
         break;
     }
-    case J60_SET_CAN_TIMEOUT:
-    {
+    case J60_SET_CAN_TIMEOUT: {
         len = 1;
 
         TxData[0] = LIMIT(data, J60_CAN_TIMEOUT_LIMIT);
         break;
     }
-    case J60_SET_BANDWIDTH:
-    {
+    case J60_SET_BANDWIDTH: {
         len = 2;
 
         *(unsigned short *)TxData = LIMIT(data, J60_BANDWIDTH_LIMIT);
@@ -44,15 +39,12 @@ void J60_SendCmd(CAN_handle_t *const CAN_handle, const unsigned char idx, const 
 #endif
 }
 
-void J60_Init(CAN_handle_t *const CAN_handle, const unsigned char idx)
-{
+void J60_Init(CAN_handle_t *const CAN_handle, const unsigned char idx) {
     J60_SendCmd(CAN_handle, idx, J60_MOTOR_ENABLE, 0);
 }
 
-bool J60_MsgHandler(const unsigned CAN_ID, const unsigned char idx, const unsigned char RxData[8])
-{
-    if (CAN_ID == (J60_MOTOR_CONTROL << 5 | J60_MSG_RECV << 4 | J60[idx].ID))
-    {
+bool J60_MsgHandler(const unsigned CAN_ID, const unsigned char idx, const unsigned char RxData[8]) {
+    if (CAN_ID == (J60_MOTOR_CONTROL << 5 | J60_MSG_RECV << 4 | J60[idx].ID)) {
         J60[idx].fdbk.pos = (*(unsigned *)RxData & 0xFFFFF) * J60_fPOS_R - J60_POS_LIMIT;
         J60[idx].fdbk.spd = (*(unsigned *)&RxData[2] >> 4 & 0xFFFFF) * J60_fSPD_R - J60_SPD_LIMIT;
         J60[idx].fdbk.trq = *(unsigned short *)&RxData[5] * J60_fTORQUE - J60_TORQUE_LIMIT;
@@ -61,9 +53,9 @@ bool J60_MsgHandler(const unsigned CAN_ID, const unsigned char idx, const unsign
         else
             J60[idx].fdbk.temp.motor = (*(unsigned char *)&RxData[7] >> 1) * J60_fTEMP + J60_TEMP_OFFSET;
 
-        return true;
+        return false;
     }
-    return false;
+    return true;
 }
 
 #else

@@ -2,9 +2,10 @@
 #define __TIM_H
 
 #ifdef TIMsw // define TIMER TIMx, TIM frequency must be set 1Hz
-typedef struct
-{
-    double intvl, curr, prev;
+typedef struct {
+    double intvl,
+        curr,
+        prev;
 } TIMsw_t;
 
 #define TIMsw_InitStruct (TIMsw_t){0, 0, 0}
@@ -13,10 +14,8 @@ typedef struct
 
 //  @brief     update intvl of the specific time structure
 //  @attention interval must < 1s
-static inline float TIMsw_GetIntvl(TIMsw_t *const timer_struct)
-{
-    if (timer_struct->prev != 0 && timer_struct->curr != 0)
-    {
+static inline float TIMsw_GetIntvl(TIMsw_t *const timer_struct) {
+    if (timer_struct->prev != 0 && timer_struct->curr != 0) {
         timer_struct->prev = timer_struct->curr;
         timer_struct->curr = TIMsw_TIME;
 
@@ -24,8 +23,7 @@ static inline float TIMsw_GetIntvl(TIMsw_t *const timer_struct)
             timer_struct->intvl = 1 + timer_struct->curr - timer_struct->prev;
         else
             timer_struct->intvl = timer_struct->curr - timer_struct->prev;
-    }
-    else
+    } else
         timer_struct->prev = timer_struct->curr = TIMsw_TIME;
 
     return timer_struct->intvl;
@@ -33,10 +31,8 @@ static inline float TIMsw_GetIntvl(TIMsw_t *const timer_struct)
 
 //  @brief     update elapse of the specific time structure
 //  @attention interval must < 1s
-static inline float TIMsw_GetElapse(TIMsw_t *const timer_struct)
-{
-    if (timer_struct->prev != 0 && timer_struct->curr != 0)
-    {
+static inline float TIMsw_GetElapse(TIMsw_t *const timer_struct) {
+    if (timer_struct->prev != 0 && timer_struct->curr != 0) {
         timer_struct->prev = timer_struct->curr;
         timer_struct->curr = TIMsw_TIME;
 
@@ -44,27 +40,23 @@ static inline float TIMsw_GetElapse(TIMsw_t *const timer_struct)
             timer_struct->intvl += 1 + timer_struct->curr - timer_struct->prev;
         else
             timer_struct->intvl += timer_struct->curr - timer_struct->prev;
-    }
-    else
+    } else
         timer_struct->prev = timer_struct->curr = TIMsw_TIME;
 
     return timer_struct->intvl;
 }
 
 // @return timeout or not
-static inline bool TIMsw_CheckTimeout(TIMsw_t *const timer_struct, const float timeout)
-{
+static inline bool TIMsw_CheckTimeout(TIMsw_t *const timer_struct, const float timeout) {
     TIMsw_GetElapse(timer_struct);
     return timer_struct->intvl >= timeout;
 }
 
-static inline void TIMsw_Clear(TIMsw_t *const timer_struct)
-{
+static inline void TIMsw_Clear(TIMsw_t *const timer_struct) {
     timer_struct->intvl = timer_struct->curr = timer_struct->prev = 0;
 }
 
-static inline float TIMsw_GetRatio(TIMsw_t *const timer_struct, const float duration)
-{
+static inline float TIMsw_GetRatio(TIMsw_t *const timer_struct, const float duration) {
     return TIMsw_GetElapse(timer_struct) > duration ? 1 : timer_struct->intvl / duration;
 }
 

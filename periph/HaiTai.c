@@ -1,47 +1,40 @@
 #include "HaiTai.h"
-#include "algorithm.h"
 #include "CAN.h"
-#include "USART.h"
 #include "CRC.h"
+#include "USART.h"
+#include "algorithm.h"
 
 #ifdef HAITAI_NUM
 
-void HaiTai_SendCmd_CAN(CAN_handle_t *const CAN_handle, const unsigned char idx, const unsigned char HAITAI_cmd)
-{
+void HaiTai_SendCmd_CAN(CAN_handle_t *const CAN_handle, const unsigned char idx, const unsigned char HAITAI_cmd) {
     unsigned char len = 0;
 
-    switch (HAITAI_cmd)
-    {
+    switch (HAITAI_cmd) {
     case HAITAI_CTRL_OFF:
     case HAITAI_CTRL_0POS_MPL:
     case HAITAI_CTRL_0POS_SGL:
         break;
-    case HAITAI_CTRL_PWR:
-    {
+    case HAITAI_CTRL_PWR: {
         len = 2;
         *(short *)HaiTai[idx].TxData = LIMIT_RANGE(HaiTai[idx].ctrl.pwr, HAITAI_PWR_MAX, HAITAI_PWR_MIN);
         break;
     }
-    case HAITAI_CTRL_SPD:
-    {
+    case HAITAI_CTRL_SPD: {
         len = 2;
         *(short *)HaiTai[idx].TxData = LIMIT_RANGE(HaiTai[idx].ctrl.spd, HAITAI_SPD_MAX, HAITAI_SPD_MIN) / HAITAI_fSPD;
         break;
     }
-    case HAITAI_CTRL_POS_ABS:
-    {
+    case HAITAI_CTRL_POS_ABS: {
         len = 4;
         *(int *)HaiTai[idx].TxData = LIMIT_RANGE(HaiTai[idx].ctrl.pos, HAITAI_POS_MAX, HAITAI_POS_MIN) / HAITAI_fPOS;
         break;
     }
-    case HAITAI_CTRL_POS_REL:
-    {
+    case HAITAI_CTRL_POS_REL: {
         len = 4;
         *(int *)HaiTai[idx].TxData = LIMIT_RANGE(HaiTai[idx].ctrl.pos, HAITAI_POS_MAX, HAITAI_POS_MIN) / HAITAI_fPOS;
         break;
     }
-    case HAITAI_CTRL_POS_SPD_CFG:
-    {
+    case HAITAI_CTRL_POS_SPD_CFG: {
         len = 3;
         HaiTai[idx].TxData[0] = HAITAI_POS_SPD_LIM_W;
         *(short *)&HaiTai[idx].TxData[1] = LIMIT_RANGE(HaiTai[idx].ctrl.spd, HAITAI_SPD_MAX, HAITAI_SPD_MIN) / HAITAI_fSPD;
@@ -58,47 +51,39 @@ void HaiTai_SendCmd_CAN(CAN_handle_t *const CAN_handle, const unsigned char idx,
 #endif
 }
 
-void HaiTai_SendCmd_RS485(USART_handle_t *const UART_info, const unsigned char idx, const unsigned char HAITAI_cmd)
-{
+void HaiTai_SendCmd_RS485(USART_handle_t *const UART_info, const unsigned char idx, const unsigned char HAITAI_cmd) {
     HaiTai[idx].TxData[0] = HAITAI_PREAMBLE_SEND;
     HaiTai[idx].TxData[1] = HAITAI_PID;
     HaiTai[idx].TxData[2] = HaiTai[idx].ID;
     HaiTai[idx].TxData[3] = HAITAI_cmd;
 
-    switch (HAITAI_cmd)
-    {
+    switch (HAITAI_cmd) {
     case HAITAI_SYS_PARAM_W:
-    case HAITAI_SYS_PARAM_P:
-    {
+    case HAITAI_SYS_PARAM_P: {
         // unknown behavior
         return;
     }
-    case HAITAI_CTRL_PWR:
-    {
+    case HAITAI_CTRL_PWR: {
         HaiTai[idx].TxData[4] = 2;
         *(short *)&HaiTai[idx].TxData[5] = LIMIT_RANGE(HaiTai[idx].ctrl.pwr, HAITAI_PWR_MAX, HAITAI_PWR_MIN);
         break;
     }
-    case HAITAI_CTRL_SPD:
-    {
+    case HAITAI_CTRL_SPD: {
         HaiTai[idx].TxData[4] = 2;
         *(short *)&HaiTai[idx].TxData[5] = LIMIT_RANGE(HaiTai[idx].ctrl.spd, HAITAI_SPD_MAX, HAITAI_SPD_MIN) / HAITAI_fSPD;
         break;
     }
-    case HAITAI_CTRL_POS_ABS:
-    {
+    case HAITAI_CTRL_POS_ABS: {
         HaiTai[idx].TxData[4] = 4;
         *(int *)&HaiTai[idx].TxData[5] = LIMIT_RANGE(HaiTai[idx].ctrl.pos, HAITAI_POS_MAX, HAITAI_POS_MIN) / HAITAI_fPOS;
         break;
     }
-    case HAITAI_CTRL_POS_REL:
-    {
+    case HAITAI_CTRL_POS_REL: {
         HaiTai[idx].TxData[4] = 4;
         *(int *)&HaiTai[idx].TxData[5] = LIMIT_RANGE(HaiTai[idx].ctrl.pos, HAITAI_POS_MAX, HAITAI_POS_MIN) / HAITAI_fPOS;
         break;
     }
-    case HAITAI_CTRL_POS_SPD_CFG:
-    {
+    case HAITAI_CTRL_POS_SPD_CFG: {
         HaiTai[idx].TxData[4] = 3;
         HaiTai[idx].TxData[5] = HAITAI_POS_SPD_LIM_W;
         *(short *)&HaiTai[idx].TxData[6] = LIMIT_RANGE(HaiTai[idx].ctrl.spd, HAITAI_SPD_MAX, HAITAI_SPD_MIN) / HAITAI_fSPD;
@@ -119,9 +104,9 @@ bool HaiTai_MsgHandler_CAN(const unsigned CAN_ID, const unsigned char idx, const
         HaiTai[idx].fdbk.pos_mpl = *(int *)&RxData[2] * HAITAI_fPOS;
         HaiTai[idx].fdbk.spd = *(short *)&RxData[6] * HAITAI_fSPD;
 
-        return true;
+        return false;
     }
-    return false;
+    return true;
 }
 
 bool HaiTai_MsgHandler_RS485(const unsigned char idx, const unsigned char RxData[15])
@@ -136,9 +121,9 @@ bool HaiTai_MsgHandler_RS485(const unsigned char idx, const unsigned char RxData
         HaiTai[idx].fdbk.pos_mpl = *(int *)&RxData[2] * HAITAI_fPOS;
         HaiTai[idx].fdbk.spd = *(short *)&RxData[6] * HAITAI_fSPD;
 
-        return true;
+        return false;
     }
-    return false;
+    return true;
 }
 
 #else
